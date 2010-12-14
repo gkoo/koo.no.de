@@ -5,7 +5,7 @@ var s = http.createServer(function(req, res) {
   res.writeHead(200);
   res.end('<h1>hello world</h1>');
 });
-s.listen('80');
+//s.listen('80');
 
 // Express app
 express = require('express');
@@ -15,4 +15,4 @@ app.get('/', function(req, res) {
   res.send('Hello World Express');
 });
 
-app.listen(3000);
+app.listen(80);
