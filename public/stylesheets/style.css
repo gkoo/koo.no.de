@@ -1,4 +1,20 @@
 body {
-  padding: 50px;
+  background-color: #000;
   font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+a {
+  color: #f00;
+}
+a {
+  color: #999;
+}
+h1 {
+  text-align: center;
+}
+.content {
+  color: #fff;
+  margin: 50px auto;
+  text-align: left;
+  width: 500px;
 }
