@@ -31,7 +31,15 @@ app.configure('production', function(){
 app.get('/', function(req, res){
   res.render('index', {
     locals: {
-      title: 'Express'
+      title: 'Gordon\'s Website'
+    }
+  });
+});
+
+app.get('/blog', function(req, res){
+  res.render('blog', {
+    locals: {
+      title: 'Blog'
     }
   });
 });
@@ -39,6 +47,6 @@ app.get('/', function(req, res){
 // Only listen on $ node app.js
 
 if (!module.parent) {
-  app.listen(80);
+  app.listen(3000);
   console.log("Express server listening on port %d", app.address().port)
 }
