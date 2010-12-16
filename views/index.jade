@@ -3,3 +3,10 @@
   a(href='blog', title='Go to my blog!') Blog
   p Welcome to #{title}
   p Built using NodeJS. Please bear with me while I learn more about this cool technology!
+  #chat-window
+  input#chatinput(type='text')
+  input#chatsendbtn(type='button', value='Send')
+
+script(src='/javascripts/jquery-1.4.4.min.js')
+script(src='/socket.io/socket.io.js')
+script(src='/javascripts/io.js')
