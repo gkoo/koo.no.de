@@ -1,24 +1,36 @@
 body {
-  background-color: #000;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  font: 14px Arial;
   text-align: center;
-}
-a {
-  color: #f00;
-}
-a {
-  color: #999;
 }
 h1 {
+  font-size: 36px;
   text-align: center;
+  text-shadow: 1px 1px 1px #999;
 }
-.content {
-  background-color: #fff;
+a {
+  color: #8a95d7;
+}
+#main {
+  background-color: #eee;
   color: #000;
   margin: 50px auto;
   padding: 20px;
   text-align: left;
   width: 700px;
+
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+  border-radius: 12px;
+}
+.foot {
+  list-style-type: none;
+  margin: 10px 0;
+  padding: 0;
+}
+li {
+  float: left;
+  margin: 0 10px 0 0;
+  padding: 0;
 }
 #chat-window {
   border: 1px solid black;
@@ -29,4 +41,7 @@ h1 {
 }
 #chatinput {
   width: 500px;
+}
+.clear {
+  clear: both;
 }
