@@ -32,6 +32,7 @@ io = io.listen(app);
 
 io.on('connection', function(client) {
   client.send({ grid: grid });
+  client.broadcast({ msg: 'I\'m here!!!'});
 
   client.on('message', function(message) {
     if ('type' in message) {
@@ -45,6 +46,7 @@ io.on('connection', function(client) {
 
           break;
         case 'toggleOn':
+          //console.log('toggleon ('+message.x+', ' + message.y+')');
           grid[message.x][message.y] = 1;
           break;
         case 'clear':

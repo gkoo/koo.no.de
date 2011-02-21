@@ -35,6 +35,9 @@ $(document).ready(function() {
         }
       }
     }
+    else if ('msg' in obj) {
+      alert (obj.msg);
+    }
   });
 
   /*
