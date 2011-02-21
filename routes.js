@@ -32,12 +32,12 @@ app.get('/500', function(req, res){
 });
 app.error(function(err, req, res, next){
   if (err instanceof NotFound) {
-    console.log('doing 404');
-    res.render('404.jade', {
+    res.render('404', {
       locals: {
-        title: 'Oops!',
+        title: 'The page cannot be found',
         err: err
-      }
+      },
+      layout: 'errlayout'
     });
   } else {
     console.log('next');
@@ -49,7 +49,8 @@ app.error(function(err, req, res){
     locals: {
       title: 'Oops!',
       error: err
-    }
+    },
+    layout: 'errlayout'
   });
 });
 
