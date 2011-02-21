@@ -32,7 +32,6 @@ io = io.listen(app);
 
 io.on('connection', function(client) {
   client.send({ grid: grid });
-  client.broadcast({ msg: 'I\'m here!!!'});
 
   client.on('message', function(message) {
     if ('type' in message) {
