@@ -1,17 +1,27 @@
+/* RESET STUFF */
+html, body, div, p, ul, ol, li {
+  margin: 0;
+  padding: 0;
+}
+ul {
+  list-style: none;
+}
 body {
   font: 14px Arial;
   text-align: center;
 }
+h1, h2, h3, h4, h5 {
+  color: #d00;
+}
 h1 {
-  font-size: 36px;
+  font-size: 48px;
   text-align: center;
-  text-shadow: 1px 1px 1px #999;
 }
 h2 {
   margin-top: 30px;
 }
 a {
-  color: #8a95d7;
+  color: #059bff;
 }
 #main {
   background-color: #eee;
@@ -24,6 +34,10 @@ a {
   -moz-border-radius: 12px;
   -webkit-border-radius: 12px;
   border-radius: 12px;
+}
+.link-list {
+  padding-left: 15px;
+  margin: 10px 0;
 }
 .foot {
   font-size: 11px;

@@ -1,10 +1,11 @@
-p
-  a(href='grid') Grid
+- var nodelink = "<a href='http://nodejs.org'>NodeJS</a>"
+- var expresslink = "<a href='http://expressjs.com/'>Express</a>"
+- var socketiolink = "<a href='http://socket.io'>Socket.IO</a>"
 
 h2 About The Site
 p
-  | This site was made using NodeJS modules: Express and Socket.IO.
-  | I'm still learning about this stuff, so bear with me please while I build
+  | This site was made using !{nodelink} modules: !{expresslink}
+  | and !{socketiolink}. I'm still learning about this stuff, so bear with me please while I build
   | this site!
 
 
@@ -17,6 +18,11 @@ p
 h2 About The Projects
 p
   | Here are some experiments with NodeJS.
+ul.link-list
+  li
+    h3
+      a(href='grid') Grid
+    p It's a grid! You draw on it and say, "Huzzah!"
 
 //script(src='/socket.io/socket.io.js')
 //script(src='/javascripts/io.js')

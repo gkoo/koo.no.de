@@ -1,3 +1,4 @@
+/* TODO: DISABLE EDITING OF GRID UNTIL GRID IS LOADED FROM SERVER. */
 var socket = null,
     grid = null,
     mouseIsDown = false,

@@ -68,9 +68,11 @@ io.on('connection', function(client) {
 // Only listen on $ node server.js
 
 if (!module.parent) {
-  app.listen(80);
+  app.listen(8080);
   console.log("Express server listening on port %d", app.address().port)
 }
+
+
 
 /*
 var io = io.listen(app),

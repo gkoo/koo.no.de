@@ -1,4 +1,5 @@
-var express = require('express');
+var express = require('express'),
+    sys = require('sys'),
     app = express.createServer(),
     dimSize = 30;
 
@@ -14,7 +15,8 @@ app.configure(function(){
 });
 
 app.configure('development', function(){
-  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  //app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  //app.use(express.errorHandler());
 });
 
 app.configure('production', function(){
@@ -47,6 +49,49 @@ app.get('/blog', function(req, res){
     }
   });
 });
+
+
+/* ==============
+ * ERROR HANDLING
+ * ==============
+ */
+function NotFound(msg){
+    this.name = 'NotFound';
+    Error.call(this, msg);
+    Error.captureStackTrace(this, arguments.callee);
+}
+
+sys.inherits(NotFound, Error);
+
+app.get('/404', function(req, res){
+  throw new NotFound;
+});
+
+app.get('/500', function(req, res){
+  throw new Error('keyboard cat!');
+});
+app.error(function(err, req, res, next){
+  sys.puts('APP.ERROR: ' + sys.inspect(err));
+  res.render('500', {
+    locals: {
+      title: 'Oops!',
+      error: err
+    }
+  });
+//  if (err instanceof NotFound) {
+//    res.render('404.jade');
+//  } else {
+//    next(err);
+//  }
+});
+app.error(function(err, req, res){
+  res.render('500.jade', {
+    locals: {
+     error: err
+    }
+  });
+});
+
 
 // export app instance into the Routes module object
 exports.app = app;
