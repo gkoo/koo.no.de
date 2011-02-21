@@ -54,7 +54,7 @@ $(document).ready(function() {
     if (elem.get(0).tagName.toLowerCase() !== 'li') {
       return;
     }
-    
+
     elemCoord = getCoordByCell(elem);
 
     mouseIsDown = true;

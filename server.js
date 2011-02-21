@@ -64,7 +64,7 @@ io.on('connection', function(client) {
 /* ============== */
 
 
-// Only listen on $ node app.js
+// Only listen on $ node server.js
 
 if (!module.parent) {
   app.listen(80);
