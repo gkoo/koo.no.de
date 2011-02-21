@@ -26,15 +26,19 @@ $(document).ready(function() {
           break;
       }
     }
-    else if ('grid' in obj && obj.grid) {
-      for (var i=0; i<obj.grid.length; ++i) { // i: columns
-        for (var j=0; j<obj.grid[i].length; ++j) { // j: rows
-          if (obj.grid[i][j] != 0) {
-            var cell = getCellByCoord(i, j);
-            toggleCell({ cell: cell });
+    else if ('grid' in obj) {
+      if (obj.grid) {
+        // Do initialization of grid, if there is any to be done.
+        for (var i=0; i<obj.grid.length; ++i) { // i: columns
+          for (var j=0; j<obj.grid[i].length; ++j) { // j: rows
+            if (obj.grid[i][j] != 0) {
+              var cell = getCellByCoord(i, j);
+              toggleCell({ cell: cell });
+            }
           }
         }
       }
+      $('#wrapper').children(':first-child').removeClass('loading');
     }
     else if ('msg' in obj) {
       alert (obj.msg);

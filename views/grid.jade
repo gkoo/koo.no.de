@@ -1,10 +1,17 @@
-ul#grid
-  - for (var i=0; i<dimSize; i++)
-    li
-      ul.innergrid
-        - for (var j=0; j<dimSize; j++)
-          li
-input#clearbtn(type='button', value='Clear the Grid')
+.loading
+  p.loading-status Initializing grid particles...
+  ul#grid
+    - for (var i=0; i<dimSize; i++)
+      li
+        ul.innergrid
+          - for (var j=0; j<dimSize; j++)
+            li
+  input#clearbtn(type='button', value='Clear the Grid')
+h2 Upcoming features!
+ul
+  li Erasing!
+  li Color selection!
+  li That's it!
 
 script(src='/socket.io/socket.io.js')
 script(src='/javascripts/gridclient.js')

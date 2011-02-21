@@ -27,6 +27,9 @@ function NotFound(msg){
 
 sys.inherits(NotFound, Error);
 
+app.get('/404', function(req, res){
+  throw new NotFound;
+});
 app.get('/500', function(req, res){
   throw new Error('keyboard cat!');
 });
@@ -54,16 +57,13 @@ app.error(function(err, req, res){
   });
 });
 
-/*
 app.configure('development', function(){
-  //app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-  //app.use(express.errorHandler());
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
 
 app.configure('production', function(){
   app.use(express.errorHandler());
 });
-*/
 
 // Routes
 

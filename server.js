@@ -3,7 +3,6 @@
  * Module dependencies.
  */
 
-//var io = require('socket.io'),
 var routes = require('./routes.js');
     io = require('socket.io'),
     app = routes.app,
@@ -16,6 +15,7 @@ var routes = require('./routes.js');
 
     dimSize = 30,
     grid = [],
+    gridDirty = false;
     // Init grid.
     initGrid = function() {
       for (var i=0; i<dimSize; ++i) {
@@ -31,7 +31,12 @@ initGrid();
 io = io.listen(app);
 
 io.on('connection', function(client) {
-  client.send({ grid: grid });
+  if (gridDirty) {
+    client.send({ grid: grid });
+  }
+  else {
+    client.send({ grid: null });
+  }
 
   client.on('message', function(message) {
     if ('type' in message) {
@@ -42,14 +47,17 @@ io.on('connection', function(client) {
 
           if (grid[x][y]) { grid[x][y] = 0; }
           else { grid[x][y] = 1; }
+          gridDirty = true;
 
           break;
         case 'toggleOn':
           //console.log('toggleon ('+message.x+', ' + message.y+')');
           grid[message.x][message.y] = 1;
+          gridDirty = true;
           break;
         case 'clear':
           initGrid();
+          gridDirty = false;
           break;
       }
       client.broadcast(message);
@@ -68,7 +76,7 @@ io.on('connection', function(client) {
 // Only listen on $ node server.js
 
 if (!module.parent) {
-  app.listen(8080);
+  app.listen(80);
   console.log("Express server listening on port %d", app.address().port)
 }
 

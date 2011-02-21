@@ -12,14 +12,16 @@ html
       h1= title
 
       // MAIN CONTENT
-      div!= body
+      #wrapper!= body
 
       ul.foot
         li
+          a(href='/') Home
+        li
           a(href='about') About
         li
-          a(href='about') Jobs
+          a(href='jobs') Jobs
         li
-          a(href='about') Press
+          a(href='press') Press
 
       div.clear
