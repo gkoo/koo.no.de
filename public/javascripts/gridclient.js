@@ -68,7 +68,7 @@ $(document).ready(function() {
   $('#grid').mousemove(function(evt) {
     var el = $(evt.target);
 
-    if (mouseIsDown && !el.hasClass('toggled')) {
+    if (mouseIsDown && el.get(0).tagName.toLowerCase() === 'li' && !el.hasClass('toggled')) {
       var elemCoord = getCoordByCell(el);
       toggleCell({ cell: el });
       socket.send({ type: 'toggleOn', x: elemCoord.x, y: elemCoord.y });
