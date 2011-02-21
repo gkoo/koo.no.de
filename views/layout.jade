@@ -1,17 +1,18 @@
-!!! 5
+!!!
 html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
     - if (dimSize)
       link(rel='stylesheet', href='/stylesheets/grid.css')
+    script(src='/javascripts/jquery-1.4.4.min.js')
   body
     #main
 
       h1= title
 
       // MAIN CONTENT
-      #{body}
+      !{body}
 
       ul.foot
         li
@@ -22,5 +23,3 @@ html
           a(href='about') Press
 
       div.clear
-
-  script(src='/javascripts/jquery-1.4.4.min.js')

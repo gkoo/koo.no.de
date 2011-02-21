@@ -5,7 +5,64 @@
 
 //var io = require('socket.io'),
 var routes = require('./routes.js');
-    app = routes.app;
+    io = require('socket.io'),
+    app = routes.app,
+
+
+
+/* ================ */
+/* BEGIN GRID STUFF */
+/* ================ */
+
+    dimSize = 30,
+    grid = [],
+    // Init grid.
+    initGrid = function() {
+      for (var i=0; i<dimSize; ++i) {
+        grid[i] = [];
+        for (var j=0; j<dimSize; ++j) {
+          grid[i][j] = 0;
+        }
+      }
+    };
+
+initGrid();
+
+io = io.listen(app);
+
+io.on('connection', function(client) {
+  client.send({ grid: grid });
+
+  client.on('message', function(message) {
+    if ('type' in message) {
+      switch (message.type) {
+        case 'toggle':
+          var x = message.x,
+              y = message.y;
+
+          if (grid[x][y]) { grid[x][y] = 0; }
+          else { grid[x][y] = 1; }
+
+          break;
+        case 'toggleOn':
+          grid[message.x][message.y] = 1;
+          break;
+        case 'clear':
+          initGrid();
+          break;
+      }
+      client.broadcast(message);
+    }
+  });
+
+  client.on('disconnect', function(message) { });
+
+});
+
+/* ============== */
+/* END GRID STUFF */
+/* ============== */
+
 
 // Only listen on $ node app.js
 

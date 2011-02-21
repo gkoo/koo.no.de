@@ -1,5 +1,6 @@
 var express = require('express');
-    app = express.createServer();
+    app = express.createServer(),
+    dimSize = 30;
 
 // Configuration
 
@@ -33,7 +34,7 @@ app.get('/', function(req, res){
 app.get('/grid', function(req, res){
   res.render('grid', {
     locals: {
-      dimSize: 30,
+      dimSize: dimSize,
       title: 'Welcome to the Grid'
     }
   });
@@ -49,3 +50,4 @@ app.get('/blog', function(req, res){
 
 // export app instance into the Routes module object
 exports.app = app;
+exports.dimSize = dimSize;
