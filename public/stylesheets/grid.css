@@ -1,0 +1,25 @@
+#main, #grid {
+  text-align: center;
+}
+#grid, .innergrid {
+  list-style: none;
+}
+#grid,
+.innergrid,
+.innergrid li{
+  padding: 0;
+}
+#grid li {
+ clear: left;
+}
+#grid .innergrid li {
+  background-color: #fff;
+  border: 1px solid #000;
+  clear: none;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+}
+.innergrid li.toggled {
+  background-color: black;
+}

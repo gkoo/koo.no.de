@@ -1,6 +1,26 @@
-!!!
+!!! 5
 html
   head
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
-  body!= body
+    - if (dimSize)
+      link(rel='stylesheet', href='/stylesheets/grid.css')
+  body
+    #main
+
+      h1= title
+
+      // MAIN CONTENT
+      #{body}
+
+      ul.foot
+        li
+          a(href='about') About
+        li
+          a(href='about') Jobs
+        li
+          a(href='about') Press
+
+      div.clear
+
+  script(src='/javascripts/jquery-1.4.4.min.js')
