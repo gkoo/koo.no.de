@@ -57,6 +57,7 @@ app.error(function(err, req, res){
   });
 });
 
+/*
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
@@ -64,6 +65,7 @@ app.configure('development', function(){
 app.configure('production', function(){
   app.use(express.errorHandler());
 });
+*/
 
 // Routes
 
