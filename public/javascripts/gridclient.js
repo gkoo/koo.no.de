@@ -1,14 +1,14 @@
-/* TODO: DISABLE EDITING OF GRID UNTIL GRID IS LOADED FROM SERVER. */
 var socket = null,
     grid = null,
     mouseIsDown = false,
+    drawMode = '1'; // 1 is draw, 0 is erase
     WHITE = '#fff',
     BLACK = '#000';
 
 $(document).ready(function() {
 
   grid  = document.getElementById('grid');
-  socket = new io.Socket(null, {port: 80, rememberTransport: false});
+  socket = new io.Socket(null, {port: 8080, rememberTransport: false});
   socket.connect();
 
   socket.on('message', function(obj) {
@@ -68,7 +68,7 @@ $(document).ready(function() {
     mouseIsDown = true;
     if (!elem.hasClass('toggled')) {
       toggleCell({ cell: elem });
-      socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y });
+      socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y, drawMode: drawMode });
     }
     return false;
   });
@@ -76,10 +76,11 @@ $(document).ready(function() {
   $('#grid').mousemove(function(evt) {
     var el = $(evt.target);
 
-    if (mouseIsDown && el.get(0).tagName.toLowerCase() === 'li' && !el.hasClass('toggled')) {
+    if (mouseIsDown && isDrawable(el)) {
       var elemCoord = getCoordByCell(el);
+
       toggleCell({ cell: el });
-      socket.send({ type: 'toggleOn', x: elemCoord.x, y: elemCoord.y });
+      socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y, drawMode: drawMode });
     }
   });
 
@@ -90,6 +91,14 @@ $(document).ready(function() {
   $('#clearbtn').click(function(evt) {
     $('#grid ul li').removeClass('toggled');
     socket.send({ type: 'clear' });
+  });
+
+  $('#drawbtn').click(function(evt) {
+    drawMode = 1;
+  });
+
+  $('#erasebtn').click(function(evt) {
+    drawMode = 0;
   });
 
 });
@@ -116,18 +125,9 @@ var toggleCell = function(cellInfo) {
     cell = getCellByCoord(cellInfo.x, cellInfo.y);
   }
 
-  state = cell.hasClass('toggled') ? 0 : 1;
+  state = 'drawMode' in cellInfo ? cellInfo.drawMode : drawMode;
 
-  if ('state' in cellInfo) {
-    state = cellInfo.state;
-  }
-
-  if (state) {
-    cell.addClass('toggled');
-  }
-  else {
-    cell.removeClass('toggled');
-  }
+  state ? cell.addClass('toggled') : cell.removeClass('toggled');
 };
 
 var getCellByCoord = function(x, y) {
@@ -146,3 +146,7 @@ var getCoordByCell = function(el) {
 
   return { x: x, y: y };
 };
+
+var isDrawable = function(el) {
+  return el.get(0).tagName.toLowerCase() === 'li' && el.hasClass('toggled') != drawMode;
+}

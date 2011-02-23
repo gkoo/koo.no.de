@@ -45,8 +45,7 @@ io.on('connection', function(client) {
           var x = message.x,
               y = message.y;
 
-          if (grid[x][y]) { grid[x][y] = 0; }
-          else { grid[x][y] = 1; }
+          grid[x][y] = message.drawMode;
           gridDirty = true;
 
           break;
@@ -76,7 +75,7 @@ io.on('connection', function(client) {
 // Only listen on $ node server.js
 
 if (!module.parent) {
-  app.listen(80);
+  app.listen(8080);
   console.log("Express server listening on port %d", app.address().port)
 }
 
