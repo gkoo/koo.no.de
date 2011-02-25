@@ -95,10 +95,12 @@ $(document).ready(function() {
 
   $('#drawbtn').click(function(evt) {
     drawMode = 1;
+    $('#controls').children('status').text('You are drawing.');
   });
 
   $('#erasebtn').click(function(evt) {
     drawMode = 0;
+    $('#controls').children('.status').text('You are erasing.');
   });
 
 });
