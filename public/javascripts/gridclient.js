@@ -66,7 +66,7 @@ $(document).ready(function() {
     elemCoord = getCoordByCell(elem);
 
     mouseIsDown = true;
-    if (!elem.hasClass('toggled')) {
+    if (isDrawable(elem)) {
       toggleCell({ cell: elem });
       socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y, drawMode: drawMode });
     }
