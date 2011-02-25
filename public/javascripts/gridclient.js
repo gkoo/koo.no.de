@@ -1,9 +1,7 @@
 var socket = null,
     grid = null,
     mouseIsDown = false,
-    drawMode = '1'; // 1 is draw, 0 is erase
-    WHITE = '#fff',
-    BLACK = '#000';
+    currColorClass = 'black';
 
 $(document).ready(function() {
 
@@ -22,7 +20,7 @@ $(document).ready(function() {
           toggleCell(obj);
           break;
         case 'clear':
-          $('#grid ul li').removeClass('toggled');
+          $('#grid ul li').removeClass();
           break;
       }
     }
@@ -33,7 +31,7 @@ $(document).ready(function() {
           for (var j=0; j<obj.grid[i].length; ++j) { // j: rows
             if (obj.grid[i][j] != 0) {
               var cell = getCellByCoord(i, j);
-              toggleCell({ cell: cell });
+              toggleCell({ cell: cell, currColorClass: obj.grid[i][j] });
             }
           }
         }
@@ -68,7 +66,12 @@ $(document).ready(function() {
     mouseIsDown = true;
     if (isDrawable(elem)) {
       toggleCell({ cell: elem });
-      socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y, drawMode: drawMode });
+      socket.send({
+        type: 'toggle',
+        x: elemCoord.x,
+        y: elemCoord.y,
+        currColorClass: currColorClass
+      });
     }
     return false;
   });
@@ -80,7 +83,12 @@ $(document).ready(function() {
       var elemCoord = getCoordByCell(el);
 
       toggleCell({ cell: el });
-      socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y, drawMode: drawMode });
+      socket.send({
+        type: 'toggle',
+        x: elemCoord.x,
+        y: elemCoord.y,
+        currColorClass: currColorClass
+      });
     }
   });
 
@@ -88,19 +96,23 @@ $(document).ready(function() {
     mouseIsDown = false;
   });
 
-  $('#clearbtn').click(function(evt) {
-    $('#grid ul li').removeClass('toggled');
-    socket.send({ type: 'clear' });
-  });
+  /* ======= CONTROLS ======= */
 
-  $('#drawbtn').click(function(evt) {
-    drawMode = 1;
-    $('#controls').children('status').text('You are drawing.');
-  });
-
-  $('#erasebtn').click(function(evt) {
-    drawMode = 0;
-    $('#controls').children('.status').text('You are erasing.');
+  $('#controls').click(function(evt) {
+    var target = $(evt.target);
+    if (target.attr('id') === 'clearbtn') {
+      $('#grid ul li').removeClass();
+      socket.send({ type: 'clear' });
+    }
+    else if (target.is('a')) {
+      var yourColor = $('#colorMsg').children('div');
+      currColorClass = target.attr('class');
+      yourColor.css('display', 'none');
+      yourColor.removeClass();
+      yourColor.addClass(currColorClass);
+      yourColor.css('display', 'block');
+      evt.preventDefault();
+    }
   });
 
 });
@@ -118,7 +130,6 @@ $(document).ready(function() {
 
 var toggleCell = function(cellInfo) {
   var cell = null;
-  var state = -1;
 
   if ('cell' in cellInfo && cellInfo.cell) {
     cell = $(cellInfo.cell);
@@ -127,9 +138,10 @@ var toggleCell = function(cellInfo) {
     cell = getCellByCoord(cellInfo.x, cellInfo.y);
   }
 
-  state = 'drawMode' in cellInfo ? cellInfo.drawMode : drawMode;
-
-  state ? cell.addClass('toggled') : cell.removeClass('toggled');
+  cell.css('display', 'none');
+  cell.removeClass();
+  cellInfo.currColorClass ? cell.addClass(cellInfo.currColorClass) : cell.addClass(currColorClass);
+  cell.css('display', 'inline-block');
 };
 
 var getCellByCoord = function(x, y) {
@@ -150,5 +162,5 @@ var getCoordByCell = function(el) {
 };
 
 var isDrawable = function(el) {
-  return el.get(0).tagName.toLowerCase() === 'li' && el.hasClass('toggled') != drawMode;
+  return el.get(0).tagName.toLowerCase() === 'li' && !el.hasClass(currColorClass);
 }
