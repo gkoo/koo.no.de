@@ -2,7 +2,6 @@
   visibility: hidden;
 }
 #grid {
-  background-color: #fff;
   text-align: center;
 }
 #grid, .innergrid {
@@ -12,9 +11,15 @@
 .innergrid,
 .innergrid li{
   padding: 0;
+  text-align: center;
 }
 #grid li {
- clear: left;
+  clear: left;
+  margin: 0 auto;
+  width: 660px;
+}
+.innergrid {
+  background-color: #fff;
 }
 #grid .innergrid li {
   border: 1px solid #000;
