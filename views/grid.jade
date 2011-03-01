@@ -6,9 +6,25 @@
         ul.innergrid
           - for (var j=0; j<dimSize; j++)
             li
-  input#clearbtn(type='button', value='Clear the Grid')
-  input#drawbtn(type='button', value='Draw')
-  input#erasebtn(type='button', value='Eraser')
+  #controls
+    #colorMsg
+      div.black
+      p Your color
+    ul.colors
+      li
+        a.black(href='#')
+      li
+        a.red(href='#')
+      li
+        a.green(href='#')
+      li
+        a.blue(href='#')
+      li
+        a.yellow(href='#')
+      li
+        a.white(href='#')
+    p
+      input#clearbtn(type='button', value='Clear the Grid')
 h2 Upcoming features!
 ul
   li Erasing!

@@ -11,12 +11,17 @@
 .innergrid,
 .innergrid li{
   padding: 0;
+  text-align: center;
 }
 #grid li {
- clear: left;
+  clear: left;
+  margin: 0 auto;
+  width: 660px;
+}
+.innergrid {
+  background-color: #fff;
 }
 #grid .innergrid li {
-  background-color: #fff;
   border: 1px solid #000;
   clear: none;
   display: inline-block;
@@ -35,4 +40,51 @@
 }
 .loading-status {
   display: none;
+}
+#controls {
+  border: 1px solid #000;
+  min-height: 109px;
+  margin-top: 20px;
+  padding: 10px;
+}
+.colors li {
+  float: left;
+}
+.colors li a,
+#colorMsg div{
+  border: 1px solid #000;
+  height: 40px;
+  margin: 10px;
+  width: 40px;
+}
+.colors li a {
+  display: inline-block;
+}
+#controls p {
+  clear: left;
+}
+#colorMsg {
+  float: right;
+  text-align: center;
+}
+#clearbtn {
+  padding-top: 15px;
+}
+.black {
+  background-color: #000;
+}
+.red {
+  background-color: #f00;
+}
+.blue {
+  background-color: #00f;
+}
+.green {
+  background-color: #0f0;
+}
+.yellow {
+  background-color: #ff0;
+}
+.white {
+  background-color: #fff;
 }
