@@ -1,7 +1,9 @@
 var socket = null,
     grid = null,
     mouseIsDown = false,
-    currColorClass = 'black';
+    currColorClass = 'black',
+    username = '',
+    PLAYER_ID_PREFIX = 'player-';
 
 $(document).ready(function() {
 
@@ -14,10 +16,7 @@ $(document).ready(function() {
       switch(obj.type) {
         case 'toggle':
           toggleCell(obj);
-          break;
-        case 'toggleOn':
-          obj.state = 1;
-          toggleCell(obj);
+          addLabel(obj);
           break;
         case 'clear':
           $('#grid ul li').removeClass();
@@ -55,41 +54,20 @@ $(document).ready(function() {
   */
 
   $('#grid').mousedown(function(evt) {
-    var elem = $(evt.target),
+    var el = $(evt.target),
         elemCoord;
-    if (elem.get(0).tagName.toLowerCase() !== 'li') {
+    if (el.get(0).tagName.toLowerCase() !== 'li') {
       return;
     }
 
-    elemCoord = getCoordByCell(elem);
-
     mouseIsDown = true;
-    if (isDrawable(elem)) {
-      toggleCell({ cell: elem });
-      socket.send({
-        type: 'toggle',
-        x: elemCoord.x,
-        y: elemCoord.y,
-        currColorClass: currColorClass
-      });
-    }
-    return false;
+    doDraw(el);
+    evt.preventDefault();
   });
 
   $('#grid').mousemove(function(evt) {
     var el = $(evt.target);
-
-    if (mouseIsDown && isDrawable(el)) {
-      var elemCoord = getCoordByCell(el);
-
-      toggleCell({ cell: el });
-      socket.send({
-        type: 'toggle',
-        x: elemCoord.x,
-        y: elemCoord.y,
-        currColorClass: currColorClass
-      });
-    }
+    doDraw(el);
   });
 
   $('body').mouseup(function(evt) {
@@ -100,9 +78,18 @@ $(document).ready(function() {
 
   $('#controls').click(function(evt) {
     var target = $(evt.target);
-    if (target.attr('id') === 'clearbtn') {
+    if (target.attr('id') === 'clearBtn') {
       $('#grid ul li').removeClass();
       socket.send({ type: 'clear' });
+    }
+    // Initiate setting name.
+    else if (target.attr('id') === 'editNameBtn') {
+      $('#username').hide();
+      $('#editNameField').show();
+    }
+    // Save changes to username.
+    else if (target.attr('id') === 'editNameSubmit') {
+      handleNameChange();
     }
     else if (target.is('a')) {
       var yourColor = $('#colorMsg').children('div');
@@ -112,6 +99,13 @@ $(document).ready(function() {
       yourColor.addClass(currColorClass);
       yourColor.css('display', 'block');
       evt.preventDefault();
+    }
+  });
+
+  $('#editNameText').keypress(function(evt) {
+    // If user presses 'Enter' key, submit name change.
+    if (evt.keyCode == '13') {
+      handleNameChange();
     }
   });
 
@@ -129,14 +123,8 @@ $(document).ready(function() {
  */
 
 var toggleCell = function(cellInfo) {
-  var cell = null;
-
-  if ('cell' in cellInfo && cellInfo.cell) {
-    cell = $(cellInfo.cell);
-  }
-  else if ('x' in cellInfo && 'y' in cellInfo) {
-    cell = getCellByCoord(cellInfo.x, cellInfo.y);
-  }
+  var cell = getCellFromCellInfo(cellInfo);
+  if (!cell) { return; }
 
   cell.css('display', 'none');
   cell.removeClass();
@@ -161,6 +149,84 @@ var getCoordByCell = function(el) {
   return { x: x, y: y };
 };
 
+var getCellFromCellInfo = function(cellInfo) {
+  var cell = null;
+
+  if ('cell' in cellInfo && cellInfo.cell) {
+    cell = $(cellInfo.cell);
+  }
+  else if ('x' in cellInfo && 'y' in cellInfo) {
+    cell = getCellByCoord(cellInfo.x, cellInfo.y);
+  }
+  return cell;
+}
+
+var doDraw = function(el) {
+  if (mouseIsDown && isDrawable(el)) {
+    var elemCoord = getCoordByCell(el);
+
+    toggleCell({ cell: el });
+    socket.send({
+      type: 'toggle',
+      x: elemCoord.x,
+      y: elemCoord.y,
+      currColorClass: currColorClass,
+      username: username
+    });
+  }
+};
+
+// Adds a name label to the cell that was just drawn.
+var addLabel = function(cellInfo) {
+  var cell, newLabel;
+
+  if (typeof cellInfo.username === 'undefined' || !cellInfo.username) {
+    return;
+  }
+  cell = getCellFromCellInfo(cellInfo);
+
+  existingName = $('#' + PLAYER_ID_PREFIX + cellInfo.playerid);
+  if (existingName) {
+    existingName.remove();
+  }
+
+  newLabel = $('<div>').text(cellInfo.username)
+                       .addClass('nameLabel')
+                       .attr('id', PLAYER_ID_PREFIX + cellInfo.playerId);
+  cell.append(newLabel);
+
+  setTimeout(function() {
+    if (newLabel) { newLabel.remove(); }
+  }, 2000);
+}
+
+/*
+ * isDrawable
+ * ==========
+ * Returns false if the cell matches the user's current color. Otherwise,
+ * returns true.
+ */
 var isDrawable = function(el) {
   return el.get(0).tagName.toLowerCase() === 'li' && !el.hasClass(currColorClass);
-}
+};
+
+var handleNameChange = function() {
+  var newName = $('#editNameText').val(), // user input! be sure to escape!
+      MAX_NAME_LENGTH = 20;
+  if (newName.length > MAX_NAME_LENGTH) {
+    alert('Sorry, your name can\'t be more than ' + MAX_NAME_LENGTH + ' characters long.');
+  }
+  else {
+    // Change name and hide field.
+    username = newName;
+    nameElem = $('#username');
+    $('#editNameField').hide();
+    if (newName) {
+      nameElem.children('span').text(newName).show();
+    }
+    else {
+      nameElem.children('span').hide();
+    }
+    nameElem.show()
+  }
+};

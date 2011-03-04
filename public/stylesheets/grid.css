@@ -25,11 +25,20 @@
   border: 1px solid #000;
   clear: none;
   display: inline-block;
+  overflow: visible;
   height: 20px;
   width: 20px;
 }
 #grid .innergrid li.toggled {
   background-color: black;
+}
+.nameLabel {
+  background-color: #d5a222;
+  border: 1px solid black;
+  float: left;
+  left: -2px;
+  position: relative;
+  top: -20px;
 }
 .loading .loading-status {
   display: block;
@@ -63,12 +72,22 @@
 #controls p {
   clear: left;
 }
+#clearBtn {
+  margin-left: 10px;
+}
+#username span {
+  display: none;
+  padding: 0 10px;
+}
+#editNameText {
+  margin-right: 10px;
+}
+#editNameField {
+  display: none;
+}
 #colorMsg {
   float: right;
   text-align: center;
-}
-#clearbtn {
-  padding-top: 15px;
 }
 .black {
   background-color: #000;
