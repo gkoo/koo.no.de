@@ -40,10 +40,12 @@ toggleCell = function(cellInfo) {
   var cell = getCellFromCellInfo(cellInfo);
   if (!cell) { return; }
 
-  cell.css('display', 'none');
-  cell.removeClass();
-  cellInfo.currColorClass ? cell.addClass(cellInfo.currColorClass) : cell.addClass(currColorClass);
-  cell.css('display', 'inline-block');
+  if (cellInfo.currColorClass) {
+    cell.css('display', 'none');
+    cell.removeClass();
+    cell.addClass(cellInfo.currColorClass);
+    cell.css('display', 'inline-block');
+  }
 },
 
 getCoordByCell = function(el) {
@@ -68,7 +70,7 @@ doDraw = function(el) {
   if (mouseIsDown && isDrawable(el)) {
     var elemCoord = getCoordByCell(el);
 
-    toggleCell({ cell: el });
+    toggleCell({ cell: el, currColorClass: currColorClass });
     socket.send({
       type: 'toggle',
       x: elemCoord.x,
@@ -147,8 +149,8 @@ $(document).ready(function() {
         // Do initialization of grid, if there is any to be done.
         for (var i=0; i<obj.grid.length; ++i) { // i: columns
           for (var j=0; j<obj.grid[i].length; ++j) { // j: rows
+            var cell = getCellByCoord(i, j);
             if (obj.grid[i][j] !== 0) {
-              var cell = getCellByCoord(i, j);
               toggleCell({ cell: cell, currColorClass: obj.grid[i][j] });
             }
           }
@@ -226,6 +228,10 @@ $(document).ready(function() {
     if (evt.keyCode == '13') {
       handleNameChange();
     }
+  });
+
+  $('#testBtn').click(function(evt) {
+    socket.send({ 'type' : 'printGrid'});
   });
 
 });

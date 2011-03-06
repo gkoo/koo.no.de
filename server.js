@@ -19,6 +19,7 @@ var routes = require('./routes.js');
     players = {},         // a hash of all currently active players
     nextId = 0,           // the next id to assign the next player
     // Init grid.
+
     initGrid = function() {
       for (var i=0; i<dimSize; ++i) {
         grid[i] = [];
@@ -26,6 +27,18 @@ var routes = require('./routes.js');
           grid[i][j] = '';
         }
       }
+    },
+    printGrid = function() {
+      var str = '', // the string to represent the grid.
+          COLORS = ['black', 'white'],
+          i = j = 0;
+
+      console.log('Printing grid..');
+      for (; i<grid.length; ++i) {
+        for (; j<grid[i].length; ++j) {
+        }
+      }
+      console.log('Done printing grid..');
     };
 
 initGrid();
@@ -63,6 +76,8 @@ io.on('connection', function(client) {
         case 'name':
           players[client.sessionId].name = message.name; // this is user input. watch out!
           break;
+        case 'printGrid':
+          printGrid();
       }
       client.broadcast(message);
     }
