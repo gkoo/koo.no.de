@@ -24,12 +24,20 @@
       li
         a.white(href='#')
     p
-      input#clearbtn(type='button', value='Clear the Grid')
+      span#username
+        span
+        input#editNameBtn(type='button', value='Edit your name')
+      span#editNameField
+        input#editNameText(type='text')
+        input#editNameSubmit(type='button', value='Save name')
+      input#clearBtn(type='button', value='Clear the Grid')
+    h2 Artists
+    ul
+      li.null Where is everyone? There's nobody here!
 h2 Upcoming features!
 ul
-  li Erasing!
-  li Color selection!
-  li Brush size!
+  li Saving!
+  li Brush size! (maybe!)
   li That's it!
 
 script(src='/socket.io/socket.io.js')
