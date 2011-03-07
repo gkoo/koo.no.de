@@ -1,19 +1,9 @@
-var socket = null,
-    grid = null,
-    mouseIsDown = false,
-    currColorClass = 'black',
-    username = '',
-    PLAYER_ID_PREFIX = 'player-';
-/*
- * toggleCell
- * ==========
- *
- * Switches the state of the cell to the opposite state.
- *
- * Takes in one argument: cellInfo of type Object.
- * You can either pass in the HTML element or the coordinates
- * for the HTML element you want to toggle.
- */
+var socket            = null,
+    grid              = null,
+    mouseIsDown       = false,
+    currColorClass    = 'black',
+    username          = '',
+    PLAYER_ID_PREFIX  = 'player-';
 
 var getCellByCoord = function(x, y) {
   // blah! nth-child is 1-indexed. why??
@@ -36,14 +26,24 @@ getCellFromCellInfo = function(cellInfo) {
   return cell;
 },
 
+/*
+ * toggleCell
+ * ==========
+ *
+ * Switches the state of the cell to the opposite state.
+ *
+ * Takes in one argument: cellInfo of type Object.
+ * You can either pass in the HTML element or the coordinates
+ * for the HTML element you want to toggle.
+ */
 toggleCell = function(cellInfo) {
   var cell = getCellFromCellInfo(cellInfo);
   if (!cell) { return; }
 
-  if (cellInfo.currColorClass) {
+  if (typeof cellInfo.currColorClass !== 'undefined' && cellInfo.currColorClass) {
     cell.css('display', 'none');
     cell.removeClass();
-    cell.addClass(cellInfo.currColorClass);
+    cellInfo.currColorClass ? cell.addClass(cellInfo.currColorClass) : cell.addClass(currColorClass);
     cell.css('display', 'inline-block');
   }
 },
@@ -68,9 +68,10 @@ isDrawable = function(el) {
 
 doDraw = function(el) {
   if (mouseIsDown && isDrawable(el)) {
-    var elemCoord = getCoordByCell(el);
+    var elemCoord = getCoordByCell(el),
+        color = currColorClass || '';
 
-    toggleCell({ cell: el, currColorClass: currColorClass });
+    toggleCell({ cell: el, currColorClass: color });
     socket.send({
       type: 'toggle',
       x: elemCoord.x,
@@ -150,7 +151,7 @@ $(document).ready(function() {
         for (var i=0; i<obj.grid.length; ++i) { // i: columns
           for (var j=0; j<obj.grid[i].length; ++j) { // j: rows
             var cell = getCellByCoord(i, j);
-            if (obj.grid[i][j] !== 0) {
+            if (obj.grid[i][j] !== cell.attr('class')) {
               toggleCell({ cell: cell, currColorClass: obj.grid[i][j] });
             }
           }
@@ -230,8 +231,8 @@ $(document).ready(function() {
     }
   });
 
-  $('#testBtn').click(function(evt) {
-    socket.send({ 'type' : 'printGrid'});
+  $('#testbtn').click(function(evt) {
+    socket.send({ type: 'printGrid' });
   });
 
 });

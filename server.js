@@ -6,6 +6,7 @@
 var routes = require('./routes.js');
     io = require('socket.io'),
     app = routes.app,
+    COLORS = ['black', 'red', 'green', 'blue', 'yellow', 'white'],
 
 
 
@@ -19,7 +20,6 @@ var routes = require('./routes.js');
     players = {},         // a hash of all currently active players
     nextId = 0,           // the next id to assign the next player
     // Init grid.
-
     initGrid = function() {
       for (var i=0; i<dimSize; ++i) {
         grid[i] = [];
@@ -28,17 +28,17 @@ var routes = require('./routes.js');
         }
       }
     },
-    printGrid = function() {
-      var str = '', // the string to represent the grid.
-          COLORS = ['black', 'white'],
-          i = j = 0;
-
-      console.log('Printing grid..');
-      for (; i<grid.length; ++i) {
-        for (; j<grid[i].length; ++j) {
-        }
+    getColorId = function(colorName) {
+      var i=0;
+      if (typeof colorName !== 'string') { return -1; }
+      if (colorName === '') { return 0; }
+      for (; i<COLORS.length; ++i) {
+        if (COLORS[i] === colorName) { return i+1; }
       }
-      console.log('Done printing grid..');
+      // should never return this. it's just
+      // a randomly large integer so it stands
+      // out in the output
+      return 888888;
     };
 
 initGrid();
@@ -58,6 +58,7 @@ io.on('connection', function(client) {
 
   client.on('message', function(message) {
     if ('type' in message) {
+      client.broadcast(message);
       switch (message.type) {
         case 'toggle':
           var x = message.x,
@@ -70,6 +71,7 @@ io.on('connection', function(client) {
 
           break;
         case 'clear':
+          console.log('clearing grid');
           initGrid();
           gridDirty = false;
           break;
@@ -77,9 +79,18 @@ io.on('connection', function(client) {
           players[client.sessionId].name = message.name; // this is user input. watch out!
           break;
         case 'printGrid':
-          printGrid();
+          var outputStr = '',
+              i = 0,
+              j;
+          for (; i<dimSize; ++i) {
+            for (j=0; j<dimSize; ++j) {
+              outputStr += getColorId(grid[j][i]);
+            }
+            outputStr += '\n';
+          }
+          console.log('Printing grid...\n' + outputStr + '\nDone printing grid...');
+          break;
       }
-      client.broadcast(message);
     }
   });
 
