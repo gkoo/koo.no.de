@@ -1,6 +1,8 @@
 // TODO: If a company doesn't have any dates, create a generic time window for it.
 // TODO: handle no connections
 
+var onLinkedInLoad;
+
 $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket,
       today         = new Date(),
@@ -463,7 +465,7 @@ $(function() {
     loadingElem.css('z-index', 11);
     loadingElem.fadeTo('fast', 1);
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
-  },
+  };
 
   onLinkedInLoad = function () {
     console.log('linkedin load');
