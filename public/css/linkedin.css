@@ -1,0 +1,103 @@
+html, body { margin: 0; padding: 0; }
+body {
+  color: #000;
+  font: 13px Arial;
+  text-align: center;
+}
+ul {
+  list-style: none;
+}
+li {
+  border: 1px solid #000;
+  min-height: 100px;
+  padding: 10px;
+  width: 400px;
+}
+#body {
+  margin: 0 auto;
+  position: relative;
+  width: 1000px;
+}
+#upper, #lower {
+  background-color: #fff;
+  height: 395px;
+  overflow: hidden;
+  position: relative;
+}
+#companytitle {
+  bottom: 20px;
+  margin: 17px 0;
+  position: absolute;
+  width: 100%;
+}
+#timeline {
+  background-color: #000;
+  height: 10px;
+  opacity: 0;
+  position: relative;
+  width: 100%;
+}
+#header {
+  z-index: 1000;
+}
+#debug {
+  float:left;
+  padding-top: 20px;
+}
+#myicon {
+  left: 0;
+  position: absolute;
+  top: -9999px;
+}
+#mypic {
+  border: 5px solid #0c77af;
+  cursor: pointer;
+  display: none;
+  height: 80px;
+  opacity: 0;
+  top: 50%;
+  width: 80px;
+}
+input {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+.cxnPic {
+  cursor: pointer;
+  width: 80px;
+  height: 80px;
+}
+#intro {
+  border: 1px solid black;
+  bottom: 50px;
+  opacity: 0;
+  margin-left: 10px;
+  padding: 10px 10px 10px 75px;
+  position: absolute;
+  text-align: left;
+  width: 200px;
+}
+#overlay {
+  background-color: #000;
+  display: none;
+  left: 0;
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
+}
+#loading {
+  background-color: #fff;
+  border: 5px solid #000;
+  display: none;
+  left: 360px;
+  opacity: 0;
+  padding: 10px;
+  position: absolute;
+  top: 30%;
+  width: 250px;
+  z-index: 11;
+}
