@@ -1,5 +1,5 @@
 var username,
-    socket = new io.Socket(null, {port: 8080, rememberTransport: false}),
+    socket = new io.Socket(null, {port: 80, rememberTransport: false}),
     send = function() {
       var input = document.getElementById('chatinput'),
           messageObj = { sender: username, msg: input.value };

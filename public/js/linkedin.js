@@ -483,7 +483,7 @@ $(function() {
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
-  socket = new io.Socket(null, {port: 8080, rememberTransport: false});
+  socket = new io.Socket(null, {port: 80, rememberTransport: false});
   socket.connect();
 
   socket.on('message', function(message) {
