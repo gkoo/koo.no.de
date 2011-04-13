@@ -101,3 +101,6 @@ input {
   width: 250px;
   z-index: 11;
 }
+#printCompBtn {
+  display: none;
+}
