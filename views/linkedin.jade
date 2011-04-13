@@ -1,0 +1,37 @@
+!!! 5
+html(lang="en")
+  head
+    title= title
+    script(src='http://platform.linkedin.com/in.js')
+      | api_key: y8JAzL_jJwPMkPPpN3CACsxArbVnDw73JGH4K0FYKVgqlTq78qh15fKJ-II9Eb5E
+      | authorize: true
+      | onLoad: onLinkedInLoad
+    link(rel='stylesheet', href='/css/style.css')
+  body
+    #header
+      h1 I'll come up with a title later
+      script(type="IN/Login")
+    input#printCompBtn(type="button", value='Print Companies')
+    #overlay
+    #body
+      h1#loading Loading...
+      #upper
+        h1#companytitle
+        .pics
+        #intro
+          span.arrow
+          | Follow your career timeline and track the connections you've made throughout the years!
+          | Start by dragging your picture across the screen.
+      #timeline
+      #lower
+        .pics
+      #myicon
+        img#mypic
+        div#dateLabel
+    script(src='/js/jquery/js/jquery-1.5.1.min.js')
+    script(src='/socket.io/socket.io.js')
+    script(src='/js/linkedin.js')
+    script(src='/js/jquery/js/jquery.ui.core.js')
+    script(src='/js/jquery/js/jquery.ui.widget.js')
+    script(src='/js/jquery/js/jquery.ui.mouse.js')
+    script(src='/js/jquery/js/jquery.ui.draggable.js')

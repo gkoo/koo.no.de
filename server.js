@@ -3,10 +3,11 @@
  * Module dependencies.
  */
 
-var routes = require('./routes.js');
-    io = require('socket.io'),
-    app = routes.app,
-    COLORS = ['black', 'red', 'green', 'blue', 'yellow', 'white'],
+var routes  = require('./routes.js'),
+    li      = require('./lihelper.js'),
+    io      = require('socket.io'),
+    app     = routes.app,
+    COLORS  = ['black', 'red', 'green', 'blue', 'yellow', 'white'],
 
 
 
@@ -58,38 +59,67 @@ io.on('connection', function(client) {
 
   client.on('message', function(message) {
     if ('type' in message) {
-      client.broadcast(message);
-      switch (message.type) {
-        case 'toggle':
-          var x = message.x,
-              y = message.y;
+      if (message.type === 'toggle') {
+        var x = message.x,
+            y = message.y;
 
-          //console.log('toggleon ('+message.x+', ' + message.y+')');
-          grid[x][y] = message.currColorClass;
-          gridDirty = true;
-          message.playerId = players[client.sessionId].playerId;
-
-          break;
-        case 'clear':
-          console.log('clearing grid');
-          initGrid();
-          gridDirty = false;
-          break;
-        case 'name':
-          players[client.sessionId].name = message.name; // this is user input. watch out!
-          break;
-        case 'printGrid':
-          var outputStr = '',
-              i = 0,
-              j;
-          for (; i<dimSize; ++i) {
-            for (j=0; j<dimSize; ++j) {
-              outputStr += getColorId(grid[j][i]);
-            }
-            outputStr += '\n';
+        client.broadcast(message);
+        //console.log('toggleon ('+message.x+', ' + message.y+')');
+        grid[x][y] = message.currColorClass;
+        gridDirty = true;
+        message.playerId = players[client.sessionId].playerId;
+      }
+      else if (message.type === 'clear') {
+        client.broadcast(message);
+        console.log('clearing grid');
+        initGrid();
+        gridDirty = false;
+      }
+      else if (message.type === 'name') {
+        client.broadcast(message);
+        players[client.sessionId].name = message.name; // this is user input. watch out!
+      }
+      else if (message.type === 'printGrid') {
+        var outputStr = '',
+            i = 0,
+            j;
+        client.broadcast(message);
+        for (; i<dimSize; ++i) {
+          for (j=0; j<dimSize; ++j) {
+            outputStr += getColorId(grid[j][i]);
           }
-          console.log('Printing grid...\n' + outputStr + '\nDone printing grid...');
-          break;
+          outputStr += '\n';
+        }
+        console.log('Printing grid...\n' + outputStr + '\nDone printing grid...');
+      }
+
+      // ========
+      // LINKEDIN
+      // ========
+      else if (message.type === 'storeOwnProfile') {
+        li.storeProfile(message.profile, true);
+      }
+      else if (message.type === 'storeConnections') {
+        li.storeConnections(message.profiles, function() {
+          client.send({ type: 'connectionsStored' });
+        });
+      }
+      else if (message.type === 'getConnectionsByCompany' && message.companies) {
+        li.getConnectionsByCompany(message.companies, function(err, connections) {
+          if (err) {
+            console.log(err);
+          }
+          else if (connections) {
+            client.send({
+              type: 'connectionsByCompanyResult',
+              companies: message.companies,
+              connections: connections
+            });
+          }
+        });
+      }
+      else if (message.type === 'myCompanies' && message.companies) {
+        li.storeMyCompanies(message.companies);
       }
     }
   });

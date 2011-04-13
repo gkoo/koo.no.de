@@ -8,9 +8,9 @@ var express = require('express'),
 app.configure(function(){
   app.set('views', __dirname + '/views');
   app.set('view engine', 'jade');
-  app.use(express.bodyDecoder());
+  app.use(express.bodyParser());
   app.use(express.methodOverride());
-  app.use(express.staticProvider(__dirname + '/public'));
+  app.use(express.static(__dirname + '/public'));
   app.use(app.router); // IMPORTANT! keep this line last.
 });
 
@@ -43,7 +43,6 @@ app.error(function(err, req, res, next){
       layout: 'errlayout'
     });
   } else {
-    console.log('next');
     next(err);
   }
 });
@@ -70,8 +69,10 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
+  console.log('here');
   res.render('index', {
     locals: {
+      page: 'index',
       title: 'Some Guy\'s Site'
     }
   });
@@ -80,6 +81,7 @@ app.get('/', function(req, res){
 app.get('/grid', function(req, res){
   res.render('grid', {
     locals: {
+      page: 'grid',
       dimSize: dimSize,
       title: 'Welcome to the Grid'
     }
@@ -91,6 +93,15 @@ app.get('/blog', function(req, res){
     locals: {
       title: 'Blog'
     }
+  });
+});
+
+app.get('/linkedin', function(req, res){
+  res.render('linkedin', {
+    locals: {
+      title: 'LinkedIn Connections!'
+    },
+    layout: false
   });
 });
 
