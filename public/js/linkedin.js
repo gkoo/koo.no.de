@@ -389,8 +389,7 @@ $(function() {
   },
 
   handleCompanyConnections = function (connections) {
-    var i, cxn, currPic, currLink, randLeft, randTop, randRotate,
-        addToUpper = true;
+    var i, cxn, currPic, currLink, randLeft, randTop, randRotate;
     if (!connections) {
       console.log('no connections found');
       return;
@@ -402,53 +401,45 @@ $(function() {
         // only store connection if they have a picture.
         storeEmployee(cxn);
         if (cxn.id !== myProfileId && cxn.pictureUrl) {
-          currLink= $('#' + cxn.id);
-          if (currLink.length && isConcurrentEmployee(cxn)) {
-            // pic already exists, let's just prep it
+          // pic doesn't exist; let's create it
+          randLeft = Math.floor(Math.random()*RIGHT_BOUND);
+          randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE*2));
+          randRotate = Math.floor(Math.random()*20)-10;
+
+          if (!cxn.publicProfileUrl) {
+            cxn.publicProfileUrl = '#';
+          }
+          currLink = $('<a/>').attr('href', cxn.publicProfileUrl)
+                              .attr('title', cxn.fullName)
+                              .attr('id', cxn.id)
+                              .attr('target', '_new')
+                              .css('-moz-transform', ['rotate(', randRotate, 'deg)'].join(''))
+                              .css('-webkit-transform', ['rotate(', randRotate, 'deg)'].join(''))
+                              .css('transform', ['rotate(', randRotate, 'deg)'].join(''))
+                              .css('left', randLeft)
+                              .css('position', 'absolute')
+                              .css('background-image', 'url('+cxn.pictureUrl+')')
+                              .addClass('cxnPic');
+          if (isConcurrentEmployee(cxn)) {
             currLink.addClass('picToShow');
           }
-          else {
-            // pic doesn't exist; let's create it
-            randLeft = Math.floor(Math.random()*RIGHT_BOUND);
-            randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE*2));
-            randRotate = Math.floor(Math.random()*20)-10;
-
-            if (!cxn.publicProfileUrl) {
-              cxn.publicProfileUrl = '#';
-            }
-            currLink = $('<a/>').attr('href', cxn.publicProfileUrl)
-                                .attr('title', cxn.fullName)
-                                .attr('id', cxn.id)
-                                .attr('target', '_new')
-                                .css('-moz-transform', ['rotate(', randRotate, 'deg)'].join(''))
-                                .css('-webkit-transform', ['rotate(', randRotate, 'deg)'].join(''))
-                                .css('transform', ['rotate(', randRotate, 'deg)'].join(''))
-                                .css('left', randLeft)
-                                .css('position', 'absolute')
-                                .css('background-image', 'url('+cxn.pictureUrl+')')
-                                .addClass('cxnPic');
-            if (isConcurrentEmployee(cxn)) {
-              currLink.addClass('picToShow');
-            }
-            currLink.hover(function() {
-              $(this).css('z-index', 1000);
-            }, function() {
-              $(this).css('z-index', '');
-            });
-            if (addToUpper) {
-              currLink.addClass('upper')
-                      .css('top', HALF_HEIGHT+PIC_SIZE)
-                      .attr('li-top', randTop);
-              $('#upper .pics').append(currLink);
-            }
-            else { //add to lower
-              randTop += PIC_SIZE;
-              currLink.addClass('lower')
-                      .css('top', PIC_SIZE*(-1.5))
-                      .attr('li-top', randTop);
-              $('#lower .pics').append(currLink.addClass('lower'));
-            }
-            addToUpper = !addToUpper; // alternate adding pics top and bottom
+          currLink.hover(function() {
+            $(this).css('z-index', 1000);
+          }, function() {
+            $(this).css('z-index', '');
+          });
+          if (Math.floor(Math.random()*2)) { //upper
+            currLink.addClass('upper')
+                    .css('top', HALF_HEIGHT+PIC_SIZE)
+                    .attr('li-top', randTop);
+            $('#upper .pics').append(currLink);
+          }
+          else { //add to lower
+            randTop += PIC_SIZE;
+            currLink.addClass('lower')
+                    .css('top', PIC_SIZE*(-1.5))
+                    .attr('li-top', randTop);
+            $('#lower .pics').append(currLink.addClass('lower'));
           }
         }
       }
