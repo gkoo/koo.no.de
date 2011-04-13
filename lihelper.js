@@ -24,7 +24,6 @@ getConnectionProfile = function (connectionId, isLast, callback) {
         companyName = dateKeys[i].split(':')[2];
         redis.smembers(dateKeys[i], function(err, dates) {
           var companyName = dateKeys[count].split(':')[2]; // counting on redis to return responses in order.
-          //if (connectionId === 'Jp12kOJ3B6' && companyName === 'oracle') { console.log(dates); }
           if (err) { console.log(err); return; }
           if (!profile.employmentDates) { profile.employmentDates = {}; }
           // associate these dates with the company
@@ -152,7 +151,7 @@ exports.getConnectionsByCompany = getConnectionsByCompany = function(companies, 
   }
 
   if (keys && keys.length) {
-    redis.sunion(keys, function(err, replies) {
+    redis.sunion(keys, function(err, cxnIds) {
       var isLast;
       if (err) {
         console.log('Something went wrong with the union of companies!');
@@ -161,9 +160,9 @@ exports.getConnectionsByCompany = getConnectionsByCompany = function(companies, 
       }
       else {
         connections = [];
-        for (i=0; i<replies.length; ++i) {
-          isLast = (i === replies.length-1);
-          getConnectionProfile(replies[i], isLast, isLast ? callback : null);
+        for (i=0; i<cxnIds.length; ++i) {
+          isLast = (i === cxnIds.length-1);
+          getConnectionProfile(cxnIds[i], isLast, isLast ? callback : null);
         }
       }
     });

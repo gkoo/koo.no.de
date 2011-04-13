@@ -17,6 +17,7 @@ $(function() {
       currCompanies = [], // what company(ies) we're at in the timeline
       myProfileId   = -1,
       myCompanies   = [],
+      PORT          = 80,
       PIC_SIZE      = 80,
       BORDER_SIZE   = 5,
       FRAME_WIDTH   = 1000,
@@ -269,6 +270,8 @@ $(function() {
   },
 
   convertDateToVal = function(date) {
+    if (!date) return 0;
+    if (!date.month) { date.month = 1; } // default month to January
     return date ? (date.year - 1900)*12 + date.month : 0;
   };
 
@@ -463,7 +466,7 @@ $(function() {
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
-  socket = new io.Socket(null, {port: 80, rememberTransport: false});
+  socket = new io.Socket(null, {port: PORT, rememberTransport: false});
   socket.connect();
 
   socket.on('message', function(message) {
