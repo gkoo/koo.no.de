@@ -5,7 +5,6 @@ $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket,
       today         = new Date(),
       picElems      = $('.pics'),
-      debugElem     = $('#debug'),
       introElem     = $('#intro'),
       overlayElem   = $('#overlay'),
       loadingElem   = $('#loading'),
@@ -69,7 +68,6 @@ $(function() {
             && connection.startDate.val < timelinePos
             && (!connection.endDate || connection.endDate > timelinePos)) {
           // display connection's picture.
-          debugElem.text(debugElem.text() + connection.firstName + ' ' + connection.lastName + ' ');
         }
       }
     }
@@ -179,26 +177,13 @@ $(function() {
   },
 
   updateCurrCompanies = function () {
-    var tmpCurrCompanies = [];
     for (i=0; i<currCompanies.length; ++i) {
       if (currCompanies[i].employees) {
         showExistingPictures(currCompanies[i].employees);
       }
-      else {
-        tmpCurrCompanies.push(currCompanies[i]);
-      }
     }
     hidePics();
-    if (tmpCurrCompanies.length) {
-      // the callback for this will call showPics()
-      socket.send({
-        type: 'getConnectionsByCompany',
-        companies: tmpCurrCompanies
-      });
-    }
-    else {
-      showPics();
-    }
+    showPics();
 
     companyNames = [];
     for (i=0; i<currCompanies.length; ++i) {
@@ -266,14 +251,12 @@ $(function() {
     if (!currCompanies.length) {
       $('#companytitle').empty();
       hidePics();
-      debugElem.empty();
     }
   },
 
   handleConnections = function(profiles) {
     var i, profile, position, company;
     if (!profiles.values) {
-      debugElem.text('Sorry, you have no connections to display.');
       console.log('no profiles!!!');
       return;
     }
@@ -339,10 +322,6 @@ $(function() {
       }
     }
     timelineElem.show();
-    socket.send({
-      type: 'myCompanies',
-      companies: myCompanies
-    });
   },
 
   handleOwnProfile = function (profile) {
@@ -379,15 +358,12 @@ $(function() {
       // TODO: check if only one position
       handleOwnPositions(profile.positions.values);
     }
-    else {
-      debugElem.text('Sorry, you don\'t seem to have any positions. Why don\'t you update your profile?');
-    }
   },
 
   storeEmployee = function (connection) {
     var i, j, cmpName, startKey, endKey, startDate, endDate;
-    for (i=0; i<currCompanies.length; ++i) {
-      cmpName = currCompanies[i].name.toLowerCase();
+    for (i=0; i<myCompanies.length; ++i) {
+      cmpName = myCompanies[i].name.toLowerCase();
       datesArr = connection.employmentDates[cmpName];
       if (datesArr) {
         for (j=0; j<datesArr.length; ++j) {
@@ -397,12 +373,12 @@ $(function() {
           // make sure the two worked there at the same time.
           if (startDate && datesOverlap(startDate,
                                         endDate,
-                                        convertDateToVal(currCompanies[i].startDate),
-                                        convertDateToVal(currCompanies[i].endDate))) {
-            if (!currCompanies[i].employees) {
-              currCompanies[i].employees = [connection];
+                                        convertDateToVal(myCompanies[i].startDate),
+                                        convertDateToVal(myCompanies[i].endDate))) {
+            if (!myCompanies[i].employees) {
+              myCompanies[i].employees = [connection];
             } else {
-              currCompanies[i].employees.push(connection);
+              myCompanies[i].employees.push(connection);
             }
           }
         }
@@ -490,6 +466,7 @@ $(function() {
   },
 
   onLinkedInLoad = function () {
+    console.log('linkedin load');
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
@@ -499,17 +476,29 @@ $(function() {
   socket.on('message', function(message) {
     if (message.type !== 'undefined') {
       if (message.type === 'connectionsStored') {
+        // fade out overlay
         overlayElem.fadeTo('fast', 0);
         overlayElem.css('z-index', -999);
+        // fade out loading
         loadingElem.fadeTo('fast', 0);
         loadingElem.css('z-index', -999);
         introElem.fadeTo('slow', 1);
-        //debugElem.text('Connections stored!');
       }
       else if (message.type === 'connectionsByCompanyResult') {
         if (isSameCompanies(currCompanies, message.companies)) {
           handleCompanyConnections(message.connections);
         }
+      }
+      else if (message.type === 'allConnectionsResult') {
+        // fade out overlay
+        overlayElem.fadeTo('fast', 0);
+        overlayElem.css('z-index', -999);
+        // fade out loading
+        loadingElem.fadeTo('fast', 0);
+        loadingElem.css('z-index', -999);
+        introElem.fadeTo('slow', 1);
+        handleCompanyConnections(message.connections);
+        //console.log(message.connections);
       }
     }
   });

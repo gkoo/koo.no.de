@@ -100,8 +100,11 @@ io.on('connection', function(client) {
         li.storeProfile(message.profile, true);
       }
       else if (message.type === 'storeConnections') {
-        li.storeConnections(message.profiles, function() {
-          client.send({ type: 'connectionsStored' });
+        li.storeConnections(message.profiles, function(err) {
+          li.getAllConnections(function(err, connections) {
+            client.send({ type: 'allConnectionsResult', connections: connections });
+          });
+          //client.send({ type: 'connectionsStored' });
         });
       }
       else if (message.type === 'getConnectionsByCompany' && message.companies) {

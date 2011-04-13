@@ -7,6 +7,8 @@ myCompanies = [],
 
 myProfileId = 0,
 
+convertDateToVal, storePosition, storeProfile, getConnectionsByCompany,
+
 // Function: getConnectionProfile
 // ==============================
 // Get info for one connection, push to connections array for passing back to client
@@ -125,18 +127,49 @@ exports.storeProfile = storeProfile = function(profile, isSelf/*optional*/, call
   }
   redis.hmset(keyValuePairs);
 
-  if (!isSelf && profile.positions && profile.positions.values) {
+  if (!isSelf && profile.positions && profile.positions.values && profile.positions.values.length) {
     for (i = 0; i<profile.positions.values.length; ++i) {
       storePosition(profile.id, profile.positions.values[i], true);
     }
   }
-  else if (profile.positions && profile.positions.values && profile.positions.values._total) { // isSelf
+  else if (profile.positions && profile.positions.values && profile.positions.values.length) { // isSelf
     for (i = 0; i<profile.positions.values.length; ++i) {
       company = profile.positions.values[i].company;
       if (company.name) {
-        myCompanies.push(company.name);
+        myCompanies.push(company);
       }
     }
+  }
+};
+
+exports.getConnectionsByCompany = getConnectionsByCompany = function(companies, callback) {
+  var i, keys = [];
+
+  if (!companies) { return; }
+
+  for (i=0; i<companies.length; ++i) {
+    keys.push(['coworkers', myProfileId, companies[i].name.toLowerCase()].join(':'));
+  }
+
+  if (keys && keys.length) {
+    redis.sunion(keys, function(err, replies) {
+      var isLast;
+      if (err) {
+        console.log('Something went wrong with the union of companies!');
+        console.log(err);
+        callback(err);
+      }
+      else {
+        connections = [];
+        for (i=0; i<replies.length; ++i) {
+          isLast = (i === replies.length-1);
+          getConnectionProfile(replies[i], isLast, isLast ? callback : null);
+        }
+      }
+    });
+  }
+  else {
+    console.log('No keys! Can\'t get connections');
   }
 };
 
@@ -149,32 +182,8 @@ exports.storeConnections = function(profiles, callback) {
   callback();
 };
 
-exports.getConnectionsByCompany = function(companies, callback) {
-  var i, keys = [];
-
-  if (!companies) { return; }
-
-  for (i=0; i<companies.length; ++i) {
-    keys.push(['coworkers', myProfileId, companies[i].name.toLowerCase()].join(':'));
+exports.getAllConnections = function(callback) {
+  if (myCompanies) {
+    getConnectionsByCompany(myCompanies, callback);
   }
-
-  redis.sunion(keys, function(err, replies) {
-    var isLast;
-    if (err) {
-      console.log('Something went wrong with the union of companies!');
-      callback(err);
-    }
-    else {
-      connections = [];
-      for (i=0; i<replies.length; ++i) {
-        isLast = (i === replies.length-1);
-        getConnectionProfile(replies[i], isLast, isLast ? callback : null);
-      }
-    }
-  });
-};
-
-exports.storeMyCompanies = function(companies) {
-  // TODO:  make sure this is a deep copy.
-  myCompanies = companies;
 };
