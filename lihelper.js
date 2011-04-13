@@ -12,11 +12,28 @@ myProfileId = 0,
 // Get info for one connection, push to connections array for passing back to client
 getConnectionProfile = function (connectionId, isLast, callback) {
   redis.hgetall(['profiles', connectionId].join(':'), function(err, profile) {
-    redis.hgetall(['employmentDates', connectionId].join(':'), function(err, dates) {
-      profile.employmentDates = dates;
-      connections.push(profile);
-      if (isLast) {
-        callback(null, connections);
+    // get all profile fields and combine them into one profile object
+    if (err) { console.log(err); return; }
+    redis.keys(['employmentDates', profile.id, '*'].join(':'), function(err, dateKeys) {
+      // find all employmentDates for connection
+      var i, companyName, employmentDates, count = 0;
+      for (i=0; i<dateKeys.length; ++i) {
+        // for each dateKey (usually there's only one), add dates to profile
+        companyName = dateKeys[i].split(':')[2];
+        redis.smembers(dateKeys[i], function(err, dates) {
+          var companyName = dateKeys[count].split(':')[2]; // counting on redis to return responses in order.
+          //if (connectionId === 'Jp12kOJ3B6' && companyName === 'oracle') { console.log(dates); }
+          if (err) { console.log(err); return; }
+          if (!profile.employmentDates) { profile.employmentDates = {}; }
+          // associate these dates with the company
+          profile.employmentDates[companyName] = dates;
+          connections.push(profile);
+          if (isLast && count === dateKeys.length-1) {
+            callback(null, connections);
+          } else {
+            ++count;
+          }
+        });
       }
     });
   });
@@ -71,19 +88,17 @@ exports.convertDateToVal = convertDateToVal = function(date) {
 
 exports.storePosition = storePosition = function(profileId, position) {
   var company = position.company,
-      keyValuePairs = [],
-      i, companyname;
+      i, companyname, start, end;
 
   if (company && company.name && isRelevantCompany(company.name)) {
     // this is a connection
     companyname = company.name.toLowerCase();
     redis.sadd(['coworkers', myProfileId, companyname].join(':'), profileId);
     if (position.startDate) { // educations have no start date
-      keyValuePairs.push(['employmentDates', profileId].join(':'), [companyname, 'startdate'].join(':'), convertDateToVal(position.startDate));
-      if (position.endDate) {
-        keyValuePairs.push([companyname, 'enddate'].join(':'), convertDateToVal(position.endDate));
-      }
-      redis.hmset(keyValuePairs);
+      start = convertDateToVal(position.startDate);
+      end = position.endDate ? convertDateToVal(position.endDate) : 0;
+      dates = [start, end].join(':');
+      redis.sadd(['employmentDates', profileId, companyname].join(':'), dates);
     }
   }
 };
@@ -129,7 +144,6 @@ exports.storeConnections = function(profiles, callback) {
   var i;
   if (!profiles || !profiles.values) { return; }
   for (i=0; i<profiles.values.length; ++i) {
-  //for (i=0; i<10; ++i) {
     storeProfile(profiles.values[i]);
   }
   callback();

@@ -137,20 +137,26 @@ $(function() {
   // Given the current position on the timeline, is the connection
   // at the same company as the user?
   isConcurrentEmployee = function (profile) {
-    var i, start, end, companyName,
+    var i, j, datesArr, dates, start, end, companyName,
         myCurrTime = Math.floor(currTime);
 
     if (!profile || !profile.employmentDates) { return false; }
 
     for (i=0; i<currCompanies.length; ++i) {
       companyName = currCompanies[i].name.toLowerCase();
-      start = Math.floor(profile.employmentDates[companyName + ':startdate']);
-      end   = Math.floor(profile.employmentDates[companyName + ':enddate']);
+      datesArr = profile.employmentDates[companyName];
+      if (datesArr) {
+        for (j=0; j<datesArr.length; ++j) {
+          dates = datesArr[j].split(':');
+          start = Math.floor(dates[0]);
+          end   = Math.floor(dates[1]);
 
-      // start is before currTime and (endtime is after currTime OR endtime is null)
-      if ((start && (start < myCurrTime || start == myCurrTime))
-            && (!end || (end > myCurrTime || end == myCurrTime))) {
-        return true; // currently working at!
+          // start is before currTime and (endtime is after currTime OR endtime is null)
+          if ((start && (start < myCurrTime || start == myCurrTime))
+                && (!end || (end > myCurrTime || end == myCurrTime))) {
+            return true; // currently working at!
+          }
+        }
       }
     }
     return false; // not currently working at.
@@ -292,7 +298,7 @@ $(function() {
       return (endVal1 > startVal2 && startVal1 < endVal2);
     }
 
-    if (!endVal1 && !endVal2) { return true; } // both dates ongoing
+    if ((!endVal1 && !endVal2) || (endVal1 == 0 && endVal2 == 0)) { return true; } // both dates ongoing
 
     if (!endVal1) { // all exist except endVal1
       return startVal1 < endVal2;
@@ -379,22 +385,26 @@ $(function() {
   },
 
   storeEmployee = function (connection) {
-    var i, cmpName, startKey, endKey, startDate, endDate;
+    var i, j, cmpName, startKey, endKey, startDate, endDate;
     for (i=0; i<currCompanies.length; ++i) {
       cmpName = currCompanies[i].name.toLowerCase();
-      startKey = [cmpName, 'startdate'].join(':');
-      endKey = [cmpName, 'enddate'].join(':');
-      startDate = connection.employmentDates[startKey];
-      endDate = connection.employmentDates[endKey];
-      // make sure the two worked there at the same time.
-      if (startDate && datesOverlap(startDate,
-                                    endDate,
-                                    convertDateToVal(currCompanies[i].startDate),
-                                    convertDateToVal(currCompanies[i].endDate))) {
-        if (!currCompanies[i].employees) {
-          currCompanies[i].employees = [connection];
-        } else {
-          currCompanies[i].employees.push(connection);
+      datesArr = connection.employmentDates[cmpName];
+      if (datesArr) {
+        for (j=0; j<datesArr.length; ++j) {
+          dates = datesArr[j].split(':');
+          startDate = dates[0];
+          endDate = dates[1] || null;
+          // make sure the two worked there at the same time.
+          if (startDate && datesOverlap(startDate,
+                                        endDate,
+                                        convertDateToVal(currCompanies[i].startDate),
+                                        convertDateToVal(currCompanies[i].endDate))) {
+            if (!currCompanies[i].employees) {
+              currCompanies[i].employees = [connection];
+            } else {
+              currCompanies[i].employees.push(connection);
+            }
+          }
         }
       }
     }
