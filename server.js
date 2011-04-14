@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var port  = 80,
+var PORT  = 80,
     routes  = require('./routes.js'),
     li      = require('./lihelper.js'),
     io      = require('socket.io'),
@@ -140,6 +140,6 @@ io.on('connection', function(client) {
 // Only listen on $ node server.js
 
 if (!module.parent) {
-  app.listen(port);
+  app.listen(PORT);
   console.log("Express server listening on port %d", app.address().port);
 }

@@ -11,6 +11,8 @@ $(function() {
       overlayElem   = $('#overlay'),
       loadingElem   = $('#loading'),
       timelineElem  = $('#timeline'),
+      iconElem      = $('#myicon'),
+      playBtn       = $('#playBtn'),
       thisMonth     = today.getMonth()+1,
       thisYear      = today.getFullYear(),
       currTime      = 0,
@@ -201,16 +203,15 @@ $(function() {
     currTime = timelinePos;
     timelineDate = convertDateFromVal(timelinePos);
     $('#dateLabel').text([MONTHS[timelineDate.month-1], timelineDate.year].join(' '));
-  }
+  },
 
-  doDrag = function(evt, ui) {
-    var positionRatio, timelinePos, i, j, company, startVal, endVal, companyNames, oldCurrCompanies, currPos;
+  doDrag = function(left) {
+    var positionRatio, timelinePos, i, j, company, startVal, endVal, companyNames, oldCurrCompanies;
 
     if (introElem.css('opacity')) { introElem.fadeTo('slow', 0); }
 
     // calculate how far along myPic is on the timeline.
-    currPos = ui.position.left;
-    positionRatio = currPos/RIGHT_BOUND;
+    positionRatio = left/RIGHT_BOUND;
 
     // calculate this position relative to our career timeline.
     timelinePos = (myCareerLength * positionRatio) + myCareerStart;
@@ -255,6 +256,11 @@ $(function() {
       $('#companytitle').empty();
       hidePics();
     }
+  },
+
+  doDragWrapper = function(evt, ui) {
+    iconElem.stop(true);
+    doDrag(ui.position.left);
   },
 
   handleConnections = function(profiles) {
@@ -352,10 +358,10 @@ $(function() {
     pic = $('#mypic').attr('src', profile.pictureUrl)
                      .fadeTo('fast', 1);
     timelineElem.fadeTo('fast', 1);
-    icon = $('#myicon').css('top', (FRAME_HEIGHT - 90)/2);
+    icon = iconElem.css('top', (FRAME_HEIGHT - 90)/2);
     icon.draggable({
       axis : 'x',
-      drag: doDrag,
+      drag: doDragWrapper,
       containment: 'parent'
     });
 
@@ -462,7 +468,6 @@ $(function() {
   };
 
   onLinkedInLoad = function () {
-    console.log('linkedin load');
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
@@ -497,6 +502,23 @@ $(function() {
         //console.log(message.connections);
       }
     }
+  });
+
+  playBtn.toggle(function() {
+    $(this).attr('value', 'Pause');
+    iconElem.animate({ left: RIGHT_BOUND + 'px' },
+    {
+      duration: 15000,
+      step: function(now, fx) {
+        doDrag(now);
+      },
+      complete: function() {
+        playBtn.attr('value', 'Play');
+      }
+    });
+  }, function() {
+    $(this).attr('value', 'Play');
+    iconElem.stop(stop);
   });
 
   $('#printCompBtn').click(function() {
