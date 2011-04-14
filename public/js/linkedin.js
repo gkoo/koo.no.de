@@ -30,7 +30,8 @@ $(function() {
       MONTHS        = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   convertDateFromVal = function(val) {
-    return { month: Math.floor(val%12) || 12, year: Math.floor(1900+val/12) };
+    var month = Math.floor(val%12) || 12;
+    return { month: month, year: Math.floor(1900+(val-month)/12) };
   },
 
   convertDateToVal = function(date) {
