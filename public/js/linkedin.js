@@ -12,6 +12,7 @@ $(function() {
       loadingElem   = $('#loading'),
       timelineElem  = $('#timeline'),
       iconElem      = $('#myicon'),
+      messageElem   = $('#message'),
       playBtn       = $('#playBtn'),
       thisMonth     = today.getMonth()+1,
       thisYear      = today.getFullYear(),
@@ -42,8 +43,8 @@ $(function() {
 
   // set "career start" to a month before actual career start, so you have something to which you can drag.
   createMonthBuffer = function(positions) {
-    var startDate, endDate, i;
-    for (i=positions.length-1; i>=0; --i) {
+    var startDate, endDate, i, length = positions.length;
+    for (i=length-1; i>=0; --i) {
       startDate = positions[i].startDate;
       if (startDate) {
         newPos    = new Position({
@@ -65,10 +66,11 @@ $(function() {
   // ================================
   // Get company connections for a given position on the timeline.
   getCurrentConnections = function(company, timelinePos) {
-    var i, connection;
+    var i, connection, length;
     if (!company) { console.log('no company; something is wrong!'); return; }
     if (company.connections) {
-      for (i=0; i<company.connections.length; ++i) {
+      length = company.connections.length;
+      for (i=0; i<length; ++i) {
         connection = company.connections[i];
         if (connection.startDate
             && connection.startDate.val < timelinePos
@@ -82,12 +84,12 @@ $(function() {
   isSameCompanies = function(companiesOld, companiesNew) {
     // given two arrays of companies, do they contain the same companies?
     // probably going to be a very small number of companies, okay to do brute force here
-    var i, j, found;
-    if (companiesOld.length !== companiesNew.length) { return false; }
+    var i, j, found, oldlength = companiesOld.length, newlength = companiesNew.length;
+    if (oldlength !== newlength) { return false; }
 
-    for (i=0; i<companiesOld.length; ++i) {
+    for (i=0; i<oldlength; ++i) {
       found = false;
-      for (j=0; j<companiesNew.length; ++j) {
+      for (j=0; j<newlength; ++j) {
         if (companiesOld[i].name === companiesNew[j].name) {
           found = true;
           break;
@@ -141,16 +143,18 @@ $(function() {
   // Given the current position on the timeline, is the connection
   // at the same company as the user?
   isConcurrentEmployee = function (profile) {
-    var i, j, datesArr, dates, start, end, companyName,
-        myCurrTime = Math.floor(currTime);
+    var i, j, datesArr, dates, start, end, companyName, datesLength,
+        myCurrTime = Math.floor(currTime),
+        length = currCompanies.length;
 
     if (!profile || !profile.employmentDates) { return false; }
 
-    for (i=0; i<currCompanies.length; ++i) {
+    for (i=0; i<length; ++i) {
       companyName = currCompanies[i].name.toLowerCase();
       datesArr = profile.employmentDates[companyName];
       if (datesArr) {
-        for (j=0; j<datesArr.length; ++j) {
+        datesLength = datesArr.length;
+        for (j=0; j<datesLength; ++j) {
           dates = datesArr[j].split(':');
           start = Math.floor(dates[0]);
           end   = Math.floor(dates[1]);
@@ -167,8 +171,10 @@ $(function() {
   },
 
   showExistingPictures = function (profiles) {
-    var i, j, pic, isConcurrent;
-    for (i=0; i<profiles.length; ++i) {
+    var i, j, pic, isConcurrent, length;
+    if (!profiles) { return; }
+    length = profiles.length;
+    for (i=0; i<length; ++i) {
       pic = $('#' + profiles[i].id);
       if (pic) {
         isConcurrent = isConcurrentEmployee(profiles[i]);
@@ -183,7 +189,8 @@ $(function() {
   },
 
   updateCurrCompanies = function () {
-    for (i=0; i<currCompanies.length; ++i) {
+    var length = currCompanies.length;
+    for (i=0; i<length; ++i) {
       if (currCompanies[i].employees) {
         showExistingPictures(currCompanies[i].employees);
       }
@@ -192,7 +199,7 @@ $(function() {
     showPics();
 
     companyNames = [];
-    for (i=0; i<currCompanies.length; ++i) {
+    for (i=0; i<length; ++i) {
       companyNames.push(currCompanies[i].name);
     }
     $('#companytitle').text(companyNames.join(', '));
@@ -207,7 +214,7 @@ $(function() {
   },
 
   doDrag = function(left) {
-    var positionRatio, timelinePos, i, j, company, startVal, endVal, companyNames, oldCurrCompanies;
+    var positionRatio, timelinePos, i, j, company, startVal, endVal, companyNames, oldCurrCompanies, myCompaniesLength, currCompaniesLength;
 
     if (introElem.css('opacity')) { introElem.fadeTo('slow', 0); }
 
@@ -219,8 +226,9 @@ $(function() {
     updateDateLabel(timelinePos);
     oldCurrCompanies = currCompanies;
     currCompanies = [];
+    myCompaniesLength = myCompanies.length;
 
-    for (i=0; i<myCompanies.length; ++i) {
+    for (i=0; i<myCompaniesLength; ++i) {
       company  = myCompanies[i];
       startVal = convertDateToVal(company.startDate);
       endVal   = convertDateToVal(company.endDate);
@@ -239,12 +247,13 @@ $(function() {
       if (endVal && endVal < timelinePos) { break; }
     }
 
-    if (currCompanies && currCompanies.length && !isSameCompanies(oldCurrCompanies, currCompanies)) {
+    currCompaniesLength = currCompanies.length;
+    if (currCompanies && currCompaniesLength && !isSameCompanies(oldCurrCompanies, currCompanies)) {
       updateCurrCompanies();
     }
-    else if (currCompanies.length) {
+    else if (currCompaniesLength) {
       // same companies, but let's still check for updated concurrent coworkers
-      for (i=0; i<currCompanies.length; ++i) {
+      for (i=0; i<currCompaniesLength; ++i) {
         if (currCompanies[i].employees) {
           showExistingPictures(currCompanies[i].employees);
         }
@@ -253,7 +262,7 @@ $(function() {
       hideMarkedPics();
     }
 
-    if (!currCompanies.length) {
+    if (!currCompaniesLength) {
       $('#companytitle').empty();
       hidePics();
     }
@@ -264,10 +273,26 @@ $(function() {
     doDrag(ui.position.left);
   },
 
+  hideOverlay = function() {
+    // fade out overlay
+    overlayElem.fadeTo('fast', 0, function() {
+      overlayElem.css('z-index', -999);
+    });
+    // fade out loading
+    loadingElem.fadeTo('fast', 0, function() {
+      loadingElem.css('z-index', -999);
+    });
+  },
+
   handleConnections = function(profiles) {
-    var i, profile, position, company;
+    var i, profile, position, company, pymkLink;
     if (!profiles.values) {
-      console.log('no profiles!!!');
+      hideOverlay();
+      pymkLink = $('<a/>').attr('href', 'http://www.linkedin.com/pymk-results?showMore=&')
+                          .text('people you may know');
+      messageElem.text('You don\'t seem to have any connections. Why don\'t you add some ')
+                 .append(pymkLink);
+      messageElem.show();
       return;
     }
     socket.send({
@@ -303,12 +328,14 @@ $(function() {
   },
 
   handleOwnPositions = function (positions) {
-    var i, company, startVal, endVal, width, left, newSection, timelineElem = $('#timeline');
-    myCareerStart = convertDateToVal(positions[positions.length-1].startDate);
+    var i, company, startVal, endVal, width, left, newSection,
+        posLength = positions.length,
+        timelineElem = $('#timeline');
+    myCareerStart = convertDateToVal(positions[posLength-1].startDate);
     myCareerLength = myCareerNow - myCareerStart;
 
     timelineElem.hide()
-    for (i=0; i<positions.length; ++i) {
+    for (i=0; i<posLength; ++i) {
       company = positions[i].company;
       if (company && company.name) {
         myCompanies.push({
@@ -373,12 +400,13 @@ $(function() {
   },
 
   storeEmployee = function (connection) {
-    var i, j, cmpName, startKey, endKey, startDate, endDate;
-    for (i=0; i<myCompanies.length; ++i) {
+    var i, j, cmpName, startKey, endKey, startDate, endDate, datesLength, length = myCompanies.length;
+    for (i=0; i<length; ++i) {
       cmpName = myCompanies[i].name.toLowerCase();
       datesArr = connection.employmentDates[cmpName];
       if (datesArr) {
-        for (j=0; j<datesArr.length; ++j) {
+        datesLength = datesArr.length;
+        for (j=0; j<datesLength; ++j) {
           dates = datesArr[j].split(':');
           startDate = dates[0];
           endDate = dates[1] || null;
@@ -399,13 +427,13 @@ $(function() {
   },
 
   handleCompanyConnections = function (connections) {
-    var i, cxn, currPic, currLink, randLeft, randTop, randRotate;
+    var i, cxn, currPic, currLink, randLeft, randTop, randRotate, length = connections.length;
     if (!connections) {
       console.log('no connections found');
       return;
     }
     hidePics();
-    for (i=0; i<connections.length; ++i) {
+    for (i=0; i<length; ++i) {
       cxn = connections[i];
       if (cxn.pictureUrl) {
         // only store connection if they have a picture.
@@ -457,6 +485,29 @@ $(function() {
     showPics();
   },
 
+  doPlay = function() {
+    var iconLeft, dur, totalDur = $('#speed').attr('value');
+    $(this).attr('value', 'Pause');
+    iconLeft = iconElem.position().left;
+    dur = (RIGHT_BOUND - iconLeft)*totalDur/RIGHT_BOUND;
+    iconElem.animate({ left: RIGHT_BOUND + 'px' },
+    {
+      duration: dur,
+      easing: 'linear',
+      step: function(now, fx) {
+        doDrag(now);
+      },
+      complete: function() {
+        playBtn.attr('value', 'Play');
+      }
+    });
+  },
+
+  doPause = function() {
+    $(this).attr('value', 'Play');
+    iconElem.stop(stop);
+  },
+
   onLinkedInAuth = function() {
     // get own profile
     overlayElem.show();
@@ -478,12 +529,7 @@ $(function() {
   socket.on('message', function(message) {
     if (message.type !== 'undefined') {
       if (message.type === 'connectionsStored') {
-        // fade out overlay
-        overlayElem.fadeTo('fast', 0);
-        overlayElem.css('z-index', -999);
-        // fade out loading
-        loadingElem.fadeTo('fast', 0);
-        loadingElem.css('z-index', -999);
+        hideOverlay();
         introElem.fadeTo('slow', 1);
       }
       else if (message.type === 'connectionsByCompanyResult') {
@@ -505,21 +551,13 @@ $(function() {
     }
   });
 
-  playBtn.toggle(function() {
-    $(this).attr('value', 'Pause');
-    iconElem.animate({ left: RIGHT_BOUND + 'px' },
-    {
-      duration: 15000,
-      step: function(now, fx) {
-        doDrag(now);
-      },
-      complete: function() {
-        playBtn.attr('value', 'Play');
-      }
-    });
-  }, function() {
-    $(this).attr('value', 'Play');
-    iconElem.stop(stop);
+  playBtn.click(function() {
+    if ($(this).attr('value') === 'Play') {
+      doPlay.apply(this);
+    }
+    else {
+      doPause.apply(this);
+    }
   });
 
   $('#printCompBtn').click(function() {

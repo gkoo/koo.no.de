@@ -5,8 +5,6 @@ connections = [],
 
 myCompanies = [],
 
-myProfileId = 0,
-
 convertDateToVal, storePosition, storeProfile, getConnectionsByCompany,
 
 // Function: getConnectionProfile
@@ -87,7 +85,7 @@ exports.convertDateToVal = convertDateToVal = function(date) {
   return date.month ? yearVal + date.month : yearVal;
 };
 
-exports.storePosition = storePosition = function(profileId, position) {
+exports.storePosition = storePosition = function(profileId, position, myProfileId) {
   var company = position.company,
       i, companyname, start, end;
 
@@ -104,15 +102,15 @@ exports.storePosition = storePosition = function(profileId, position) {
   }
 };
 
-exports.storeProfile = storeProfile = function(profile, isSelf/*optional*/, callback/*optional*/) {
+exports.storeProfile = storeProfile = function(profile, options) {
   var keyPrefix = ['profiles', profile.id].join(':'),
       fullName  = [profile.firstName, profile.lastName].join(' '),
       keyValuePairs = [keyPrefix],
       i, company;
 
-  if (typeof isSelf === 'undefined') { isSelf = false; }
-
-  if (isSelf) { myProfileId = profile.id; }
+  if (options.mySessionId) {
+    redis.set(['id', options.mySessionId].join(':'), profile.id); // for future lookups
+  }
 
   keyValuePairs.push('id', profile.id);
   if (profile.firstName || profile.lastName) {
@@ -126,9 +124,9 @@ exports.storeProfile = storeProfile = function(profile, isSelf/*optional*/, call
   }
   redis.hmset(keyValuePairs);
 
-  if (!isSelf && profile.positions && profile.positions.values && profile.positions.values.length) {
+  if (!options.mySessionId && profile.positions && profile.positions.values && profile.positions.values.length) {
     for (i = 0; i<profile.positions.values.length; ++i) {
-      storePosition(profile.id, profile.positions.values[i], true);
+      storePosition(profile.id, profile.positions.values[i], options.myProfileId);
     }
   }
   else if (profile.positions && profile.positions.values && profile.positions.values.length) { // isSelf
@@ -141,48 +139,59 @@ exports.storeProfile = storeProfile = function(profile, isSelf/*optional*/, call
   }
 };
 
-exports.getConnectionsByCompany = getConnectionsByCompany = function(companies, callback) {
-  var i, keys = [];
+exports.getConnectionsByCompany = getConnectionsByCompany = function(sessionId, companies, callback) {
+  redis.get(['id', sessionId].join(':'), function(err, profileId) {
+    var i, keys = [];
 
-  if (!companies) { return; }
+    if (!companies) { return; }
 
-  for (i=0; i<companies.length; ++i) {
-    keys.push(['coworkers', myProfileId, companies[i].name.toLowerCase()].join(':'));
-  }
+    for (i=0; i<companies.length; ++i) {
+      keys.push(['coworkers', profileId, companies[i].name.toLowerCase()].join(':'));
+    }
 
-  if (keys && keys.length) {
-    redis.sunion(keys, function(err, cxnIds) {
-      var isLast;
-      if (err) {
-        console.log('Something went wrong with the union of companies!');
-        console.log(err);
-        callback(err);
-      }
-      else {
-        connections = [];
-        for (i=0; i<cxnIds.length; ++i) {
-          isLast = (i === cxnIds.length-1);
-          getConnectionProfile(cxnIds[i], isLast, isLast ? callback : null);
+    if (keys && keys.length) {
+      redis.sunion(keys, function(err, cxnIds) {
+        var isLast;
+        if (err) {
+          console.log('Something went wrong with the union of companies!');
+          console.log(err);
+          callback(err);
         }
-      }
-    });
+        else {
+          connections = [];
+          for (i=0; i<cxnIds.length; ++i) {
+            isLast = (i === cxnIds.length-1);
+            getConnectionProfile(cxnIds[i], isLast, isLast ? callback : null);
+          }
+        }
+      });
+    }
+    else {
+      console.log('No keys! Can\'t get connections');
+    }
+  });
+};
+
+exports.storeConnections = function(sessionId, profiles, callback) {
+  redis.get(['id', sessionId].join(':'), function(err, myProfileId) {
+    var i;
+    if (err) {
+      console.log(err);
+      return;
+    }
+    if (!profiles || !profiles.values) { return; }
+    for (i=0; i<profiles.values.length; ++i) {
+      storeProfile(profiles.values[i], { myProfileId: myProfileId });
+    }
+    callback();
+  });
+};
+
+exports.getAllConnections = function(sessionId, callback) {
+  if (myCompanies && myCompanies.length) {
+    getConnectionsByCompany(sessionId, myCompanies, callback);
   }
   else {
-    console.log('No keys! Can\'t get connections');
-  }
-};
-
-exports.storeConnections = function(profiles, callback) {
-  var i;
-  if (!profiles || !profiles.values) { return; }
-  for (i=0; i<profiles.values.length; ++i) {
-    storeProfile(profiles.values[i]);
-  }
-  callback();
-};
-
-exports.getAllConnections = function(callback) {
-  if (myCompanies) {
-    getConnectionsByCompany(myCompanies, callback);
+    console.log('no myCompanies');
   }
 };

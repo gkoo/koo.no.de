@@ -19,9 +19,15 @@ html(lang="en")
       script(type="IN/Login")
     input#printCompBtn(type="button", value='Print Companies')
     input#playBtn(type="button", value="Play")
+    select#speed
+      option(value="35000") Slow
+      option(value="25000") Medium
+      option(value="8000") Fast
+      option(value="3000") Really Fast
     #overlay
     #body
       h1#loading Loading...
+      p#message
       #upper
         h1#companytitle
         .pics

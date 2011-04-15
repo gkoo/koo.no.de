@@ -63,6 +63,11 @@ input {
   top: 10px;
   left: 10px;
 }
+select {
+  position: absolute;
+  top: 30px;
+  left: 10px;
+}
 .cxnPic {
   cursor: pointer;
   width: 80px;
@@ -102,5 +107,8 @@ input {
   z-index: 11;
 }
 #printCompBtn {
+  display: none;
+}
+#message {
   display: none;
 }

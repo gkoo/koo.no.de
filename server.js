@@ -98,21 +98,20 @@ io.on('connection', function(client) {
       // LINKEDIN
       // ========
       else if (message.type === 'storeOwnProfile') {
-        li.storeProfile(message.profile, true);
+        li.storeProfile(message.profile, { mySessionId: client.sessionId });
       }
       else if (message.type === 'storeConnections') {
-        li.storeConnections(message.profiles, function(err) {
-          li.getAllConnections(function(err, connections) {
+        li.storeConnections(client.sessionId, message.profiles, function(err) {
+          li.getAllConnections(client.sessionId, function(err, connections) {
             client.send({ type: 'allConnectionsResult', connections: connections });
           });
           //client.send({ type: 'connectionsStored' });
         });
       }
       else if (message.type === 'getConnectionsByCompany' && message.companies) {
-        li.getConnectionsByCompany(message.companies, function(err, connections) {
-          if (err) {
-            console.log(err);
-          }
+        li.getConnectionsByCompany(client.sessionId, message.companies, function(err, connections) {
+          if (err) { console.log(err); }
+
           else if (connections) {
             client.send({
               type: 'connectionsByCompanyResult',
@@ -121,9 +120,6 @@ io.on('connection', function(client) {
             });
           }
         });
-      }
-      else if (message.type === 'myCompanies' && message.companies) {
-        li.storeMyCompanies(message.companies);
       }
     }
   });
