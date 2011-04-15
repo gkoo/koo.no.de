@@ -21,15 +21,9 @@ li {
 }
 #upper, #lower {
   background-color: #000;
-  height: 375px;
+  height: 350px;
   overflow: hidden;
   position: relative;
-}
-#companytitle {
-  bottom: 20px;
-  margin: 17px 0;
-  position: absolute;
-  width: 100%;
 }
 #timeline {
   background-color: #222;
@@ -49,6 +43,9 @@ li {
   height: 20px;
   width: 100%;
 }
+#timeline .block {
+  position: relative;
+}
 #timeline .top.block {
   border-bottom: 2px solid #fff;
 }
@@ -65,7 +62,7 @@ li {
   padding-top: 20px;
 }
 #mypic {
-  border: 5px solid #0c77af;
+  border: 1px solid #fff;
   cursor: pointer;
   display: none;
   height: 80px;

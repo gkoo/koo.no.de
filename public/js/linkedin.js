@@ -2,6 +2,7 @@
 // TODO: handle no connections
 // TODO: make left-most profile position equal to the first company, instead of nothing. (on drag)
 // TODO: compute by middle of picture rather than left (for timeline blocks)
+// TODO: fix randTops
 
 var onLinkedInLoad;
 
@@ -16,25 +17,30 @@ $(function() {
       myPicElem        = $('#mypic'),
       messageElem     = $('#message'),
       playBtn         = $('#playBtn'),
+      topBlockElem    = timelineElem.children('.top.block'),
+      bottomBlockElem = timelineElem.children('.bottom.block'),
       thisMonth       = today.getMonth()+1,
       thisYear        = today.getFullYear(),
       currTime        = 0,
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
       myCompanies     = [],
-      //PORT            = 8080,
-      PORT            = 80,
+      topCompanies    = [],
+      bottomCompanies = [],
+      PORT            = 8080,
+      //PORT            = 80,
       PIC_SIZE        = 80,
-      BORDER_SIZE     = 5,
+      BORDER_SIZE     = 1,
       FRAME_WIDTH     = 1000,
-      FRAME_HEIGHT    = 820,
       TL_WIDTH        = 970,
       TL_HEIGHT       = 140,
       TL_BLOCK_HT     = 30,
       TL_HZ_PADDING   = 15,
-      HALF_HEIGHT     = (FRAME_HEIGHT - TL_HEIGHT)/2,
+      HALF_HEIGHT     = 300,
+      LEFT_BOUND      = TL_HZ_PADDING,
       RIGHT_BOUND     = TL_WIDTH - PIC_SIZE - BORDER_SIZE*2 + TL_HZ_PADDING,
       MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      COLORS          = ['#ed712b', '#069', '#85c93c', '#9c3ba7', '#00a4a3', '#d9002e', '#f0bb00', '#dd009c', '#667c88'],
       STRIP_PUNC      = /[^\w\s]/gi;
 
   convertDateFromVal = function(val) {
@@ -209,7 +215,6 @@ $(function() {
     for (i=0; i<length; ++i) {
       companyNames.push(currCompanies[i].name);
     }
-    $('#companytitle').text(companyNames.join(', '));
   },
 
   updateDateLabel = function(timelinePos) {
@@ -226,7 +231,7 @@ $(function() {
     if (introElem.css('opacity')) { introElem.fadeTo('slow', 0); }
 
     // calculate how far along myPic is on the timeline.
-    positionRatio = left/RIGHT_BOUND;
+    positionRatio = (left-LEFT_BOUND)/RIGHT_BOUND;
 
     // calculate this position relative to our career timeline.
     timelinePos = (myCareerLength * positionRatio) + myCareerStart;
@@ -269,7 +274,6 @@ $(function() {
     }
 
     if (!currCompaniesLength) {
-      $('#companytitle').empty();
       hidePics();
     }
   },
@@ -334,13 +338,12 @@ $(function() {
   },
 
   handleOwnPositions = function (positions) {
-    var i, company, startVal, endVal, width, left, newSection, tmpStart,
-        posLength = positions.length,
-        timelineElem = $('#timeline');
+    var i, company, startVal, endVal, width, left, newSection, tmpStart, color,
+        length = positions.length;
 
     timelineElem.hide()
     myCareerStart = convertDateToVal(positions[0].startDate);
-    for (i=0; i<posLength; ++i) {
+    for (i=0; i<length; ++i) {
       company = positions[i].company;
       if (company && company.name) {
         myCompanies.push({
@@ -353,24 +356,34 @@ $(function() {
         if (tmpStart < myCareerStart) {
           myCareerStart = tmpStart;
         }
-
-        //create a little sectionbar on the timeline for this company.
-        /*
-        startVal = convertDateToVal(positions[i].startDate);
-        endVal = positions[i].endDate ? convertDateToVal(positions[i].endDate) : myCareerNow;
-        width = (endVal-startVal)/myCareerLength*100 + '%';
-        left = (startVal-myCareerStart)/myCareerLength*100 + '%';
-        newSection = $('<div/>').css('height', '100%')
-                                .css('width', width)
-                                .css('left', left)
-                                .css('position', 'absolute')
-                                .css('background-color', '#f00')
-                                .css('border', '1px solid #0c77af');
-        timelineElem.append(newSection);
-        */
       }
     }
     myCareerLength = myCareerNow - myCareerStart;
+    length = myCompanies.length;
+    for (i=0; i<length; ++i) {
+
+      //create a little sectionbar on the timeline for this company.
+      startVal = convertDateToVal(positions[i].startDate);
+      endVal = positions[i].endDate ? convertDateToVal(positions[i].endDate) : myCareerNow;
+      width = (endVal-startVal)/myCareerLength*100 + '%';
+      console.log('startVal: ' + startVal);
+      console.log('myCareerStart: ' + myCareerStart);
+      console.log('myCareerLength: ' + myCareerLength);
+      left = (startVal-myCareerStart)/myCareerLength*100 + '%';
+      color = COLORS[i%COLORS.length];
+      newSection = $('<div/>').css('height', '100%')
+                              .css('width', width)
+                              .css('left', left)
+                              .css('position', 'absolute')
+                              .css('background-color', color)
+                              .css('border-left', '1px solid #fff');
+      if (i%2) {
+        topBlockElem.append(newSection);
+      }
+      else {
+        bottomBlockElem.append(newSection);
+      }
+    }
     timelineElem.show();
   },
 
@@ -464,7 +477,7 @@ $(function() {
         if (cxn.id !== myProfileId && cxn.pictureUrl) {
           // pic doesn't exist; let's create it
           randLeft = Math.floor(Math.random()*RIGHT_BOUND);
-          randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE*2));
+          randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE));
           randRotate = Math.floor(Math.random()*20)-10;
 
           if (!cxn.publicProfileUrl) {
@@ -496,7 +509,6 @@ $(function() {
             $('#upper .pics').append(currLink);
           }
           else { //add to lower
-            randTop += PIC_SIZE;
             currLink.addClass('lower')
                     .css('top', PIC_SIZE*(-1.5))
                     .attr('li-top', randTop);
