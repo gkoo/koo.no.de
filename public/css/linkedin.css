@@ -1,6 +1,7 @@
 html, body { margin: 0; padding: 0; }
 body {
-  color: #000;
+  background-color: #000;
+  color: #fff;
   font: 13px Arial;
   text-align: center;
 }
@@ -19,8 +20,8 @@ li {
   width: 1000px;
 }
 #upper, #lower {
-  background-color: #fff;
-  height: 395px;
+  background-color: #000;
+  height: 375px;
   overflow: hidden;
   position: relative;
 }
@@ -31,10 +32,29 @@ li {
   width: 100%;
 }
 #timeline {
-  background-color: #000;
-  height: 10px;
+  background-color: #222;
+  height: 120px;
   opacity: 0;
+  padding: 10px 15px;
   position: relative;
+  text-align: left;
+  width: 970px;
+
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+}
+#timeline .top,
+#timeline .bottom {
+  height: 20px;
+  width: 100%;
+}
+#timeline .top.block {
+  border-bottom: 2px solid #fff;
+}
+#timeline .mid {
+  height: 10px;
+  background-color: #fff;
   width: 100%;
 }
 #header {
@@ -44,17 +64,13 @@ li {
   float:left;
   padding-top: 20px;
 }
-#myicon {
-  left: 0;
-  position: absolute;
-  top: -9999px;
-}
 #mypic {
   border: 5px solid #0c77af;
   cursor: pointer;
   display: none;
   height: 80px;
   opacity: 0;
+  position: absolute;
   top: 50%;
   width: 80px;
 }
@@ -76,6 +92,7 @@ select {
 #intro {
   border: 1px solid black;
   bottom: 50px;
+  display: none;
   opacity: 0;
   margin-left: 10px;
   padding: 10px 10px 10px 75px;

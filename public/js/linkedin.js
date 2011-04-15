@@ -1,36 +1,41 @@
 // TODO: If a company doesn't have any dates, create a generic time window for it.
 // TODO: handle no connections
 // TODO: make left-most profile position equal to the first company, instead of nothing. (on drag)
+// TODO: compute by middle of picture rather than left (for timeline blocks)
 
 var onLinkedInLoad;
 
 $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket,
-      today         = new Date(),
-      picElems      = $('.pics'),
-      introElem     = $('#intro'),
-      overlayElem   = $('#overlay'),
-      loadingElem   = $('#loading'),
-      timelineElem  = $('#timeline'),
-      iconElem      = $('#myicon'),
-      messageElem   = $('#message'),
-      playBtn       = $('#playBtn'),
-      thisMonth     = today.getMonth()+1,
-      thisYear      = today.getFullYear(),
-      currTime      = 0,
-      currCompanies = [], // what company(ies) we're at in the timeline
-      myProfileId   = -1,
-      myCompanies   = [],
-      PORT          = 80,
-      PIC_SIZE      = 80,
-      BORDER_SIZE   = 5,
-      FRAME_WIDTH   = 1000,
-      FRAME_HEIGHT  = 800,
-      TIMELINE_HT   = 10,
-      HALF_HEIGHT   = (FRAME_HEIGHT - TIMELINE_HT)/2,
-      RIGHT_BOUND   = FRAME_WIDTH - PIC_SIZE - BORDER_SIZE*2,
-      MONTHS        = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-      STRIP_PUNC    = /[^\w\s]/gi;
+      today           = new Date(),
+      picElems        = $('.pics'),
+      introElem       = $('#intro'),
+      overlayElem     = $('#overlay'),
+      loadingElem     = $('#loading'),
+      timelineElem    = $('#timeline'),
+      myPicElem        = $('#mypic'),
+      messageElem     = $('#message'),
+      playBtn         = $('#playBtn'),
+      thisMonth       = today.getMonth()+1,
+      thisYear        = today.getFullYear(),
+      currTime        = 0,
+      currCompanies   = [], // what company(ies) we're at in the timeline
+      myProfileId     = -1,
+      myCompanies     = [],
+      //PORT            = 8080,
+      PORT            = 80,
+      PIC_SIZE        = 80,
+      BORDER_SIZE     = 5,
+      FRAME_WIDTH     = 1000,
+      FRAME_HEIGHT    = 820,
+      TL_WIDTH        = 970,
+      TL_HEIGHT       = 140,
+      TL_BLOCK_HT     = 30,
+      TL_HZ_PADDING   = 15,
+      HALF_HEIGHT     = (FRAME_HEIGHT - TL_HEIGHT)/2,
+      RIGHT_BOUND     = TL_WIDTH - PIC_SIZE - BORDER_SIZE*2 + TL_HZ_PADDING,
+      MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      STRIP_PUNC      = /[^\w\s]/gi;
 
   convertDateFromVal = function(val) {
     var month = Math.floor(val%12) || 12;
@@ -270,7 +275,7 @@ $(function() {
   },
 
   doDragWrapper = function(evt, ui) {
-    iconElem.stop(true);
+    myPicElem.stop(true);
     doDrag(ui.position.left);
   },
 
@@ -392,8 +397,8 @@ $(function() {
     pic = $('#mypic').attr('src', profile.pictureUrl)
                      .fadeTo('fast', 1);
     timelineElem.fadeTo('fast', 1);
-    icon = iconElem.css('top', (FRAME_HEIGHT - 90)/2);
-    icon.draggable({
+    myPicElem.css('top', (TL_HEIGHT - PIC_SIZE)/2-BORDER_SIZE);
+    myPicElem.draggable({
       axis : 'x',
       drag: doDragWrapper,
       containment: 'parent'
@@ -506,9 +511,10 @@ $(function() {
   doPlay = function() {
     var iconLeft, dur, totalDur = $('#speed').attr('value');
     $(this).attr('value', 'Pause');
-    iconLeft = iconElem.position().left;
-    dur = (RIGHT_BOUND - iconLeft)*totalDur/RIGHT_BOUND;
-    iconElem.animate({ left: RIGHT_BOUND + 'px' },
+    myPicLeft = myPicElem.position().left;
+    console.log(RIGHT_BOUND)
+    dur = (RIGHT_BOUND - myPicLeft)*totalDur/RIGHT_BOUND;
+    myPicElem.animate({ left: RIGHT_BOUND + 'px' },
     {
       duration: dur,
       easing: 'linear',
@@ -523,7 +529,7 @@ $(function() {
 
   doPause = function() {
     $(this).attr('value', 'Play');
-    iconElem.stop(stop);
+    myPicElem.stop(stop);
   },
 
   onLinkedInAuth = function() {
