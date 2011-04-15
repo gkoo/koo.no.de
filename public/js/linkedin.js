@@ -1,5 +1,6 @@
 // TODO: If a company doesn't have any dates, create a generic time window for it.
 // TODO: handle no connections
+// TODO: make left-most profile position equal to the first company, instead of nothing. (on drag)
 
 var onLinkedInLoad;
 
@@ -328,13 +329,12 @@ $(function() {
   },
 
   handleOwnPositions = function (positions) {
-    var i, company, startVal, endVal, width, left, newSection,
+    var i, company, startVal, endVal, width, left, newSection, tmpStart,
         posLength = positions.length,
         timelineElem = $('#timeline');
-    myCareerStart = convertDateToVal(positions[posLength-1].startDate);
-    myCareerLength = myCareerNow - myCareerStart;
 
     timelineElem.hide()
+    myCareerStart = convertDateToVal(positions[0].startDate);
     for (i=0; i<posLength; ++i) {
       company = positions[i].company;
       if (company && company.name) {
@@ -344,6 +344,10 @@ $(function() {
           startDate:        positions[i].startDate,
           endDate:          positions[i].endDate
         });
+        tmpStart = convertDateToVal(positions[i].startDate);
+        if (tmpStart < myCareerStart) {
+          myCareerStart = tmpStart;
+        }
 
         //create a little sectionbar on the timeline for this company.
         /*
@@ -361,6 +365,7 @@ $(function() {
         */
       }
     }
+    myCareerLength = myCareerNow - myCareerStart;
     timelineElem.show();
   },
 
