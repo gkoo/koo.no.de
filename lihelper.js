@@ -1,9 +1,10 @@
-// TODO: 
 var redis = require('redis').createClient(),
 
 connections = [],
 
 myCompanies = [],
+
+stripPunc = /[^\w\s]/gi,
 
 convertDateToVal, storePosition, storeProfile, getConnectionsByCompany,
 
@@ -87,17 +88,19 @@ exports.convertDateToVal = convertDateToVal = function(date) {
 
 exports.storePosition = storePosition = function(profileId, position, myProfileId) {
   var company = position.company,
-      i, companyname, start, end;
+      i, start, end;
 
-  if (company && company.name && isRelevantCompany(company.name)) {
-    // this is a connection
-    companyname = company.name.toLowerCase();
-    redis.sadd(['coworkers', myProfileId, companyname].join(':'), profileId);
-    if (position.startDate) { // educations have no start date
-      start = convertDateToVal(position.startDate);
-      end = position.endDate ? convertDateToVal(position.endDate) : 0;
-      dates = [start, end].join(':');
-      redis.sadd(['employmentDates', profileId, companyname].join(':'), dates);
+  if (company && company.name) {
+    company.name = company.name.toLowerCase().replace(stripPunc, '');
+    if (isRelevantCompany(company.name)) {
+      // this is a connection
+      redis.sadd(['coworkers', myProfileId, company.name].join(':'), profileId);
+      if (position.startDate) { // educations have no start date
+        start = convertDateToVal(position.startDate);
+        end = position.endDate ? convertDateToVal(position.endDate) : 0;
+        dates = [start, end].join(':');
+        redis.sadd(['employmentDates', profileId, company.name].join(':'), dates);
+      }
     }
   }
 };
@@ -129,10 +132,12 @@ exports.storeProfile = storeProfile = function(profile, options) {
       storePosition(profile.id, profile.positions.values[i], options.myProfileId);
     }
   }
-  else if (profile.positions && profile.positions.values && profile.positions.values.length) { // isSelf
+  else if (profile.positions && profile.positions.values && profile.positions.values.length) {
+    // isSelf
     for (i = 0; i<profile.positions.values.length; ++i) {
       company = profile.positions.values[i].company;
       if (company.name) {
+        company.name = company.name.toLowerCase().replace(stripPunc, '');
         myCompanies.push(company);
       }
     }
@@ -146,7 +151,7 @@ exports.getConnectionsByCompany = getConnectionsByCompany = function(sessionId, 
     if (!companies) { return; }
 
     for (i=0; i<companies.length; ++i) {
-      keys.push(['coworkers', profileId, companies[i].name.toLowerCase()].join(':'));
+      keys.push(['coworkers', profileId, companies[i].name].join(':'));
     }
 
     if (keys && keys.length) {

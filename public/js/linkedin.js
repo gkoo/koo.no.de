@@ -28,7 +28,8 @@ $(function() {
       TIMELINE_HT   = 10,
       HALF_HEIGHT   = (FRAME_HEIGHT - TIMELINE_HT)/2,
       RIGHT_BOUND   = FRAME_WIDTH - PIC_SIZE - BORDER_SIZE*2,
-      MONTHS        = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      MONTHS        = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      STRIP_PUNC    = /[^\w\s]/gi;
 
   convertDateFromVal = function(val) {
     var month = Math.floor(val%12) || 12;
@@ -94,8 +95,8 @@ $(function() {
           found = true;
           break;
         }
-        if (!found) { return false; }
       }
+      if (!found) { return false; }
     }
     return true;
   },
@@ -150,7 +151,7 @@ $(function() {
     if (!profile || !profile.employmentDates) { return false; }
 
     for (i=0; i<length; ++i) {
-      companyName = currCompanies[i].name.toLowerCase();
+      companyName = currCompanies[i].unformattedName;
       datesArr = profile.employmentDates[companyName];
       if (datesArr) {
         datesLength = datesArr.length;
@@ -239,7 +240,6 @@ $(function() {
           && (!endVal || endVal > timelinePos)) {
         // we have a match! this is the company on this stretch of the timeline.
         if (company.name) {
-          $('#companytitle').text(company.name);
           currCompanies.push(company);
         }
       }
@@ -248,7 +248,7 @@ $(function() {
     }
 
     currCompaniesLength = currCompanies.length;
-    if (currCompanies && currCompaniesLength && !isSameCompanies(oldCurrCompanies, currCompanies)) {
+    if (currCompaniesLength && !isSameCompanies(oldCurrCompanies, currCompanies)) {
       updateCurrCompanies();
     }
     else if (currCompaniesLength) {
@@ -339,9 +339,10 @@ $(function() {
       company = positions[i].company;
       if (company && company.name) {
         myCompanies.push({
-          name: company.name,
-          startDate: positions[i].startDate,
-          endDate: positions[i].endDate
+          name:             company.name,
+          unformattedName:  company.name.toLowerCase().replace(STRIP_PUNC, ''),
+          startDate:        positions[i].startDate,
+          endDate:          positions[i].endDate
         });
 
         //create a little sectionbar on the timeline for this company.
@@ -399,13 +400,25 @@ $(function() {
     }
   },
 
+  companyHasEmployee = function (company, employee) {
+    var i, employeeLength;
+    if (!company.employees) { return false; }
+    employeeLength = company.employees.length;
+    for (i=0; i<employeeLength; ++i) {
+      if (company.employees[i].id === employee.id) {
+        return true;
+      }
+    }
+    return false;
+  },
+
   storeEmployee = function (connection) {
     var i, j, cmpName, startKey, endKey, startDate, endDate, datesLength, length = myCompanies.length;
     for (i=0; i<length; ++i) {
-      cmpName = myCompanies[i].name.toLowerCase();
+      cmpName = myCompanies[i].unformattedName;
       datesArr = connection.employmentDates[cmpName];
       if (datesArr) {
-        datesLength = datesArr.length;
+        datesLength = datesArr.length; // usually this is only 1
         for (j=0; j<datesLength; ++j) {
           dates = datesArr[j].split(':');
           startDate = dates[0];
@@ -417,7 +430,7 @@ $(function() {
                                         convertDateToVal(myCompanies[i].endDate))) {
             if (!myCompanies[i].employees) {
               myCompanies[i].employees = [connection];
-            } else {
+            } else if (!companyHasEmployee(myCompanies[i], connection)) {
               myCompanies[i].employees.push(connection);
             }
           }
@@ -546,7 +559,6 @@ $(function() {
         loadingElem.css('z-index', -999);
         introElem.fadeTo('slow', 1);
         handleCompanyConnections(message.connections);
-        //console.log(message.connections);
       }
     }
   });
