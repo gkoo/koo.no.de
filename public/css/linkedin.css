@@ -17,11 +17,11 @@ li {
 #body {
   margin: 0 auto;
   position: relative;
-  width: 1000px;
+  width: 1010px;
 }
 #upper, #lower {
   background-color: #000;
-  height: 350px;
+  height: 375px;
   overflow: hidden;
   position: relative;
 }
@@ -29,7 +29,8 @@ li {
   background-color: #222;
   height: 120px;
   opacity: 0;
-  padding: 10px 15px;
+  overflow: hidden;
+  padding: 10px 20px;
   position: relative;
   text-align: left;
   width: 970px;
@@ -43,8 +44,21 @@ li {
   height: 20px;
   width: 100%;
 }
-#timeline .block {
+#timeline .block,
+#timeline .date,
+#timeline .info {
   position: relative;
+}
+#timeline .info span,
+#timeline .date span {
+  padding-left: 2px;
+}
+#timeline .info span.compName,
+#timeline .info span.compDate {
+  padding: 0 5px 0 0;
+}
+.compDate {
+  color: #666;
 }
 #timeline .top.block {
   border-bottom: 2px solid #fff;

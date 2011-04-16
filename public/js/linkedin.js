@@ -10,7 +10,6 @@ $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket,
       today           = new Date(),
       picElems        = $('.pics'),
-      introElem       = $('#intro'),
       overlayElem     = $('#overlay'),
       loadingElem     = $('#loading'),
       timelineElem    = $('#timeline'),
@@ -25,8 +24,6 @@ $(function() {
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
       myCompanies     = [],
-      topCompanies    = [],
-      bottomCompanies = [],
       //PORT            = 8080,
       PORT            = 80,
       PIC_SIZE        = 80,
@@ -35,11 +32,12 @@ $(function() {
       TL_WIDTH        = 970,
       TL_HEIGHT       = 140,
       TL_BLOCK_HT     = 30,
-      TL_HZ_PADDING   = 15,
+      TL_HZ_PADDING   = 20,
       HALF_HEIGHT     = 300,
       LEFT_BOUND      = TL_HZ_PADDING,
-      RIGHT_BOUND     = TL_WIDTH - PIC_SIZE - BORDER_SIZE*2 + TL_HZ_PADDING,
+      RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2,
       MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+      MONTHS_ABBR     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       COLORS          = ['#ed712b', '#069', '#85c93c', '#9c3ba7', '#00a4a3', '#d9002e', '#f0bb00', '#dd009c', '#667c88'],
       STRIP_PUNC      = /[^\w\s]/gi;
 
@@ -228,10 +226,10 @@ $(function() {
   doDrag = function(left) {
     var positionRatio, timelinePos, i, j, company, startVal, endVal, companyNames, oldCurrCompanies, myCompaniesLength, currCompaniesLength;
 
-    if (introElem.css('opacity')) { introElem.fadeTo('slow', 0); }
+    //if (introElem.css('opacity')) { introElem.fadeTo('slow', 0); }
 
     // calculate how far along myPic is on the timeline.
-    positionRatio = (left-LEFT_BOUND)/RIGHT_BOUND;
+    positionRatio = (left - LEFT_BOUND)/(RIGHT_BOUND - LEFT_BOUND);
 
     // calculate this position relative to our career timeline.
     timelinePos = (myCareerLength * positionRatio) + myCareerStart;
@@ -337,8 +335,53 @@ $(function() {
     return startVal2 < endVal1; // endVal1 && !endVal2
   },
 
+  createTimelineBlock = function(position, count) {
+    //create a little sectionbar on the timeline for this company.
+    var startVal, endVal, newBlock, newDate, newInfo, tmpStart, color, compDate, compEndDate = '';
+    startVal = convertDateToVal(position.startDate);
+    endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
+    width = (endVal-startVal)/myCareerLength*100 + '%';
+    left = (startVal-myCareerStart)/myCareerLength*100 + '%';
+    color = COLORS[count%COLORS.length];
+    if (position.endDate) {
+    }
+    if (position.endDate) {
+      compEndDate = [' -',
+                     MONTHS_ABBR[position.endDate.month-1],
+                     position.endDate.year].join(' ');
+    }
+    compDate = ['('+MONTHS_ABBR[position.startDate.month-1],
+                position.startDate.year + compEndDate + ')'].join(' ')
+    newBlock = $('<div/>').css('height', '100%')
+                          .css('width', width)
+                          .css('left', left)
+                          .css('position', 'absolute')
+                          .css('background-color', color)
+                          .css('border-left', '1px solid #fff');
+    newDate = $('<span/>').text([MONTHS_ABBR[position.startDate.month-1],
+                                 position.startDate.year].join(' '))
+                          .css('position', 'absolute')
+                          .css('left', left);
+    newInfo = $('<span/>').css('position', 'absolute')
+                          .css('left', left)
+                          .append($('<span/>').addClass('compName')
+                                              .text(position.company.name))
+                          .append($('<span/>').addClass('compDate')
+                                              .text(compDate));
+    if (count%2) {
+      topBlockElem.append(newBlock);
+      timelineElem.children('.top.date').append(newDate);
+      timelineElem.children('.top.info').append(newInfo);
+    }
+    else {
+      bottomBlockElem.append(newBlock);
+      timelineElem.children('.bottom.date').append(newDate);
+      timelineElem.children('.bottom.info').append(newInfo);
+    }
+  },
+
   handleOwnPositions = function (positions) {
-    var i, company, startVal, endVal, width, left, newSection, tmpStart, color,
+    var i, company, width, left,
         length = positions.length;
 
     timelineElem.hide()
@@ -359,30 +402,8 @@ $(function() {
       }
     }
     myCareerLength = myCareerNow - myCareerStart;
-    length = myCompanies.length;
     for (i=0; i<length; ++i) {
-
-      //create a little sectionbar on the timeline for this company.
-      startVal = convertDateToVal(positions[i].startDate);
-      endVal = positions[i].endDate ? convertDateToVal(positions[i].endDate) : myCareerNow;
-      width = (endVal-startVal)/myCareerLength*100 + '%';
-      console.log('startVal: ' + startVal);
-      console.log('myCareerStart: ' + myCareerStart);
-      console.log('myCareerLength: ' + myCareerLength);
-      left = (startVal-myCareerStart)/myCareerLength*100 + '%';
-      color = COLORS[i%COLORS.length];
-      newSection = $('<div/>').css('height', '100%')
-                              .css('width', width)
-                              .css('left', left)
-                              .css('position', 'absolute')
-                              .css('background-color', color)
-                              .css('border-left', '1px solid #fff');
-      if (i%2) {
-        topBlockElem.append(newSection);
-      }
-      else {
-        bottomBlockElem.append(newSection);
-      }
+      createTimelineBlock(positions[i], i);
     }
     timelineElem.show();
   },
@@ -524,7 +545,6 @@ $(function() {
     var iconLeft, dur, totalDur = $('#speed').attr('value');
     $(this).attr('value', 'Pause');
     myPicLeft = myPicElem.position().left;
-    console.log(RIGHT_BOUND)
     dur = (RIGHT_BOUND - myPicLeft)*totalDur/RIGHT_BOUND;
     myPicElem.animate({ left: RIGHT_BOUND + 'px' },
     {
@@ -566,7 +586,6 @@ $(function() {
     if (message.type !== 'undefined') {
       if (message.type === 'connectionsStored') {
         hideOverlay();
-        introElem.fadeTo('slow', 1);
       }
       else if (message.type === 'connectionsByCompanyResult') {
         if (isSameCompanies(currCompanies, message.companies)) {
@@ -580,7 +599,6 @@ $(function() {
         // fade out loading
         loadingElem.fadeTo('fast', 0);
         loadingElem.css('z-index', -999);
-        introElem.fadeTo('slow', 1);
         handleCompanyConnections(message.connections);
       }
     }
