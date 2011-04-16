@@ -54,6 +54,9 @@ ul {
   background-color: #222;
   padding-left: 2px;
 }
+#timeline .info span.compName {
+  font-weight: bold;
+}
 #timeline .info span.compName,
 #timeline .info span.compDate {
   padding: 0 5px 0 0;
