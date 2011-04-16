@@ -347,8 +347,6 @@ $(function() {
     left = (startVal-myCareerStart)/myCareerLength*100 + '%';
     color = COLORS[count%COLORS.length];
     if (position.endDate) {
-    }
-    if (position.endDate) {
       compEndDate = [' -',
                      MONTHS_ABBR[position.endDate.month-1],
                      position.endDate.year].join(' ');
@@ -551,26 +549,16 @@ $(function() {
   },
 
   doPlay = function() {
-    var iconLeft, dur, totalDur, active
-        SLOW  = 35000,
-        MED   = 25000,
-        FAST  = 8000,
-        RFAST = 2500;
+    var iconLeft, dur, totalDur, active, className,
+        speeds = { slow     : 35000,
+                   med      : 25000,
+                   fast     : 8000,
+                   realfast : 2000 };
     $(this).text('Pause');
     myPicLeft = myPicElem.position().left;
     active = speedElem.children('.active');
-    if (active.hasClass('slow')) {
-      totalDur = SLOW;
-    }
-    if (active.hasClass('med')) {
-      totalDur = MED;
-    }
-    if (active.hasClass('fast')) {
-      totalDur = FAST;
-    }
-    if (active.hasClass('realfast')) {
-      totalDur = RFAST;
-    }
+    className = active.attr('class').replace(/\s?active\s?/, '');
+    totalDur = speeds[className];
     dur = (RIGHT_BOUND - myPicLeft)*totalDur/RIGHT_BOUND;
     myPicElem.animate({ left: RIGHT_BOUND + 'px' },
     {
@@ -580,7 +568,7 @@ $(function() {
         doDrag(now);
       },
       complete: function() {
-        playBtn.attr('value', 'Play');
+        playBtn.text('Play');
       }
     });
   },
@@ -592,11 +580,12 @@ $(function() {
 
   onLinkedInAuth = function() {
     // get own profile
+    // show overlay
     overlayElem.show();
-    overlayElem.css('z-index', 10);
+    overlayElem.css('z-index', 999);
     overlayElem.fadeTo('fast', 0.5);
     loadingElem.show();
-    loadingElem.css('z-index', 11);
+    loadingElem.css('z-index', 1000);
     loadingElem.fadeTo('fast', 1);
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
   };
