@@ -338,13 +338,41 @@ $(function() {
     return startVal2 < endVal1; // endVal1 && !endVal2
   },
 
-  createTimelineBlock = function(position, count) {
+  timelineHasRoom = function(compDates, startDate, endDate) {
+    var compDate, i, length = compDates.length;
+    if (compDates && !length) { return 1; }
+    for (i=0; i<length; ++i) {
+      compDate = compDates[i].split(':');
+      if (datesOverlap(compDate[0], compDate[1], startDate, endDate)) {
+        return false;
+      }
+    }
+    // got through without any dates overlapping
+    return true;
+  },
+
+  addBlockToTimeline = function(blockElem, dateElem, infoElem, timeline) {
+    if (timeline === 'top') {
+      topBlockElem.append(blockElem);
+      timelineElem.children('.top.date').append(dateElem);
+      timelineElem.children('.top.info').append(infoElem);
+    }
+    else {
+      bottomBlockElem.append(blockElem);
+      timelineElem.children('.bottom.date').append(dateElem);
+      timelineElem.children('.bottom.info').append(infoElem);
+    }
+  },
+
+  createTimelineBlock = function(position, count, topCompDates, bottomCompDates) {
     //create a little sectionbar on the timeline for this company.
-    var startVal, endVal, newBlock, newDate, newInfo, tmpStart, color, compDate, compEndDate = '';
+    var startVal, endVal, newBlock, newDate, newInfo, tmpStart, color, zindex, compDate, topHasRoom, botHasRoom,
+        compEndDate = '';
     startVal = convertDateToVal(position.startDate);
     endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
     width = (endVal-startVal)/myCareerLength*100 + '%';
-    left = (startVal-myCareerStart)/myCareerLength*100 + '%';
+    zindex = Math.floor((startVal-myCareerStart)/myCareerLength*100); // (It's just the "left" css property; see next line.)
+    left = zindex + '%';
     color = COLORS[count%COLORS.length];
     if (position.endDate) {
       compEndDate = [' -',
@@ -356,55 +384,148 @@ $(function() {
     newBlock = $('<div/>').css('height', '100%')
                           .css('width', width)
                           .css('left', left)
+                          .css('z-index', zindex)
                           .css('position', 'absolute')
                           .css('border-left', '1px solid #fff')
                           .addClass(color);
     newDate = $('<span/>').text([MONTHS_ABBR[position.startDate.month-1],
                                  position.startDate.year].join(' '))
                           .css('position', 'absolute')
-                          .css('left', left);
+                          .css('z-index', zindex)
+                          .css('left', left)
+                          .attr('li-zindex', zindex);
     newInfo = $('<span/>').css('position', 'absolute')
                           .css('left', left)
+                          .css('z-index', zindex)
+                          .attr('li-zindex', zindex)
                           .append($('<span/>').addClass('compName')
                                               .text(position.company.name))
                           .append($('<span/>').addClass('compDate')
                                               .text(compDate));
-    if (count%2) {
-      topBlockElem.append(newBlock);
-      timelineElem.children('.top.date').append(newDate);
-      timelineElem.children('.top.info').append(newInfo);
+    topHasRoom = timelineHasRoom(topCompDates, startVal, endVal);
+    botHasRoom = timelineHasRoom(bottomCompDates, startVal, endVal);
+    if ((topHasRoom && botHasRoom) || (!topHasRoom && !botHasRoom)) {
+      if (count%2) {
+        addBlockToTimeline(newBlock, newDate, newInfo, 'top');
+        topCompDates.push([startVal, endVal].join(':'));
+      }
+      else {
+        addBlockToTimeline(newBlock, newDate, newInfo, 'bottom');
+        bottomCompDates.push([startVal, endVal].join(':'));
+      }
     }
-    else {
-      bottomBlockElem.append(newBlock);
-      timelineElem.children('.bottom.date').append(newDate);
-      timelineElem.children('.bottom.info').append(newInfo);
+    else if (topHasRoom) {
+      addBlockToTimeline(newBlock, newDate, newInfo, 'top');
+      topCompDates.push([startVal, endVal].join(':'));
+    }
+    else if (botHasRoom) {
+      addBlockToTimeline(newBlock, newDate, newInfo, 'bottom');
+      bottomCompDates.push([startVal, endVal].join(':'));
     }
   },
 
+  /*
+  insertPositionByLength = function(newPositions, position) {
+    var pos, newCompsLength, lower, upper;
+
+    if (!newPositions) { return; }
+
+    newCompsLength = newPositions.length;
+    if (!newCompsLength) {
+      return newPositions.push(position);
+    }
+
+    // binary array sort
+    lower = 0;
+    upper = newCompsLength - 1;
+    while (true) {
+      if (lower === upper) {
+        // narrowed down to one position
+        if (position.tenure > newPositions[lower].tenure) {
+          return newPositions.splice(lower, 0, position);
+        }
+        if (upper < newCompsLength-1) {
+          return newPositions.splice(lower+1, 0, position);
+        }
+        return newPositions.push(position);
+      }
+      pos = Math.floor((upper-lower)/2) + lower;
+      if (position.tenure > newPositions[pos].tenure) {
+        // longer position length;
+        if (pos > 0 && position.tenure < newPositions[pos-1].tenure || pos === 0) {
+          // match! position belongs at newPositions[pos]
+          return newPositions.splice(pos, 0, position);
+        }
+        upper = pos-1;
+      }
+      else {
+        // shorter position length;
+        if (pos === newCompsLength-1) {
+          newPositions.push(position);
+        }
+        lower = pos+1;
+      }
+    }
+  },
+
+  sortMyPositionsByLength = function(positions) {
+    var i,
+        newPositions = [],
+        length = positions.length;
+    for (i=0; i<length; ++i) {
+      insertPositionByLength(newPositions, positions[i]);
+    }
+   console.log(newPositions);
+   return newPositions;
+  },
+
+  getCompanyLength = function(start, end) {
+    var startVal = convertDateToVal(start),
+        endVal   = convertDateToVal(end);
+
+    if (!startVal && !endVal) { return 0; }
+    if (!endVal) {
+      return myCareerNow - startVal;
+    }
+    return endVal - startVal;
+  },
+  */
+
   handleOwnPositions = function (positions) {
-    var i, company, width, left,
+    var i, position, company, width, left, companyLength, positionsSorted,
+        topCompDates = [],
+        bottomCompDates = [],
         length = positions.length;
 
     timelineElem.hide()
     myCareerStart = convertDateToVal(positions[0].startDate);
     for (i=0; i<length; ++i) {
-      company = positions[i].company;
+      position = positions[i];
+      company = position.company;
       if (company && company.name) {
+        //companyLength = getCompanyLength(position.startDate, position.endDate, company.name);
+        //position.tenure = companyLength;
         myCompanies.push({
           name:             company.name,
           unformattedName:  company.name.toLowerCase().replace(STRIP_PUNC, ''),
-          startDate:        positions[i].startDate,
-          endDate:          positions[i].endDate
+          startDate:        position.startDate,
+          endDate:          position.endDate
+          //tenure:           companyLength
         });
-        tmpStart = convertDateToVal(positions[i].startDate);
+        tmpStart = convertDateToVal(position.startDate);
         if (tmpStart < myCareerStart) {
           myCareerStart = tmpStart;
         }
       }
     }
     myCareerLength = myCareerNow - myCareerStart;
+
+    // Insert companies in order of decreasing length, so that we can
+    // place the blocks in the optimal position.
+    //positionsSorted = sortMyPositionsByLength(positions);
+    //length = myCompanies.length;
     for (i=0; i<length; ++i) {
-      createTimelineBlock(positions[i], i);
+      createTimelineBlock(positions[i], i, topCompDates, bottomCompDates);
     }
     timelineElem.show();
   },
@@ -618,6 +739,8 @@ $(function() {
       }
     }
   });
+
+  // Browser event handlers.
 
   playBtn.click(function() {
     if ($(this).text() === 'Play') {

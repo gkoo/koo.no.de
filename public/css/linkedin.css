@@ -51,6 +51,7 @@ ul {
 }
 #timeline .info span,
 #timeline .date span {
+  background-color: #222;
   padding-left: 2px;
 }
 #timeline .info span.compName,
@@ -88,6 +89,7 @@ ul {
   position: absolute;
   top: 50%;
   width: 80px;
+  z-index: 101;
 }
 input {
   position: absolute;
@@ -144,7 +146,7 @@ select {
   z-index: 11;
 }
 #printCompBtn {
-  display: none;
+  /*display: none;*/
 }
 #message {
   display: none;
