@@ -2,7 +2,7 @@
 // TODO: handle no connections
 // TODO: make left-most profile position equal to the first company, instead of nothing. (on drag)
 // TODO: compute by middle of picture rather than left (for timeline blocks)
-// TODO: fix randTops
+// TODO: fix bruno's dates wrapping
 
 var onLinkedInLoad;
 
@@ -13,9 +13,10 @@ $(function() {
       overlayElem     = $('#overlay'),
       loadingElem     = $('#loading'),
       timelineElem    = $('#timeline'),
-      myPicElem        = $('#mypic'),
+      myPicElem       = $('#mypic'),
       messageElem     = $('#message'),
       playBtn         = $('#playBtn'),
+      speedElem       = $('#speed'),
       topBlockElem    = timelineElem.children('.top.block'),
       bottomBlockElem = timelineElem.children('.bottom.block'),
       thisMonth       = today.getMonth()+1,
@@ -29,16 +30,18 @@ $(function() {
       PIC_SIZE        = 80,
       BORDER_SIZE     = 1,
       FRAME_WIDTH     = 1000,
+      HEADER_WIDTH    = 290,
+      HEADER_HEIGHT   = $('#header').height() + 40, // the 40 is for padding
       TL_WIDTH        = 970,
       TL_HEIGHT       = 140,
       TL_BLOCK_HT     = 30,
       TL_HZ_PADDING   = 20,
-      HALF_HEIGHT     = 300,
+      HALF_HEIGHT     = 375,
       LEFT_BOUND      = TL_HZ_PADDING,
       RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2,
       MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       MONTHS_ABBR     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-      COLORS          = ['#ed712b', '#069', '#85c93c', '#9c3ba7', '#00a4a3', '#d9002e', '#f0bb00', '#dd009c', '#667c88'],
+      COLORS          = ['orange', 'blue', 'green', 'purple', 'teal', 'red', 'yellow', 'magenta', 'grey'],
       STRIP_PUNC      = /[^\w\s]/gi;
 
   convertDateFromVal = function(val) {
@@ -356,8 +359,8 @@ $(function() {
                           .css('width', width)
                           .css('left', left)
                           .css('position', 'absolute')
-                          .css('background-color', color)
-                          .css('border-left', '1px solid #fff');
+                          .css('border-left', '1px solid #fff')
+                          .addClass(color);
     newDate = $('<span/>').text([MONTHS_ABBR[position.startDate.month-1],
                                  position.startDate.year].join(' '))
                           .css('position', 'absolute')
@@ -498,7 +501,6 @@ $(function() {
         if (cxn.id !== myProfileId && cxn.pictureUrl) {
           // pic doesn't exist; let's create it
           randLeft = Math.floor(Math.random()*RIGHT_BOUND);
-          randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE));
           randRotate = Math.floor(Math.random()*20)-10;
 
           if (!cxn.publicProfileUrl) {
@@ -524,12 +526,19 @@ $(function() {
             $(this).css('z-index', '');
           });
           if (Math.floor(Math.random()*2)) { //upper
+            if (randLeft > HEADER_WIDTH + 10) {
+              randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-40))+20;
+            }
+            else {
+              randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4)+HEADER_HEIGHT);
+            }
             currLink.addClass('upper')
                     .css('top', HALF_HEIGHT+PIC_SIZE)
                     .attr('li-top', randTop);
             $('#upper .pics').append(currLink);
           }
           else { //add to lower
+            randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-20)) + 10;
             currLink.addClass('lower')
                     .css('top', PIC_SIZE*(-1.5))
                     .attr('li-top', randTop);
@@ -542,9 +551,26 @@ $(function() {
   },
 
   doPlay = function() {
-    var iconLeft, dur, totalDur = $('#speed').attr('value');
-    $(this).attr('value', 'Pause');
+    var iconLeft, dur, totalDur, active
+        SLOW  = 35000,
+        MED   = 25000,
+        FAST  = 8000,
+        RFAST = 2500;
+    $(this).text('Pause');
     myPicLeft = myPicElem.position().left;
+    active = speedElem.children('.active');
+    if (active.hasClass('slow')) {
+      totalDur = SLOW;
+    }
+    if (active.hasClass('med')) {
+      totalDur = MED;
+    }
+    if (active.hasClass('fast')) {
+      totalDur = FAST;
+    }
+    if (active.hasClass('realfast')) {
+      totalDur = RFAST;
+    }
     dur = (RIGHT_BOUND - myPicLeft)*totalDur/RIGHT_BOUND;
     myPicElem.animate({ left: RIGHT_BOUND + 'px' },
     {
@@ -560,7 +586,7 @@ $(function() {
   },
 
   doPause = function() {
-    $(this).attr('value', 'Play');
+    $(this).text('Play');
     myPicElem.stop(stop);
   },
 
@@ -605,12 +631,32 @@ $(function() {
   });
 
   playBtn.click(function() {
-    if ($(this).attr('value') === 'Play') {
+    if ($(this).text() === 'Play') {
       doPlay.apply(this);
     }
     else {
       doPause.apply(this);
     }
+  });
+
+  speedElem.children().click(function(evt) {
+    var _this = $(this);
+    if (_this.hasClass('active')) { return; }
+    speedElem.children('.hide').removeClass('hide');
+    speedElem.children('.active')
+             .removeClass()
+             .text(_this.text())
+             .addClass(_this.attr('class') + ' active');
+    _this.addClass('hide');
+    speedElem.removeClass('hover');
+    evt.preventDefault();
+  }),
+
+  speedElem.hover(function() {
+    speedElem.addClass('hover');
+  },
+  function() {
+    speedElem.removeClass('hover');
   });
 
   $('#printCompBtn').click(function() {

@@ -1,3 +1,8 @@
+//- option(value="35000") Slow
+//- option(value="25000") Medium
+//- option(value="8000") Fast
+//- option(value="3000") Really Fast
+
 !!! 5
 html(lang="en")
   head
@@ -14,21 +19,40 @@ html(lang="en")
       | onLoad: onLinkedInLoad
     link(rel='stylesheet', href='/css/linkedin.css')
   body
-    #header
-      h1 I'll come up with a title later
-      script(type="IN/Login")
-    input#printCompBtn(type="button", value='Print Companies')
-    input#playBtn(type="button", value="Play")
-    select#speed
-      option(value="35000") Slow
-      option(value="25000") Medium
-      option(value="8000") Fast
-      option(value="3000") Really Fast
     #overlay
     #body
       h1#loading Loading...
-      p#message
       #upper
+        #header
+          img(src="/img/timeline_logo.png")
+          p
+            | Following your career timeline and track the
+            | connections you've made throughout the years!
+          p
+            | To start, press "Play" or drag your portrait!
+          a#playBtn Play
+          ul#speed
+            li.med.active
+              a(href="#") Medium
+            li.slow
+              a(href="#") Slow
+            li.med.hide
+              a(href="#") Medium
+            li.fast
+              a(href="#") Fast
+            li.realfast
+              a(href="#") Really Fast
+          #colorGrid
+            .orange
+            .blue
+            .green
+            .purple
+            .teal
+            .red
+            .yellow
+            .magenta
+            .grey
+          script(type="IN/Login")
         .pics
       #timeline
         .top.info
