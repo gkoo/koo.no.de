@@ -10,13 +10,16 @@ $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket,
       today           = new Date(),
       picElems        = $('.pics'),
-      overlayElem     = $('#overlay'),
       loadingElem     = $('#loading'),
       timelineElem    = $('#timeline'),
       myPicElem       = $('#mypic'),
       messageElem     = $('#message'),
       playBtn         = $('#playBtn'),
       speedElem       = $('#speed'),
+      signinElem      = $('#signin'),
+      logoElem        = $('#logo img'),
+      tlStuffElem     = $('#timelineStuff'),
+      headerElem      = $('#header'),
       topBlockElem    = timelineElem.children('.top.block'),
       bottomBlockElem = timelineElem.children('.bottom.block'),
       thisMonth       = today.getMonth()+1,
@@ -31,7 +34,7 @@ $(function() {
       BORDER_SIZE     = 1,
       FRAME_WIDTH     = 1000,
       HEADER_WIDTH    = 290,
-      HEADER_HEIGHT   = $('#header').height() + 40, // the 40 is for padding
+      HEADER_HEIGHT   = 126, // 76 + 50 padding
       TL_WIDTH        = 970,
       TL_HEIGHT       = 140,
       TL_BLOCK_HT     = 30,
@@ -284,21 +287,10 @@ $(function() {
     doDrag(ui.position.left);
   },
 
-  hideOverlay = function() {
-    // fade out overlay
-    overlayElem.fadeTo('fast', 0, function() {
-      overlayElem.css('z-index', -999);
-    });
-    // fade out loading
-    loadingElem.fadeTo('fast', 0, function() {
-      loadingElem.css('z-index', -999);
-    });
-  },
-
   handleConnections = function(profiles) {
     var i, profile, position, company, pymkLink;
     if (!profiles.values) {
-      hideOverlay();
+      // TODO: null case
       pymkLink = $('<a/>').attr('href', 'http://www.linkedin.com/pymk-results?showMore=&')
                           .text('people you may know');
       messageElem.text('You don\'t seem to have any connections. Why don\'t you add some ')
@@ -648,8 +640,8 @@ $(function() {
             if (randLeft > HEADER_WIDTH + 10) {
               randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-40))+20;
             }
-            else {
-              randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4)+HEADER_HEIGHT);
+            else { // underneath header ... don't allow them to go as high
+              randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + 30); // 30 is negative margin on timelineStuff
             }
             currLink.addClass('upper')
                     .css('top', HALF_HEIGHT+PIC_SIZE)
@@ -700,18 +692,25 @@ $(function() {
   },
 
   onLinkedInAuth = function() {
-    // get own profile
-    // show overlay
-    overlayElem.show();
-    overlayElem.css('z-index', 999);
-    overlayElem.fadeTo('fast', 0.5);
+    // hide signin
+    signinElem.fadeTo('fast', 0);
+    signinElem.hide();
+    // show logo and loading
     loadingElem.show();
-    loadingElem.css('z-index', 1000);
-    loadingElem.fadeTo('fast', 1);
+    loadingElem.fadeTo('slow', 1);
+    logoElem.show();
+    logoElem.fadeTo('slow', 1);
+    // get own profile
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
   };
 
   onLinkedInLoad = function () {
+    // hide loading
+    loadingElem.fadeTo('fast', 0);
+    loadingElem.hide();
+    // show signin
+    signinElem.show();
+    signinElem.fadeTo('fast', 1);
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
@@ -720,21 +719,18 @@ $(function() {
 
   socket.on('message', function(message) {
     if (message.type !== 'undefined') {
-      if (message.type === 'connectionsStored') {
-        hideOverlay();
-      }
-      else if (message.type === 'connectionsByCompanyResult') {
+      if (message.type === 'connectionsByCompanyResult') {
         if (isSameCompanies(currCompanies, message.companies)) {
           handleCompanyConnections(message.connections);
         }
       }
       else if (message.type === 'allConnectionsResult') {
-        // fade out overlay
-        overlayElem.fadeTo('fast', 0);
-        overlayElem.css('z-index', -999);
         // fade out loading
         loadingElem.fadeTo('fast', 0);
-        loadingElem.css('z-index', -999);
+        loadingElem.hide();
+        // show body
+        tlStuffElem.show();
+        tlStuffElem.fadeTo('slow', 1);
         handleCompanyConnections(message.connections);
       }
     }

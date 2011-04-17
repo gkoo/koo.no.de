@@ -19,51 +19,60 @@ html(lang="en")
       | onLoad: onLinkedInLoad
     link(rel='stylesheet', href='/css/linkedin.css')
   body
-    #overlay
+    input#printCompBtn(type="button", value="Print Companies")
+    #signin
+      p
+        | See the who, when, and where of your connections over
+        | the entire span of your career so far.
+      script(type="IN/Login")
     #body
-      h1#loading Loading...
-      #upper
-        #header
-          img(src="/img/timeline_logo.png")
-          p
-            | Following your career timeline and track the
-            | connections you've made throughout the years!
-          p
-            | To start, press "Play" or drag your portrait!
-          a#playBtn Play
-          ul#speed
-            li.med.active
-              a(href="#") Medium
-            li.slow
-              a(href="#") Slow
-            li.med.hide
-              a(href="#") Medium
-            li.fast
-              a(href="#") Fast
-            li.realfast
-              a(href="#") Really Fast
-          #colorGrid
-            .orange
-            .blue
-            .green
-            .purple
-            .teal
-            .red
-            .yellow
-            .magenta
-            .grey
-          script(type="IN/Login")
-        .pics
-      #timeline
-        .top.info
-        .top.date
-        .top.block
-        .bottom.block
-        .bottom.date
-        .bottom.info
-        img#mypic
-      #lower
-        .pics
+      #loading
+        p Loading connections...
+        img.spinner(src="/img/timeline_loader.gif")
+      div#logo
+        img(src="/img/timeline_logo.png")
+        .clear
+      #timelineStuff
+        #upper
+          #header
+            p
+              | Following your career timeline and track the
+              | connections you've made throughout the years!
+            p
+              | To start, press "Play" or drag your portrait!
+            a#playBtn Play
+            ul#speed
+              li.med.active
+                a(href="#") Medium
+              li.slow
+                a(href="#") Slow
+              li.med.hide
+                a(href="#") Medium
+              li.fast
+                a(href="#") Fast
+              li.realfast
+                a(href="#") Really Fast
+            #colorGrid
+              .orange
+              .blue
+              .green
+              .purple
+              .teal
+              .red
+              .yellow
+              .magenta
+              .grey
+          .pics
+        #timeline
+          .top.info
+          .top.date
+          .top.block
+          .bottom.block
+          .bottom.date
+          .bottom.info
+          img#mypic
+        #lower
+          .pics
     script(src='/js/jquery/js/jquery.ui.core.js')
     script(src='/js/jquery/js/jquery.ui.widget.js')
     script(src='/js/jquery/js/jquery.ui.mouse.js')

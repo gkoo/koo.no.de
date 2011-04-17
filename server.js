@@ -105,7 +105,6 @@ io.on('connection', function(client) {
           li.getAllConnections(client.sessionId, function(err, connections) {
             client.send({ type: 'allConnectionsResult', connections: connections });
           });
-          //client.send({ type: 'connectionsStored' });
         });
       }
       else if (message.type === 'getConnectionsByCompany' && message.companies) {
