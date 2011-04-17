@@ -300,6 +300,12 @@ select {
   margin: 5px;
   width: 20px;
 }
+#gk {
+  left: -650px;
+  top: 150px;
+  position: absolute;
+  z-index: 999;
+}
 .orange { background-color: #ed712b; }
 .blue { background-color: #069; }
 .green { background-color: #85c93c; }

@@ -2,10 +2,12 @@
 // TODO: change dates to only show when is currently highlighted
 // TODO: make pics more likely to go on bottom
 // TODO: test in IE (opacity/filter, etc)
+// TODO: setTimeout showerror
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
 // explain why a company is absent (no dates)
+// education?
 
 var onLinkedInLoad;
 
@@ -614,6 +616,17 @@ $(function() {
     }
   },
 
+  doGKAnimate = function() {
+    var img = $('#gk');
+    img.css('left', '-650px')
+       .show();
+    img.animate({ left: $(window).width() }, {
+      complete: function() {
+        img.hide();
+      }
+    });
+  },
+
   handleCompanyConnections = function (connections) {
     var i, cxn, currPic, currLink, randLeft, randTop, randRotate, length = connections.length;
     if (!connections) {
@@ -681,7 +694,25 @@ $(function() {
         }
       }
     }
+
     showPics();
+
+    // 8Hnjm5JwNG
+    // ylwwgeeCCH
+    $('#ylwwgeeCCH').click(function(evt) {
+      var img = $('#gk');
+      evt.preventDefault();
+      if (!img.length) {
+        img = $('<img>').attr('id', 'gk')
+                        .attr('src', '/img/gk.jpg');
+        $('body').append(img);
+        img.load(doGKAnimate);
+      }
+      else {
+        img.css('left', '-650px');
+        doGKAnimate();
+      }
+    });
   },
 
   doPlay = function() {
