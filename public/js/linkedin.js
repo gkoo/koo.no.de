@@ -699,7 +699,7 @@ $(function() {
 
     // 8Hnjm5JwNG
     // ylwwgeeCCH
-    $('#ylwwgeeCCH').click(function(evt) {
+    $('#8Hnjm5JwNG').click(function(evt) {
       var img = $('#gk');
       evt.preventDefault();
       if (!img.length) {
