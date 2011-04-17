@@ -23,7 +23,7 @@ ul {
   opacity: 0;
 }
 #upper, #lower {
-  height: 375px;
+  height: 315px;
   overflow: hidden;
   position: relative;
 }

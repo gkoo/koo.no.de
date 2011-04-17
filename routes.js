@@ -1,7 +1,13 @@
 var express = require('express'),
     sys = require('sys'),
     app = express.createServer(),
-    dimSize = 30;
+    dimSize = 30,
+    stupidLoadStatuses = ['Plugging in computer...',
+                          'Untangling cords...',
+                          'Oiling gears...',
+                          'Questioning the meaning of existence...',
+                          'Searching for signs of life...',
+                          'Changing batteries...'];
 
 // Configuration
 
@@ -99,7 +105,8 @@ app.get('/blog', function(req, res){
 app.get('/linkedin', function(req, res){
   res.render('linkedin', {
     locals: {
-      title: 'LinkedIn Connections!'
+      title: 'LinkedIn Connections!',
+      loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
     },
     layout: false
   });

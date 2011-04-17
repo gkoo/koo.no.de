@@ -1,8 +1,9 @@
-// TODO: If a company doesn't have any dates, create a generic time window for it.
 // TODO: handle no connections
-// TODO: make left-most profile position equal to the first company, instead of nothing. (on drag)
-// TODO: compute by middle of picture rather than left (for timeline blocks)
-// TODO: fix bruno's dates wrapping
+// TODO: change dates to only show when is currently highlighted
+//
+// FUTURE ENHANCEMENTS?
+// explain why a connection is absent (no picture)
+// explain why a company is absent (no dates)
 
 var onLinkedInLoad;
 
@@ -39,7 +40,7 @@ $(function() {
       TL_HEIGHT       = 140,
       TL_BLOCK_HT     = 30,
       TL_HZ_PADDING   = 20,
-      HALF_HEIGHT     = 375,
+      HALF_HEIGHT     = 315,
       LEFT_BOUND      = TL_HZ_PADDING,
       RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2,
       MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
@@ -284,6 +285,7 @@ $(function() {
 
   doDragWrapper = function(evt, ui) {
     myPicElem.stop(true);
+    playBtn.text('Play');
     doDrag(ui.position.left);
   },
 
@@ -611,7 +613,6 @@ $(function() {
         storeEmployee(cxn);
         if (cxn.id !== myProfileId && cxn.pictureUrl) {
           // pic doesn't exist; let's create it
-          randLeft = Math.floor(Math.random()*RIGHT_BOUND);
           randRotate = Math.floor(Math.random()*20)-10;
 
           if (!cxn.publicProfileUrl) {
@@ -624,7 +625,6 @@ $(function() {
                               .css('-moz-transform', ['rotate(', randRotate, 'deg)'].join(''))
                               .css('-webkit-transform', ['rotate(', randRotate, 'deg)'].join(''))
                               .css('transform', ['rotate(', randRotate, 'deg)'].join(''))
-                              .css('left', randLeft)
                               .css('position', 'absolute')
                               .css('background-image', 'url('+cxn.pictureUrl+')')
                               .addClass('cxnPic');
@@ -637,20 +637,28 @@ $(function() {
             $(this).css('z-index', '');
           });
           if (Math.floor(Math.random()*2)) { //upper
-            if (randLeft > HEADER_WIDTH + 10) {
-              randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-40))+20;
+            if (Math.floor(Math.random()*4)) {
+              // give the pic a 3/4 chance to not be under header,
+              // so as to avoid a big pileup underneath header
+              randLeft = Math.floor(Math.random()*(RIGHT_BOUND-HEADER_WIDTH))+HEADER_WIDTH;
+              randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-30))+10;
             }
-            else { // underneath header ... don't allow them to go as high
-              randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + 30); // 30 is negative margin on timelineStuff
+            else {
+              randLeft = Math.floor(Math.random()*(HEADER_WIDTH));
+              // underneath header ... don't allow them to go as high
+              randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + 20); // 30 is negative margin on timelineStuff
             }
             currLink.addClass('upper')
                     .css('top', HALF_HEIGHT+PIC_SIZE)
+                    .css('left', randLeft)
                     .attr('li-top', randTop);
             $('#upper .pics').append(currLink);
           }
           else { //add to lower
+            randLeft = Math.floor(Math.random()*RIGHT_BOUND);
             randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-20)) + 10;
             currLink.addClass('lower')
+                    .css('left', randLeft)
                     .css('top', PIC_SIZE*(-1.5))
                     .attr('li-top', randTop);
             $('#lower .pics').append(currLink.addClass('lower'));
@@ -706,11 +714,13 @@ $(function() {
 
   onLinkedInLoad = function () {
     // hide loading
-    loadingElem.fadeTo('fast', 0);
+    loadingElem.fadeTo('slow', 0, function() {
+      loadingElem.children('p').text('Loading connections...');
+    });
     loadingElem.hide();
     // show signin
     signinElem.show();
-    signinElem.fadeTo('fast', 1);
+    signinElem.fadeTo('slow', 1);
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
