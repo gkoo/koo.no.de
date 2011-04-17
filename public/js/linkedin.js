@@ -1,5 +1,7 @@
 // TODO: handle no connections
 // TODO: change dates to only show when is currently highlighted
+// TODO: make pics more likely to go on bottom
+// TODO: test in IE (opacity/filter, etc)
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
@@ -218,12 +220,12 @@ $(function() {
     showPics();
 
     companyNames = [];
-    $('.infoBlock').hide();
+    $('.infoBlock').css('opacity', 0);
     for (i=0; i<length; ++i) {
       name = currCompanies[i].name.toLowerCase()
                                   .replace(/\s/g, '')
                                   .replace(STRIP_PUNC, '');
-      $('.' + name).show();
+      $('.' + name).css('opacity', 1); // this is an .infoBlock
     }
   },
 
@@ -284,7 +286,7 @@ $(function() {
     }
 
     if (!currCompaniesLength) {
-      $('.infoBlock').hide();
+      $('.infoBlock').css('opacity', 0);
       hidePics();
     }
   },
@@ -366,7 +368,7 @@ $(function() {
 
   createTimelineBlock = function(position, count, topCompDates, bottomCompDates) {
     //create a little sectionbar on the timeline for this company.
-    var startVal, endVal, newBlock, newDate, newInfo, tmpStart, color, zindex, compDate, topHasRoom, botHasRoom,
+    var startVal, endVal, newBlock, newDate, newInfo, tmpStart, color, zindex, compDate, topHasRoom, botHasRoom, left,
         compEndDate = '';
     startVal = convertDateToVal(position.startDate);
     endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
@@ -381,21 +383,23 @@ $(function() {
     }
     compDate = ['('+MONTHS_ABBR[position.startDate.month-1],
                 position.startDate.year + compEndDate + ')'].join(' ')
+
     newBlock = $('<div/>').css('height', '100%')
                           .css('width', width)
                           .css('left', left)
-                          .css('z-index', zindex)
+                          .css('z-index', zindex) // ensure later blocks show over earlier blocks
                           .css('position', 'absolute')
                           .css('border-left', '1px solid #fff')
                           .addClass(color);
+
     newDate = $('<span/>').text([MONTHS_ABBR[position.startDate.month-1],
                                  position.startDate.year].join(' '))
                           .css('position', 'absolute')
                           .css('z-index', zindex)
                           .css('left', left)
                           .attr('li-zindex', zindex);
-    newInfo = $('<span/>').css('position', 'absolute')
-                          .css('left', left)
+
+    newInfo = $('<span/>').css('left', left)
                           .css('z-index', zindex)
                           .attr('li-zindex', zindex)
                           .addClass('infoBlock')
@@ -405,8 +409,7 @@ $(function() {
                           .append($('<span/>').addClass('compName')
                                               .text(position.company.name))
                           .append($('<span/>').addClass('compDate')
-                                              .text(compDate))
-                          .hide();
+                                              .text(compDate));
     topHasRoom = timelineHasRoom(topCompDates, startVal, endVal);
     botHasRoom = timelineHasRoom(bottomCompDates, startVal, endVal);
     if ((topHasRoom && botHasRoom) || (!topHasRoom && !botHasRoom)) {
@@ -710,6 +713,14 @@ $(function() {
     myPicElem.stop(stop);
   },
 
+  fixOverflow = function() {
+    var _this = $(this);
+    if (_this.width() + _this.position().left > TL_WIDTH) {
+      _this.css('left', '');
+      _this.css('right', '0');
+    }
+  },
+
   onLinkedInAuth = function() {
     // hide signin
     signinElem.fadeTo('fast', 0);
@@ -751,6 +762,9 @@ $(function() {
         loadingElem.hide();
         // show body
         tlStuffElem.show();
+        // detect and fix div overflow for dates/infos!
+        $('#timeline .date span').each(fixOverflow);
+        $('.infoBlock').each(fixOverflow);
         tlStuffElem.fadeTo('slow', 1);
         handleCompanyConnections(message.connections);
       }
