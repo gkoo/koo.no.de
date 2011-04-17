@@ -207,7 +207,8 @@ $(function() {
   },
 
   updateCurrCompanies = function () {
-    var length = currCompanies.length;
+    var name,
+        length = currCompanies.length;
     for (i=0; i<length; ++i) {
       if (currCompanies[i].employees) {
         showExistingPictures(currCompanies[i].employees);
@@ -217,8 +218,12 @@ $(function() {
     showPics();
 
     companyNames = [];
+    $('.infoBlock').hide();
     for (i=0; i<length; ++i) {
-      companyNames.push(currCompanies[i].name);
+      name = currCompanies[i].name.toLowerCase()
+                                  .replace(/\s/g, '')
+                                  .replace(STRIP_PUNC, '');
+      $('.' + name).show();
     }
   },
 
@@ -279,6 +284,7 @@ $(function() {
     }
 
     if (!currCompaniesLength) {
+      $('.infoBlock').hide();
       hidePics();
     }
   },
@@ -392,10 +398,15 @@ $(function() {
                           .css('left', left)
                           .css('z-index', zindex)
                           .attr('li-zindex', zindex)
+                          .addClass('infoBlock')
+                          .addClass(position.company.name.toLowerCase()
+                                            .replace(/\s/g,'')
+                                            .replace(STRIP_PUNC, ''))
                           .append($('<span/>').addClass('compName')
                                               .text(position.company.name))
                           .append($('<span/>').addClass('compDate')
-                                              .text(compDate));
+                                              .text(compDate))
+                          .hide();
     topHasRoom = timelineHasRoom(topCompDates, startVal, endVal);
     botHasRoom = timelineHasRoom(bottomCompDates, startVal, endVal);
     if ((topHasRoom && botHasRoom) || (!topHasRoom && !botHasRoom)) {

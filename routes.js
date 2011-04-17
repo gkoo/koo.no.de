@@ -5,8 +5,9 @@ var express = require('express'),
     stupidLoadStatuses = ['Plugging in computer...',
                           'Untangling cords...',
                           'Oiling gears...',
-                          'Questioning the meaning of existence...',
-                          'Searching for signs of life...',
+                          'Pondering the meaning of existence...',
+                          'Please insert floppy disk...',
+                          'Doing some spring cleaning...',
                           'Changing batteries...'];
 
 // Configuration
