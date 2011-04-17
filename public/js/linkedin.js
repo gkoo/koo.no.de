@@ -61,44 +61,41 @@ $(function() {
 
   myCareerNow = convertDateToVal({ month: thisMonth, year: thisYear }),
 
-  // set "career start" to a month before actual career start, so you have something to which you can drag.
-  createMonthBuffer = function(positions) {
-    var startDate, endDate, i, length = positions.length;
-    for (i=length-1; i>=0; --i) {
-      startDate = positions[i].startDate;
-      if (startDate) {
-        newPos    = new Position({
-          startDate : { month: startDate.month - 1 || 12,
-                        year:  startDate.year },
-          endDate   : positions[i].startDate
-        });
-        ownProfile.positions.push(newPos);
-        myCareerStart = newPos.startDate;
-        myCareerLength = myCareerNow.val - myCareerStart.val;
-        return;
-      }
-    }
-    console.log('no start dates!! uh oh...');
-    // TODO: HANDLE THIS CASE.
-  },
+  // Function: showErrorMsg
+  // ===============================
+  // Shows an message to the user, usually in the event of an error.
+  // If no arguments are given, a generic message is shown.
+  showErrorMsg = function(topText, bottomText, linkText, linkUrl) {
+    var link;
 
-  // Functions: getCurrentConnections
-  // ================================
-  // Get company connections for a given position on the timeline.
-  getCurrentConnections = function(company, timelinePos) {
-    var i, connection, length;
-    if (!company) { console.log('no company; something is wrong!'); return; }
-    if (company.connections) {
-      length = company.connections.length;
-      for (i=0; i<length; ++i) {
-        connection = company.connections[i];
-        if (connection.startDate
-            && connection.startDate.val < timelinePos
-            && (!connection.endDate || connection.endDate > timelinePos)) {
-          // display connection's picture.
-        }
-      }
+    tlStuffElem.fadeTo('slow', 0);
+    tlStuffElem.hide();
+
+    signinElem.fadeTo('slow', 0);
+    signinElem.hide();
+
+    loadingElem.fadeTo('slow', 0);
+    loadingElem.hide();
+
+    if (!topText) {
+      // no arguments, do general error
+      topText = 'Whoops... we broke something.';
+      bottomText = 'In the mean time, ';
+      linkText = 'check out LinkedIn Today!';
+      linkUrl = 'http://www.linkedin.com/today/';
     }
+
+    link = $('<a/>').attr('href', linkUrl)
+                    .text(linkText);
+
+    messageElem.append($('<p/>').text(topText))
+               .append($('<p/>').text(bottomText)
+                                .append(link));
+
+    messageElem.show();
+    messageElem.fadeTo('slow', 1, function() {
+    });
+
   },
 
   isSameCompanies = function(companiesOld, companiesNew) {
@@ -158,7 +155,7 @@ $(function() {
     });
   },
 
-  // Functions: isConcurrentEmployee
+  // Function: isConcurrentEmployee
   // ===============================
   // Given the current position on the timeline, is the connection
   // at the same company as the user?
@@ -298,14 +295,13 @@ $(function() {
   },
 
   handleConnections = function(profiles) {
-    var i, profile, position, company, pymkLink;
-    if (!profiles.values) {
+    var i, profile, position, company;
+    if (!profiles.values || !profiles._total) {
       // TODO: null case
-      pymkLink = $('<a/>').attr('href', 'http://www.linkedin.com/pymk-results?showMore=&')
-                          .text('people you may know');
-      messageElem.text('You don\'t seem to have any connections. Why don\'t you add some ')
-                 .append(pymkLink);
-      messageElem.show();
+      showErrorMsg('It doesn\'t look like you have any connections yet.',
+                   'Here are some ',
+                   'people you may know.',
+                   'http://www.linkedin.com/pymk-results');
       return;
     }
     socket.send({
@@ -511,14 +507,11 @@ $(function() {
       position = positions[i];
       company = position.company;
       if (company && company.name) {
-        //companyLength = getCompanyLength(position.startDate, position.endDate, company.name);
-        //position.tenure = companyLength;
         myCompanies.push({
           name:             company.name,
           unformattedName:  company.name.toLowerCase().replace(STRIP_PUNC, ''),
           startDate:        position.startDate,
           endDate:          position.endDate
-          //tenure:           companyLength
         });
         tmpStart = convertDateToVal(position.startDate);
         if (tmpStart < myCareerStart) {
@@ -542,14 +535,22 @@ $(function() {
     var pic;
     //ownProfile = new Profile(profile);
     if (!profile) {
-      console.log('No own profile! Something is wrong!');
+      return showErrorMsg();
     }
+    /*
+    if (!profile.positions._total) {
+      showErrorMsg('You don\'t have any companies listed.',
+                   'Why not ',
+                   'add some now?',
+                   'http://www.linkedin.com/profile/edit?trk=li_timeline');
+      return;
+    }
+    */
     socket.send({
       type: 'storeOwnProfile',
       profile: profile
     });
     myProfileId = profile.id;
-    //createMonthBuffer(ownProfile.positions);
 
     // Pull in connection data
     IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url)").result(handleConnections);
@@ -616,7 +617,7 @@ $(function() {
   handleCompanyConnections = function (connections) {
     var i, cxn, currPic, currLink, randLeft, randTop, randRotate, length = connections.length;
     if (!connections) {
-      console.log('no connections found');
+      showErrorMsg();
       return;
     }
     hidePics();
@@ -763,6 +764,7 @@ $(function() {
         // show body
         tlStuffElem.show();
         // detect and fix div overflow for dates/infos!
+        // need to wait til we're here since we're display:none until now.
         $('#timeline .date span').each(fixOverflow);
         $('.infoBlock').each(fixOverflow);
         tlStuffElem.fadeTo('slow', 1);
@@ -784,12 +786,12 @@ $(function() {
 
   speedElem.children().click(function(evt) {
     var _this = $(this);
-    if (_this.hasClass('active')) { return; }
+    if (_this.hasClass('active')) { return evt.preventDefault(); }
     speedElem.children('.hide').removeClass('hide');
     speedElem.children('.active')
              .removeClass()
-             .text(_this.text())
              .addClass(_this.attr('class') + ' active');
+    speedElem.find('.active a').text(_this.text());
     _this.addClass('hide');
     speedElem.removeClass('hover');
     evt.preventDefault();
