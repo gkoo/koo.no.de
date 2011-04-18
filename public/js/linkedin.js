@@ -12,7 +12,7 @@
 var onLinkedInLoad;
 
 $(function() {
-  var ownProfile, myCareerStart, myCareerLength, socket,
+  var ownProfile, ownCxns, myCareerStart, myCareerLength, socket,
       today           = new Date(),
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
@@ -30,6 +30,7 @@ $(function() {
       thisMonth       = today.getMonth()+1,
       thisYear        = today.getFullYear(),
       ioConnected     = 0,
+      profileStored   = 0,
       currTime        = 0,
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
@@ -299,6 +300,12 @@ $(function() {
 
   handleConnections = function(profiles) {
     var i, profile, position, company;
+    if (!profileStored) {
+      // don't load connections before profile is done being stored.
+      // rare, but better safe than sorry!
+      ownCxns = profiles;
+      return;
+    }
     if (!profiles.values || !profiles._total) {
       // TODO: null case
       showErrorMsg('It doesn\'t look like you have any connections yet.',
@@ -551,7 +558,6 @@ $(function() {
       return;
     }
     ownProfile = profile;
-    console.log('socket sending own profile');
     socket.send({
       type: 'storeOwnProfile',
       profile: profile
@@ -788,7 +794,6 @@ $(function() {
   // avoid problem where linkedin profile returns before we are done
   // connecting through socket.io
   socket.on('connect', function() {
-    console.log('connecting socket.io');
     ioConnected = 1;
     if (ownProfile) {
       // profile came back first
@@ -797,6 +802,13 @@ $(function() {
   });
   socket.on('message', function(message) {
     if (message.type !== 'undefined') {
+      if (message.type === 'storeOwnProfileComplete') {
+        //handle connections
+        profileStored = 1;
+        if (ownCxns) {
+          handleConnections(ownCxns);
+        }
+      }
       if (message.type === 'connectionsByCompanyResult') {
         if (isSameCompanies(currCompanies, message.companies)) {
           handleCompanyConnections(message.connections);

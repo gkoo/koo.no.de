@@ -141,6 +141,12 @@ exports.storeProfile = storeProfile = function(profile, options) {
         myCompanies.push(company);
       }
     }
+
+    if (options.callback) {
+      // send signal that own profile has been stored,
+      // so we don't load connections before we're ready.
+      options.callback();
+    }
   }
 };
 

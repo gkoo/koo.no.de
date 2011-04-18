@@ -98,7 +98,14 @@ io.on('connection', function(client) {
       // LINKEDIN
       // ========
       else if (message.type === 'storeOwnProfile') {
-        li.storeProfile(message.profile, { mySessionId: client.sessionId });
+        li.storeProfile(
+          message.profile,
+          { mySessionId: client.sessionId,
+            callback: function() {
+              client.send({ type: 'storeOwnProfileComplete' });
+            }
+          }
+        );
       }
       else if (message.type === 'storeConnections') {
         li.storeConnections(client.sessionId, message.profiles, function(err) {
@@ -107,6 +114,7 @@ io.on('connection', function(client) {
           });
         });
       }
+      /*
       else if (message.type === 'getConnectionsByCompany' && message.companies) {
         li.getConnectionsByCompany(client.sessionId, message.companies, function(err, connections) {
           if (err) { console.log(err); }
@@ -120,6 +128,7 @@ io.on('connection', function(client) {
           }
         });
       }
+      */
     }
   });
 
