@@ -44,7 +44,7 @@ app.error(function(err, req, res, next){
   if (err instanceof NotFound) {
     res.render('404', {
       locals: {
-        title: 'The page cannot be found',
+        title: 'The ol\' 404',
         err: err
       },
       layout: 'errlayout'
