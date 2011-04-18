@@ -29,6 +29,7 @@ $(function() {
       bottomBlockElem = timelineElem.children('.bottom.block'),
       thisMonth       = today.getMonth()+1,
       thisYear        = today.getFullYear(),
+      ioConnected     = 0,
       currTime        = 0,
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
@@ -535,11 +536,13 @@ $(function() {
 
   handleOwnProfile = function (profile) {
     var pic;
-    //ownProfile = new Profile(profile);
     if (!profile) {
       return showErrorMsg();
     }
-    /*
+    if (!ioConnected) {
+      ownProfile = profile;
+      return;
+    }
     if (!profile.positions._total) {
       showErrorMsg('You don\'t have any companies listed.',
                    'Why not ',
@@ -547,7 +550,8 @@ $(function() {
                    'http://www.linkedin.com/profile/edit?trk=li_timeline');
       return;
     }
-    */
+    ownProfile = profile;
+    console.log('socket sending own profile');
     socket.send({
       type: 'storeOwnProfile',
       profile: profile
@@ -781,6 +785,16 @@ $(function() {
   socket = new io.Socket(null, {port: PORT, rememberTransport: false});
   socket.connect();
 
+  // avoid problem where linkedin profile returns before we are done
+  // connecting through socket.io
+  socket.on('connect', function() {
+    console.log('connecting socket.io');
+    ioConnected = 1;
+    if (ownProfile) {
+      // profile came back first
+      handleOwnProfile(ownProfile);
+    }
+  });
   socket.on('message', function(message) {
     if (message.type !== 'undefined') {
       if (message.type === 'connectionsByCompanyResult') {
