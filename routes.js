@@ -106,7 +106,7 @@ app.get('/blog', function(req, res){
 app.get('/linkedin', function(req, res){
   res.render('linkedin', {
     locals: {
-      title: 'LinkedIn Connections!',
+      title: 'LinkedIn Connection Timeline',
       loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
     },
     layout: false
