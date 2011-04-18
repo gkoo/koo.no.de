@@ -147,6 +147,8 @@ exports.storeProfile = storeProfile = function(profile, options) {
       // so we don't load connections before we're ready.
       options.callback();
     }
+
+    redis.incr(['views', profile.id].join(':'));
   }
 };
 
