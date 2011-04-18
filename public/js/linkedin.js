@@ -12,7 +12,7 @@
 var onLinkedInLoad;
 
 $(function() {
-  var ownProfile, ownCxns, myCareerStart, myCareerLength, socket,
+  var ownProfile, myCareerStart, myCareerLength, socket, myCoworkers,
       today           = new Date(),
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
@@ -31,9 +31,11 @@ $(function() {
       thisYear        = today.getFullYear(),
       ioConnected     = 0,
       profileStored   = 0,
+      cxnsLoaded      = 0, // boolean flag
       currTime        = 0,
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
+      myConnections   = {},
       myCompanies     = [],
       //PORT            = 8080,
       PORT            = 80,
@@ -60,6 +62,7 @@ $(function() {
   },
 
   convertDateToVal = function(date) {
+    if (!date) { return 0; }
     return (date.year - 1900)*12 + date.month;
   },
 
@@ -163,12 +166,25 @@ $(function() {
   // ===============================
   // Given the current position on the timeline, is the connection
   // at the same company as the user?
-  isConcurrentEmployee = function (profile) {
+  isConcurrentEmployee = function (cxnDates) {
+    var i, theirDate, start, end,
+        theirLength = cxnDates.length,
+        myCurrTime = Math.floor(currTime);
+
+    for (i=0; i<theirLength; ++i) {
+      cxnDate = cxnDates[i].split(':');
+      start   = parseInt(cxnDate[0]);
+      end     = parseInt(cxnDate[1]);
+      // start is before currTime and (endtime is after currTime OR endtime is null)
+      if ((start && (start < myCurrTime || start == myCurrTime))
+            && (!end || (end > myCurrTime || end == myCurrTime))) {
+        return true; // currently working at!
+      }
+    }
+    /*
     var i, j, datesArr, dates, start, end, companyName, datesLength,
         myCurrTime = Math.floor(currTime),
         length = currCompanies.length;
-
-    if (!profile || !profile.employmentDates) { return false; }
 
     for (i=0; i<length; ++i) {
       companyName = currCompanies[i].unformattedName;
@@ -188,33 +204,39 @@ $(function() {
         }
       }
     }
+    */
     return false; // not currently working at.
   },
 
-  showExistingPictures = function (profiles) {
-    var i, j, pic, isConcurrent, length;
-    if (!profiles) { return; }
-    length = profiles.length;
-    for (i=0; i<length; ++i) {
-      pic = $('#' + profiles[i].id);
-      if (pic) {
-        isConcurrent = isConcurrentEmployee(profiles[i]);
-        if (pic && isConcurrent) {
-          pic.addClass('picToShow');
-        }
-        else if (pic && pic.hasClass('picShowing') && !isConcurrent) {
-          pic.addClass('picToHide');
+  showExistingPictures = function (coworkers, currTime) {
+    var pic, isConcurrent, length, myDates;
+    if (!coworkers) { return; }
+
+    myDates = coworkers[myProfileId];
+    for (id in coworkers) {
+      if (id !== myProfileId) {
+        pic = $('#' + id);
+        if (pic) {
+          isConcurrent = isConcurrentEmployee(coworkers[id]);
+          if (pic && isConcurrent) {
+            pic.addClass('picToShow');
+          }
+          else if (pic && pic.hasClass('picShowing') && !isConcurrent) {
+            pic.addClass('picToHide');
+          }
         }
       }
     }
   },
 
-  updateCurrCompanies = function () {
-    var name,
+  updateCurrCompanies = function (currTime) {
+    var name, cmpKey, cmp,
         length = currCompanies.length;
     for (i=0; i<length; ++i) {
-      if (currCompanies[i].employees) {
-        showExistingPictures(currCompanies[i].employees);
+      cmp = currCompanies[i];
+      cmpKey = cmp.unformattedName;
+      if (myCoworkers[cmpKey]) {
+        showExistingPictures(myCoworkers[cmpKey], currTime);
       }
     }
     hidePics();
@@ -230,29 +252,20 @@ $(function() {
     }
   },
 
-  updateDateLabel = function(timelinePos) {
-    var timelineDate;
-    if (!timelinePos || Math.floor(currTime) == Math.floor(timelinePos)) { return; }
-    currTime = timelinePos;
-    timelineDate = convertDateFromVal(timelinePos);
-    $('#dateLabel').text([MONTHS[timelineDate.month-1], timelineDate.year].join(' '));
-  },
-
   doDrag = function(left) {
-    var positionRatio, timelinePos, i, j, company, startVal, endVal, companyNames, oldCurrCompanies, myCompaniesLength, currCompaniesLength;
-
-    //if (introElem.css('opacity')) { introElem.fadeTo('slow', 0); }
+    var positionRatio, timelinePos, i, company, startVal, endVal, oldCurrCompanies, myCompaniesLength, currCompaniesLength, coworkers;
 
     // calculate how far along myPic is on the timeline.
     positionRatio = (left - LEFT_BOUND)/(RIGHT_BOUND - LEFT_BOUND);
 
     // calculate this position relative to our career timeline.
     timelinePos = (myCareerLength * positionRatio) + myCareerStart;
-    updateDateLabel(timelinePos);
+    currTime = timelinePos;
     oldCurrCompanies = currCompanies;
     currCompanies = [];
     myCompaniesLength = myCompanies.length;
 
+    // get new currCompanies
     for (i=0; i<myCompaniesLength; ++i) {
       company  = myCompanies[i];
       startVal = convertDateToVal(company.startDate);
@@ -273,13 +286,14 @@ $(function() {
 
     currCompaniesLength = currCompanies.length;
     if (currCompaniesLength && !isSameCompanies(oldCurrCompanies, currCompanies)) {
-      updateCurrCompanies();
+      updateCurrCompanies(currTime);
     }
     else if (currCompaniesLength) {
       // same companies, but let's still check for updated concurrent coworkers
       for (i=0; i<currCompaniesLength; ++i) {
-        if (currCompanies[i].employees) {
-          showExistingPictures(currCompanies[i].employees);
+        coworkers = myCoworkers[currCompanies[i].unformattedName];
+        if (coworkers) {
+          showExistingPictures(coworkers, currTime);
         }
       }
       showPics();
@@ -298,33 +312,11 @@ $(function() {
     doDrag(ui.position.left);
   },
 
-  handleConnections = function(profiles) {
-    var i, profile, position, company;
-    if (!profileStored) {
-      // don't load connections before profile is done being stored.
-      // rare, but better safe than sorry!
-      ownCxns = profiles;
-      return;
-    }
-    if (!profiles.values || !profiles._total) {
-      // TODO: null case
-      showErrorMsg('It doesn\'t look like you have any connections yet.',
-                   'Here are some ',
-                   'people you may know.',
-                   'http://www.linkedin.com/pymk-results');
-      return;
-    }
-    socket.send({
-      type: 'storeConnections',
-      profiles: profiles
-    });
-  },
-
   convertDateToVal = function(date) {
     if (!date) return 0;
     if (!date.month) { date.month = 1; } // default month to January
     return date ? (date.year - 1900)*12 + date.month : 0;
-  };
+  },
 
   datesOverlap = function(startVal1, endVal1, startVal2, endVal2) {
     if (!startVal1 || !startVal2) { return false; } // require both startVals
@@ -438,73 +430,6 @@ $(function() {
     }
   },
 
-  /*
-  insertPositionByLength = function(newPositions, position) {
-    var pos, newCompsLength, lower, upper;
-
-    if (!newPositions) { return; }
-
-    newCompsLength = newPositions.length;
-    if (!newCompsLength) {
-      return newPositions.push(position);
-    }
-
-    // binary array sort
-    lower = 0;
-    upper = newCompsLength - 1;
-    while (true) {
-      if (lower === upper) {
-        // narrowed down to one position
-        if (position.tenure > newPositions[lower].tenure) {
-          return newPositions.splice(lower, 0, position);
-        }
-        if (upper < newCompsLength-1) {
-          return newPositions.splice(lower+1, 0, position);
-        }
-        return newPositions.push(position);
-      }
-      pos = Math.floor((upper-lower)/2) + lower;
-      if (position.tenure > newPositions[pos].tenure) {
-        // longer position length;
-        if (pos > 0 && position.tenure < newPositions[pos-1].tenure || pos === 0) {
-          // match! position belongs at newPositions[pos]
-          return newPositions.splice(pos, 0, position);
-        }
-        upper = pos-1;
-      }
-      else {
-        // shorter position length;
-        if (pos === newCompsLength-1) {
-          newPositions.push(position);
-        }
-        lower = pos+1;
-      }
-    }
-  },
-
-  sortMyPositionsByLength = function(positions) {
-    var i,
-        newPositions = [],
-        length = positions.length;
-    for (i=0; i<length; ++i) {
-      insertPositionByLength(newPositions, positions[i]);
-    }
-   console.log(newPositions);
-   return newPositions;
-  },
-
-  getCompanyLength = function(start, end) {
-    var startVal = convertDateToVal(start),
-        endVal   = convertDateToVal(end);
-
-    if (!startVal && !endVal) { return 0; }
-    if (!endVal) {
-      return myCareerNow - startVal;
-    }
-    return endVal - startVal;
-  },
-  */
-
   handleOwnPositions = function (positions) {
     var i, position, company, width, left, companyLength, positionsSorted,
         topCompDates = [],
@@ -518,6 +443,7 @@ $(function() {
       company = position.company;
       if (company && company.name) {
         myCompanies.push({
+          id:               company.id,
           name:             company.name,
           unformattedName:  company.name.toLowerCase().replace(STRIP_PUNC, ''),
           startDate:        position.startDate,
@@ -564,8 +490,6 @@ $(function() {
     });
     myProfileId = profile.id;
 
-    // Pull in connection data
-    IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url)").result(handleConnections);
 
     if (!profile.pictureUrl) {
       profile.pictureUrl = '/img/icon_no_photo_80x80.png';
@@ -587,43 +511,132 @@ $(function() {
     }
   },
 
-  companyHasEmployee = function (company, employee) {
-    var i, employeeLength;
-    if (!company.employees) { return false; }
-    employeeLength = company.employees.length;
-    for (i=0; i<employeeLength; ++i) {
-      if (company.employees[i].id === employee.id) {
-        return true;
-      }
-    }
-    return false;
-  },
+  createEmployDates = function(cxn) {
+    var cmpName, cmpId, key, position, start, end, employDates = {};
+    if (!cxn.positions) { return; }
 
-  storeEmployee = function (connection) {
-    var i, j, cmpName, startKey, endKey, startDate, endDate, datesLength, length = myCompanies.length;
-    for (i=0; i<length; ++i) {
-      cmpName = myCompanies[i].unformattedName;
-      datesArr = connection.employmentDates[cmpName];
-      if (datesArr) {
-        datesLength = datesArr.length; // usually this is only 1
-        for (j=0; j<datesLength; ++j) {
-          dates = datesArr[j].split(':');
-          startDate = dates[0];
-          endDate = dates[1] || null;
-          // make sure the two worked there at the same time.
-          if (startDate && datesOverlap(startDate,
-                                        endDate,
-                                        convertDateToVal(myCompanies[i].startDate),
-                                        convertDateToVal(myCompanies[i].endDate))) {
-            if (!myCompanies[i].employees) {
-              myCompanies[i].employees = [connection];
-            } else if (!companyHasEmployee(myCompanies[i], connection)) {
-              myCompanies[i].employees.push(connection);
-            }
-          }
+    for (var i=0; i<cxn.positions._total; ++i) {
+      position = cxn.positions.values[i];
+      start = convertDateToVal(position.startDate);
+      end = convertDateToVal(position.endDate);
+      cmpId = position.company.id;
+      cmpName = position.company.name ? position.company.name.toLowerCase() : '';
+      key = cmpId ? cmpId : cmpName;
+      if (key) {
+        if (employDates[key]) {
+          employDates[key].push([start, end].join(':'));
+        }
+        else if (key) {
+          employDates[key] = [[start, end].join(':')];
         }
       }
     }
+    return employDates;
+  },
+
+  storeConnection = function (connection) {
+    var i, j, newCxn, cmpName, startDate, endDate, datesLength, length = myCompanies.length;
+    newCxn = {};
+    newCxn.id               = connection.id;
+    newCxn.pictureUrl       = connection.pictureUrl;
+    newCxn.publicProfileUrl = connection.publicProfileUrl;
+    newCxn.fullName         = [connection.firstName, connection.lastName].join(' ');
+    newCxn.employmentDates  = createEmployDates(connection);
+    myConnections[connection.id]  = newCxn;
+  },
+
+  createCxnPic = function(connection) {
+    var randRotate, randTop, randLeft, currLink;
+    randRotate = Math.floor(Math.random()*20)-10;
+
+    if (!connection.publicProfileUrl) {
+      connection.publicProfileUrl = '#';
+    }
+    currLink = $('<a/>').attr('href', connection.publicProfileUrl)
+                        .attr('title', [connection.firstName, connection.lastName].join(' '))
+                        .attr('id', connection.id)
+                        .attr('target', '_new')
+                        .css('-moz-transform', ['rotate(', randRotate, 'deg)'].join(''))
+                        .css('-webkit-transform', ['rotate(', randRotate, 'deg)'].join(''))
+                        .css('transform', ['rotate(', randRotate, 'deg)'].join(''))
+                        .css('position', 'absolute')
+                        .css('background-image', 'url('+connection.pictureUrl+')')
+                        .addClass('cxnPic');
+    /*
+    if (isConcurrentEmployee(connection)) {
+      currLink.addClass('picToShow');
+    }
+    */
+    currLink.hover(function() {
+      $(this).css('z-index', 1000);
+    }, function() {
+      $(this).css('z-index', '');
+    });
+    if (Math.floor(Math.random()*2)) { //upper
+      if (Math.floor(Math.random()*4)) {
+        // give the pic a 3/4 chance to not be under header,
+        // so as to avoid a big pileup underneath header
+        randLeft = Math.floor(Math.random()*(RIGHT_BOUND-HEADER_WIDTH))+HEADER_WIDTH;
+        randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-30))+10;
+      }
+      else {
+        randLeft = Math.floor(Math.random()*(HEADER_WIDTH));
+        // underneath header ... don't allow them to go as high
+        randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + 20); // 30 is negative margin on timelineStuff
+      }
+      currLink.addClass('upper')
+              .css('top', HALF_HEIGHT+PIC_SIZE)
+              .css('left', randLeft)
+              .attr('li-top', randTop);
+      $('#upper .pics').append(currLink);
+    }
+    else { //add to lower
+      randLeft = Math.floor(Math.random()*RIGHT_BOUND);
+      randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-20)) + 10;
+      currLink.addClass('lower')
+              .css('left', randLeft)
+              .css('top', PIC_SIZE*(-1.5))
+              .attr('li-top', randTop);
+      $('#lower .pics').append(currLink.addClass('lower'));
+    }
+  },
+
+  handleConnections = function(profiles) {
+    var i, profile, position, company, length, cxn;
+    cxnsLoaded = 1;
+    if (!profileStored) {
+      // don't load connections before profile is done being stored.
+      // rare, but better safe than sorry!
+      myConnections = profiles;
+      return;
+    }
+    if (!profiles.values || !profiles._total) {
+      console.log('null');
+      console.log(profiles);
+      showErrorMsg('It doesn\'t look like you have any connections yet.',
+                   'Here are some ',
+                   'people you may know.',
+                   'http://www.linkedin.com/pymk-results');
+      return;
+    }
+    for (i=0; i<profiles._total; ++i) {
+      cxn = profiles.values[i];
+      if (cxn.id !== myProfileId && cxn.pictureUrl) {
+        // only store employee if has pictureUrl
+        storeConnection(cxn);
+        // pic doesn't exist; let's create it
+        if (!$('#' + cxn.id).length) {
+          createCxnPic(cxn);
+        }
+      }
+      else {
+        //profiles.values.splice(i--, 1);
+      }
+    }
+    socket.send({
+      type: 'filterConnections',
+      profiles: profiles
+    });
   },
 
   doGKAnimate = function() {
@@ -633,94 +646,6 @@ $(function() {
     img.animate({ left: $(window).width() }, {
       complete: function() {
         img.hide();
-      }
-    });
-  },
-
-  handleCompanyConnections = function (connections) {
-    var i, cxn, currPic, currLink, randLeft, randTop, randRotate, length = connections.length;
-    if (!connections) {
-      showErrorMsg();
-      return;
-    }
-    hidePics();
-    for (i=0; i<length; ++i) {
-      cxn = connections[i];
-      if (cxn.pictureUrl) {
-        // only store connection if they have a picture.
-        storeEmployee(cxn);
-        if (cxn.id !== myProfileId && cxn.pictureUrl) {
-          // pic doesn't exist; let's create it
-          randRotate = Math.floor(Math.random()*20)-10;
-
-          if (!cxn.publicProfileUrl) {
-            cxn.publicProfileUrl = '#';
-          }
-          currLink = $('<a/>').attr('href', cxn.publicProfileUrl)
-                              .attr('title', cxn.fullName)
-                              .attr('id', cxn.id)
-                              .attr('target', '_new')
-                              .css('-moz-transform', ['rotate(', randRotate, 'deg)'].join(''))
-                              .css('-webkit-transform', ['rotate(', randRotate, 'deg)'].join(''))
-                              .css('transform', ['rotate(', randRotate, 'deg)'].join(''))
-                              .css('position', 'absolute')
-                              .css('background-image', 'url('+cxn.pictureUrl+')')
-                              .addClass('cxnPic');
-          if (isConcurrentEmployee(cxn)) {
-            currLink.addClass('picToShow');
-          }
-          currLink.hover(function() {
-            $(this).css('z-index', 1000);
-          }, function() {
-            $(this).css('z-index', '');
-          });
-          if (Math.floor(Math.random()*2)) { //upper
-            if (Math.floor(Math.random()*4)) {
-              // give the pic a 3/4 chance to not be under header,
-              // so as to avoid a big pileup underneath header
-              randLeft = Math.floor(Math.random()*(RIGHT_BOUND-HEADER_WIDTH))+HEADER_WIDTH;
-              randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-30))+10;
-            }
-            else {
-              randLeft = Math.floor(Math.random()*(HEADER_WIDTH));
-              // underneath header ... don't allow them to go as high
-              randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + 20); // 30 is negative margin on timelineStuff
-            }
-            currLink.addClass('upper')
-                    .css('top', HALF_HEIGHT+PIC_SIZE)
-                    .css('left', randLeft)
-                    .attr('li-top', randTop);
-            $('#upper .pics').append(currLink);
-          }
-          else { //add to lower
-            randLeft = Math.floor(Math.random()*RIGHT_BOUND);
-            randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-20)) + 10;
-            currLink.addClass('lower')
-                    .css('left', randLeft)
-                    .css('top', PIC_SIZE*(-1.5))
-                    .attr('li-top', randTop);
-            $('#lower .pics').append(currLink.addClass('lower'));
-          }
-        }
-      }
-    }
-
-    showPics();
-
-    // 8Hnjm5JwNG
-    // ylwwgeeCCH
-    $('#8Hnjm5JwNG').click(function(evt) {
-      var img = $('#gk');
-      evt.preventDefault();
-      if (!img.length) {
-        img = $('<img>').attr('id', 'gk')
-                        .attr('src', '/img/gk.jpg');
-        $('body').append(img);
-        img.load(doGKAnimate);
-      }
-      else {
-        img.css('left', '-650px');
-        doGKAnimate();
       }
     });
   },
@@ -774,6 +699,8 @@ $(function() {
     logoElem.fadeTo('slow', 1);
     // get own profile
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
+    // Pull in connection data
+    IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url)").result(handleConnections);
   };
 
   onLinkedInLoad = function () {
@@ -805,16 +732,12 @@ $(function() {
       if (message.type === 'storeOwnProfileComplete') {
         //handle connections
         profileStored = 1;
-        if (ownCxns) {
-          handleConnections(ownCxns);
+        if (cxnsLoaded) {
+          handleConnections(myConnections);
         }
       }
-      if (message.type === 'connectionsByCompanyResult') {
-        if (isSameCompanies(currCompanies, message.companies)) {
-          handleCompanyConnections(message.connections);
-        }
-      }
-      else if (message.type === 'allConnectionsResult') {
+      else if (message.type === 'filterConnectionsResult') {
+        myCoworkers = message.coworkers;
         // fade out loading
         loadingElem.fadeTo('fast', 0);
         loadingElem.hide();
@@ -825,7 +748,6 @@ $(function() {
         $('#timeline .date span').each(fixOverflow);
         $('.infoBlock').each(fixOverflow);
         tlStuffElem.fadeTo('slow', 1);
-        handleCompanyConnections(message.connections);
       }
     }
   });
@@ -861,6 +783,9 @@ $(function() {
     speedElem.removeClass('hover');
   });
 
+  $('#printCoworkers').click(function() {
+    console.log(myCoworkers);
+  });
   $('#printCompBtn').click(function() {
     console.log(myCompanies);
   });

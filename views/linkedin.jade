@@ -14,7 +14,9 @@ html(lang="en")
       | onLoad: onLinkedInLoad
     link(rel='stylesheet', href='/css/linkedin.css')
   body
-    input#printCompBtn(type="button", value="Print Companies")
+    .debug
+      input#printCompBtn(type="button", value="Print Companies")
+      input#printCoworkers(type="button", value="Print Coworkers")
     #signin
       p
         | See the who, when, and where of your connections over

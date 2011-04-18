@@ -125,10 +125,6 @@ ul {
   height: 30px;
   width: 273px;
 }
-#debug {
-  float:left;
-  padding-top: 20px;
-}
 #mypic {
   border: 1px solid #fff;
   cursor: pointer;
@@ -140,11 +136,6 @@ ul {
   top: 50%;
   width: 80px;
   z-index: 101;
-}
-input {
-  position: absolute;
-  top: 10px;
-  left: 10px;
 }
 select {
   position: absolute;
@@ -186,7 +177,7 @@ select {
   height: 64px;
   width: 64px;
 }
-#printCompBtn {
+.debug {
   display: none;
 }
 #message {

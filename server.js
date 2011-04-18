@@ -98,20 +98,14 @@ io.on('connection', function(client) {
       // LINKEDIN
       // ========
       else if (message.type === 'storeOwnProfile') {
-        li.storeProfile(
-          message.profile,
-          { mySessionId: client.sessionId,
-            callback: function() {
-              client.send({ type: 'storeOwnProfileComplete' });
-            }
-          }
-        );
+        li.storeProfile(message.profile, client.sessionId, function() {
+          client.send({ type: 'storeOwnProfileComplete' });
+        });
       }
-      else if (message.type === 'storeConnections') {
-        li.storeConnections(client.sessionId, message.profiles, function(err) {
-          li.getAllConnections(client.sessionId, function(err, connections) {
-            client.send({ type: 'allConnectionsResult', connections: connections });
-          });
+      else if (message.type === 'filterConnections') {
+        li.filterConnections(client.sessionId, message.profiles, function(err, coworkers) {
+          client.send({ type: 'filterConnectionsResult',
+                        coworkers: coworkers });
         });
       }
       /*
