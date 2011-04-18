@@ -3,7 +3,7 @@
  * Module dependencies.
  */
 
-var PORT  = 80,
+var PORT  = 8080,
     routes  = require('./routes.js'),
     li      = require('./lihelper.js'),
     io      = require('socket.io'),

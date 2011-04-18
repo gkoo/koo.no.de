@@ -35,8 +35,8 @@ $(function() {
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
       myCompanies     = [],
-      //PORT            = 8080,
-      PORT            = 80,
+      PORT            = 8080,
+      //PORT            = 80,
       PIC_SIZE        = 80,
       BORDER_SIZE     = 1,
       FRAME_WIDTH     = 1000,
