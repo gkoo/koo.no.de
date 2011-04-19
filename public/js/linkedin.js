@@ -490,7 +490,7 @@ $(function() {
           }
           else {
             // no positions, create new positions object.
-            if (!profiles.positions) {
+            if (!profile.positions) {
               profile.positions = {};
             }
             profile.positions._total = 1;
