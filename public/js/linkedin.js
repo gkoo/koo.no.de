@@ -4,6 +4,7 @@
 // TODO: test in IE (opacity/filter, etc)
 // TODO: setTimeout showerror
 // TODO: check to make sure a start/endDate without month shows correctly
+// TODO: communicate via sessionId
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
@@ -182,30 +183,6 @@ $(function() {
         return true; // currently working at!
       }
     }
-    /*
-    var i, j, datesArr, dates, start, end, companyName, datesLength,
-        myCurrTime = Math.floor(currTime),
-        length = currCompanies.length;
-
-    for (i=0; i<length; ++i) {
-      companyName = currCompanies[i].unformattedName;
-      datesArr = profile.employmentDates[companyName];
-      if (datesArr) {
-        datesLength = datesArr.length;
-        for (j=0; j<datesLength; ++j) {
-          dates = datesArr[j].split(':');
-          start = Math.floor(dates[0]);
-          end   = Math.floor(dates[1]);
-
-          // start is before currTime and (endtime is after currTime OR endtime is null)
-          if ((start && (start < myCurrTime || start == myCurrTime))
-                && (!end || (end > myCurrTime || end == myCurrTime))) {
-            return true; // currently working at!
-          }
-        }
-      }
-    }
-    */
     return false; // not currently working at.
   },
 
@@ -459,10 +436,7 @@ $(function() {
     }
     myCareerLength = myCareerNow - myCareerStart;
 
-    // Insert companies in chronological order (linkedin returns positions
-    // in order of most recent to least recent) to help optimize with
-    // timeline block placement.
-    for (i=length-1; i>=0; --i) {
+    for (i=0; i<length; ++i) {
       createTimelineBlock(positions[i], i, topCompDates, bottomCompDates);
     }
     timelineElem.show();
@@ -594,11 +568,6 @@ $(function() {
                         .css('position', 'absolute')
                         .css('background-image', 'url('+connection.pictureUrl+')')
                         .addClass('cxnPic');
-    /*
-    if (isConcurrentEmployee(connection)) {
-      currLink.addClass('picToShow');
-    }
-    */
     currLink.hover(function() {
       $(this).css('z-index', 1000);
     }, function() {
