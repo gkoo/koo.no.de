@@ -409,6 +409,7 @@ $(function() {
                                               .text(position.company.name))
                           .append($('<span/>').addClass('compDate')
                                               .text(compDate));
+
     topHasRoom = timelineHasRoom(topCompDates, startVal, endVal);
     botHasRoom = timelineHasRoom(bottomCompDates, startVal, endVal);
     if ((topHasRoom && botHasRoom) || (!topHasRoom && !botHasRoom)) {
@@ -458,11 +459,10 @@ $(function() {
     }
     myCareerLength = myCareerNow - myCareerStart;
 
-    // Insert companies in order of decreasing length, so that we can
-    // place the blocks in the optimal position.
-    //positionsSorted = sortMyPositionsByLength(positions);
-    //length = myCompanies.length;
-    for (i=0; i<length; ++i) {
+    // Insert companies in chronological order (linkedin returns positions
+    // in order of most recent to least recent) to help optimize with
+    // timeline block placement.
+    for (i=length-1; i>=0; --i) {
       createTimelineBlock(positions[i], i, topCompDates, bottomCompDates);
     }
     timelineElem.show();
