@@ -120,6 +120,9 @@ ul {
 #header p {
   margin: 0 0 15px;
 }
+#header .IN-widget {
+  margin-top: 5px;
+}
 #header img {
   display: block;
   height: 30px;
@@ -246,6 +249,7 @@ select {
   padding: 1px 5px 5px;
   position: relative;
   margin: -1px 5px 5px;
+  min-width: 90px;
   text-decoration: none;
   z-index: 900;
 }

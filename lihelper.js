@@ -1,6 +1,6 @@
 var redis = require('redis').createClient(),
 
-stripPunc = /[^\w\s]/gi,
+STRIP_PUNC = /[^\w\s]/gi,
 
 storePosition, storeProfile, getConnectionsByCompany,
 
@@ -71,7 +71,7 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
         company = positions[j].company;
         if (company.name) {
           // use company name, since company id's aren't ubiquitous in all profiles
-          cmpKey = company.name.toLowerCase().replace(stripPunc, '');
+          cmpKey = company.name.toLowerCase().replace(STRIP_PUNC, '');
 
           // TODO: check for name as well, (handling non-standardized comp name)
           startVal = convertDateToVal(positions[j].startDate);
@@ -103,7 +103,7 @@ exports.storePosition = storePosition = function(profileId, position, myProfileI
       cmpKey, i, start, end;
 
   if (company && company.name) {
-    company.name = company.name.toLowerCase().replace(stripPunc, '');
+    company.name = company.name.toLowerCase().replace(STRIP_PUNC, '');
     //if (isRelevantCompany(company.name)) {
       // this is a connection
       //redis.sadd(['coworkers', myProfileId, company.name].join(':'), profileId);
@@ -111,7 +111,7 @@ exports.storePosition = storePosition = function(profileId, position, myProfileI
       start = convertDateToVal(position.startDate);
       end = position.endDate ? convertDateToVal(position.endDate) : 0;
       dates = [start, end].join(':');
-      cmpKey = company.name.toLowerCase().replace(stripPunc, '');
+      cmpKey = company.name.toLowerCase().replace(STRIP_PUNC, '');
       redis.sadd(['employmentDates', profileId, cmpKey].join(':'), dates);
     }
     //}

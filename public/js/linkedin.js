@@ -3,6 +3,7 @@
 // TODO: make pics more likely to go on bottom
 // TODO: test in IE (opacity/filter, etc)
 // TODO: setTimeout showerror
+// TODO: check to make sure a start/endDate without month shows correctly
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
@@ -220,8 +221,9 @@ $(function() {
           isConcurrent = isConcurrentEmployee(coworkers[id]);
           if (pic && isConcurrent) {
             pic.addClass('picToShow');
+            pic.removeClass('picToHide'); // in case coworker overlaps in two simultaneous companies
           }
-          else if (pic && pic.hasClass('picShowing') && !isConcurrent) {
+          else if (pic && pic.hasClass('picShowing') && !isConcurrent && !pic.hasClass('picToShow')) {
             pic.addClass('picToHide');
           }
         }
@@ -281,7 +283,6 @@ $(function() {
         }
       }
       // we're past our timeline position, so the remaining positions are irrelevant
-      if (endVal && endVal < timelinePos) { break; }
     }
 
     currCompaniesLength = currCompanies.length;
@@ -467,6 +468,39 @@ $(function() {
     timelineElem.show();
   },
 
+  // Function: addEducationToPositions
+  // ---------------------------------
+  // Treat educations like normal "companies" for the purposes of our timeline
+  addEducationToPositions = function(profile) {
+    var i, educations, edu, newEduObj, length;
+    if (profile.educations && profile.educations.values) {
+      educations = profile.educations.values;
+      length = educations.length;
+      for (i=0; i<length; ++i) {
+        edu = educations[i];
+        if (edu.startDate) {
+          newEduObj = {
+            company: { name: edu.schoolName },
+            startDate: edu.startDate,
+            endDate: edu.endDate
+          };
+          if (profile.positions && profile.positions.values) {
+            profile.positions.values.push(newEduObj);
+            ++profile.positions._total;
+          }
+          else {
+            // no positions, create new positions object.
+            if (!profiles.positions) {
+              profile.positions = {};
+            }
+            profile.positions._total = 1;
+            profile.positions.values = [newEduObj];
+          }
+        }
+      }
+    }
+  }
+
   handleOwnProfile = function (profile) {
     var pic;
     if (!profile) {
@@ -483,7 +517,7 @@ $(function() {
                    'http://www.linkedin.com/profile/edit?trk=li_timeline');
       return;
     }
-    ownProfile = profile;
+    addEducationToPositions(profile);
     socket.send({
       type: 'storeOwnProfile',
       profile: profile
@@ -519,15 +553,13 @@ $(function() {
       position = cxn.positions.values[i];
       start = convertDateToVal(position.startDate);
       end = convertDateToVal(position.endDate);
-      cmpId = position.company.id;
-      cmpName = position.company.name ? position.company.name.toLowerCase() : '';
-      key = cmpId ? cmpId : cmpName;
-      if (key) {
-        if (employDates[key]) {
-          employDates[key].push([start, end].join(':'));
+      cmpName = position.company.name ? position.company.name.toLowerCase().replace(STRIP_PUNC, '') : '';
+      if (cmpName) {
+        if (employDates[cmpName]) {
+          employDates[cmpName].push([start, end].join(':'));
         }
-        else if (key) {
-          employDates[key] = [[start, end].join(':')];
+        else if (cmpName) {
+          employDates[cmpName] = [[start, end].join(':')];
         }
       }
     }
@@ -611,8 +643,6 @@ $(function() {
       return;
     }
     if (!profiles.values || !profiles._total) {
-      console.log('null');
-      console.log(profiles);
       showErrorMsg('It doesn\'t look like you have any connections yet.',
                    'Here are some ',
                    'people you may know.',
@@ -628,6 +658,7 @@ $(function() {
         if (!$('#' + cxn.id).length) {
           createCxnPic(cxn);
         }
+        addEducationToPositions(cxn);
       }
       else {
         //profiles.values.splice(i--, 1);
@@ -698,9 +729,10 @@ $(function() {
     logoElem.show();
     logoElem.fadeTo('slow', 1);
     // get own profile
-    IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
+    IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url,educations)").result(handleOwnProfile);
+    //IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
     // Pull in connection data
-    IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url)").result(handleConnections);
+    IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url,educations)").result(handleConnections);
   };
 
   onLinkedInLoad = function () {
