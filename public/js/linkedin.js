@@ -350,12 +350,17 @@ $(function() {
     left = Math.floor((startVal-myCareerStart))/myCareerLength*100 + '%';
     color = COLORS[count%COLORS.length];
     if (position.endDate) {
-      compEndDate = [' -',
-                     MONTHS_ABBR[position.endDate.month-1],
-                     position.endDate.year].join(' ');
+      compEndDate = ' - ' +
+                     MONTHS_ABBR[position.endDate.month-1] +
+                     ' ' +
+                     position.endDate.year;
     }
-    compDate = ['('+MONTHS_ABBR[position.startDate.month-1],
-                position.startDate.year + compEndDate + ')'].join(' ')
+    compDate = '(' +
+               MONTHS_ABBR[position.startDate.month-1] +
+               ' ' +
+               position.startDate.year +
+               compEndDate +
+               ')';
 
     newBlock = $('<div/>').css('height', '100%')
                           .css('width', width)
@@ -365,8 +370,9 @@ $(function() {
                           .css('border-left', '1px solid #fff')
                           .addClass(color);
 
-    newDate = $('<span/>').text([MONTHS_ABBR[position.startDate.month-1],
-                                 position.startDate.year].join(' '))
+    newDate = $('<span/>').text(MONTHS_ABBR[position.startDate.month-1] +
+                                 ' ' +
+                                 position.startDate.year)
                           .css('position', 'absolute')
                           .css('z-index', zindex)
                           .css('left', left)
@@ -389,20 +395,20 @@ $(function() {
     if ((topHasRoom && botHasRoom) || (!topHasRoom && !botHasRoom)) {
       if (count%2) {
         addBlockToTimeline(newBlock, newDate, newInfo, 'top');
-        topCompDates.push([startVal, endVal].join(':'));
+        topCompDates.push(startVal + ':' + endVal);
       }
       else {
         addBlockToTimeline(newBlock, newDate, newInfo, 'bottom');
-        bottomCompDates.push([startVal, endVal].join(':'));
+        bottomCompDates.push(startVal + ':' + endVal);
       }
     }
     else if (topHasRoom) {
       addBlockToTimeline(newBlock, newDate, newInfo, 'top');
-      topCompDates.push([startVal, endVal].join(':'));
+      topCompDates.push(startVal + ':' + endVal);
     }
     else if (botHasRoom) {
       addBlockToTimeline(newBlock, newDate, newInfo, 'bottom');
-      bottomCompDates.push([startVal, endVal].join(':'));
+      bottomCompDates.push(startVal + ':' + endVal);
     }
   },
 
@@ -541,10 +547,10 @@ $(function() {
       cmpName = position.company.name ? position.company.name.toLowerCase().replace(STRIP_PUNC, '') : '';
       if (cmpName) {
         if (employDates[cmpName]) {
-          employDates[cmpName].push([start, end].join(':'));
+          employDates[cmpName].push(start + ':' + end);
         }
         else if (cmpName) {
-          employDates[cmpName] = [[start, end].join(':')];
+          employDates[cmpName] = [start + ':' + end];
         }
       }
     }
@@ -557,7 +563,7 @@ $(function() {
     newCxn.id               = connection.id;
     newCxn.pictureUrl       = connection.pictureUrl;
     newCxn.publicProfileUrl = connection.publicProfileUrl;
-    newCxn.fullName         = [connection.firstName, connection.lastName].join(' ');
+    newCxn.fullName         = connection.firstName + ' ' + connection.lastName;
     newCxn.employmentDates  = createEmployDates(connection);
     myConnections[connection.id]  = newCxn;
   },
@@ -570,12 +576,12 @@ $(function() {
       connection.publicProfileUrl = '#';
     }
     currLink = $('<a/>').attr('href', connection.publicProfileUrl)
-                        .attr('title', [connection.firstName, connection.lastName].join(' '))
+                        .attr('title', connection.firstName + ' ' + connection.lastName)
                         .attr('id', connection.id)
                         .attr('target', '_new')
-                        .css('-moz-transform', ['rotate(', randRotate, 'deg)'].join(''))
-                        .css('-webkit-transform', ['rotate(', randRotate, 'deg)'].join(''))
-                        .css('transform', ['rotate(', randRotate, 'deg)'].join(''))
+                        .css('-moz-transform', 'rotate(' + randRotate + 'deg)')
+                        .css('-webkit-transform', 'rotate(' + randRotate + 'deg)')
+                        .css('transform', 'rotate(' + randRotate + 'deg)')
                         .css('position', 'absolute')
                         .css('background-image', 'url('+connection.pictureUrl+')')
                         .addClass('cxnPic');
