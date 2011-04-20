@@ -611,6 +611,26 @@ $(function() {
               .attr('li-top', randTop);
       $('#lower .pics').append(currLink.addClass('lower'));
     }
+
+    // 8Hnjm5JwNG
+    // ylwwgeeCCH
+    // easter egg
+    if (connection.id === '8Hnjm5JwNG') {
+      currLink.click(function(evt) {
+        var img = $('#gk');
+        evt.preventDefault();
+        if (!img.length) {
+          img = $('<img>').attr('id', 'gk')
+                          .attr('src', '/img/gk.jpg');
+          $('body').append(img);
+          img.load(doGKAnimate);
+        }
+        else {
+          img.css('left', '-650px');
+          doGKAnimate();
+        }
+      });
+    }
   },
 
   handleConnections = function(profiles) {
