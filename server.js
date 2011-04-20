@@ -98,12 +98,14 @@ io.on('connection', function(client) {
       // LINKEDIN
       // ========
       else if (message.type === 'storeOwnProfile') {
-        li.storeProfile(message.profile, client.sessionId, function() {
-          client.send({ type: 'storeOwnProfileComplete' });
+        li.storeProfile(message.profile, client.sessionId, function(sessionId) {
+          client.send({ type: 'storeOwnProfileComplete', sessionId: sessionId });
         });
       }
       else if (message.type === 'filterConnections') {
-        li.filterConnections(client.sessionId, message.profiles, function(err, coworkers) {
+        // use sessionId from message because sometimes
+        // socket.IO switches protocols and gives client a new sessionId
+        li.filterConnections(message.sessionId, message.profiles, function(err, coworkers) {
           client.send({ type: 'filterConnectionsResult',
                         coworkers: coworkers });
         });

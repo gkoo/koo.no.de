@@ -39,6 +39,7 @@ $(function() {
       myProfileId     = -1,
       myConnections   = {},
       myCompanies     = [],
+      mySessionId     = 0,
       //PORT            = 8080,
       PORT            = 80,
       PIC_SIZE        = 80,
@@ -642,7 +643,8 @@ $(function() {
     }
     socket.send({
       type: 'filterConnections',
-      profiles: profiles
+      profiles: profiles,
+      sessionId: mySessionId
     });
   },
 
@@ -738,6 +740,7 @@ $(function() {
   socket.on('message', function(message) {
     if (message.type !== 'undefined') {
       if (message.type === 'storeOwnProfileComplete') {
+        mySessionId = message.sessionId;
         //handle connections
         profileStored = 1;
         if (cxnsLoaded) {

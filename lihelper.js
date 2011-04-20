@@ -120,12 +120,14 @@ exports.storePosition = storePosition = function(profileId, position, myProfileI
 
 exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
   var keyPrefix = ['profiles', profile.id].join(':'),
+      idKey = ['id', sessionId].join(':'),
       fullName  = [profile.firstName, profile.lastName].join(' '),
       keyValuePairs = [keyPrefix],
       i, company;
 
   if (sessionId) {
-    redis.set(['id', sessionId].join(':'), profile.id); // for future lookups
+    redis.set(idKey, profile.id); // for future lookups
+    redis.expire(idKey, 900);
   }
 
   keyValuePairs.push('id', profile.id);
@@ -149,7 +151,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
   if (callback) {
     // send signal that own profile has been stored,
     // so we don't load connections before we're ready.
-    callback();
+    callback(sessionId);
   }
   redis.incr(['views', profile.id].join(':'));
 };
