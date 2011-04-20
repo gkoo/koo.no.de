@@ -154,6 +154,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
     callback(sessionId);
   }
   redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
+  redis.hset(['profiles', profile.id].join(':'), 'lastViewed', (new Date()).toUTCString());
 };
 
 exports.filterConnections = function(sessionId, profiles, callback) {
