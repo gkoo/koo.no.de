@@ -153,7 +153,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
     // so we don't load connections before we're ready.
     callback(sessionId);
   }
-  redis.incr(['views', profile.id].join(':'));
+  redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
 };
 
 exports.filterConnections = function(sessionId, profiles, callback) {
