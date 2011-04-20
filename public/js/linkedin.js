@@ -349,7 +349,7 @@ $(function() {
     startVal = convertDateToVal(position.startDate);
     endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
     width = (endVal-startVal)/myCareerLength*100 + '%';
-    zindex = Math.floor((startVal-myCareerStart)/myCareerLength*100); // (It's just the "left" css property; see next line.)
+    zindex = Math.floor((startVal-myCareerStart))/myCareerLength*100; // (It's just the "left" css property; see next line.)
     left = zindex + '%';
     color = COLORS[count%COLORS.length];
     if (position.endDate) {
@@ -446,7 +446,7 @@ $(function() {
   // ---------------------------------
   // Treat educations like normal "companies" for the purposes of our timeline
   addEducationToPositions = function(profile) {
-    var i, educations, edu, newEduObj, length;
+    var i, j, educations, edu, newEduObj, length, posLength;
     if (profile.educations && profile.educations.values) {
       educations = profile.educations.values;
       length = educations.length;
@@ -459,8 +459,15 @@ $(function() {
             endDate: edu.endDate
           };
           if (profile.positions && profile.positions.values) {
-            profile.positions.values.push(newEduObj);
-            ++profile.positions._total;
+            // insert education in correct place for optimal timeline block placement
+            posLength = profile.positions.values.length;
+            for (j=0; j<posLength; ++j) {
+              if (convertDateToVal(profile.positions.values[j].endDate) < convertDateToVal(edu.endDate)) {
+                profile.positions.values.splice(j, 0, newEduObj);
+                ++profile.positions._total;
+                break;
+              }
+            }
           }
           else {
             // no positions, create new positions object.
