@@ -1,15 +1,11 @@
-// TODO: handle no connections
-// TODO: change dates to only show when is currently highlighted
 // TODO: make pics more likely to go on bottom
 // TODO: test in IE (opacity/filter, etc)
 // TODO: setTimeout showerror
 // TODO: check to make sure a start/endDate without month shows correctly
-// TODO: communicate via sessionId
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
 // explain why a company is absent (no dates)
-// education?
 
 var onLinkedInLoad;
 
@@ -350,8 +346,8 @@ $(function() {
     startVal = convertDateToVal(position.startDate);
     endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
     width = (endVal-startVal)/myCareerLength*100 + '%';
-    zindex = Math.floor((startVal-myCareerStart))/myCareerLength*100; // (It's just the "left" css property; see next line.)
-    left = zindex + '%';
+    zindex = Math.floor((startVal-myCareerStart)/myCareerLength*100); // (It's just the "left" css property; see next line.)
+    left = Math.floor((startVal-myCareerStart))/myCareerLength*100 + '%';
     color = COLORS[count%COLORS.length];
     if (position.endDate) {
       compEndDate = [' -',
@@ -462,13 +458,20 @@ $(function() {
           if (profile.positions && profile.positions.values) {
             // insert education in correct place for optimal timeline block placement
             posLength = profile.positions.values.length;
-            for (j=0; j<posLength; ++j) {
-              if (convertDateToVal(profile.positions.values[j].endDate) < convertDateToVal(edu.endDate)) {
-                profile.positions.values.splice(j, 0, newEduObj);
-                ++profile.positions._total;
+            for (j=posLength-1; j>=0; --j) {
+              if (profile.positions.values[j].endDate &&
+                  (convertDateToVal(profile.positions.values[j].endDate) > convertDateToVal(edu.endDate))) {
+
+                profile.positions.values.splice(j+1, 0, newEduObj);
                 break;
+
+              }
+              else if (j === 0) {
+                // education is most recent block in timeline
+                profile.positions.values.splice(0, 0, newEduObj);
               }
             }
+            ++profile.positions._total;
           }
           else {
             // no positions, create new positions object.
