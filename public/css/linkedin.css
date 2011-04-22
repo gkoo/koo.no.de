@@ -27,6 +27,9 @@ ul {
   overflow: hidden;
   position: relative;
 }
+#upper .IN-widget {
+  float: right;
+}
 #timeline {
   background-color: #222;
   height: 120px;
@@ -119,9 +122,6 @@ ul {
 }
 #header p {
   margin: 0 0 15px;
-}
-#header .IN-widget {
-  margin-top: 3px;
 }
 #header img {
   display: block;
