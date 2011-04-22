@@ -172,8 +172,8 @@ $(function() {
 
     for (i=0; i<theirLength; ++i) {
       cxnDate = cxnDates[i].split(':');
-      start   = parseInt(cxnDate[0]);
-      end     = parseInt(cxnDate[1]);
+      start   = parseInt(cxnDate[0], 10);
+      end     = parseInt(cxnDate[1], 10);
       // start is before currTime and (endtime is after currTime OR endtime is null)
       if ((start && (start < myCurrTime || start == myCurrTime))
             && (!end || (end > myCurrTime || end == myCurrTime))) {
@@ -655,7 +655,8 @@ $(function() {
                    'http://www.linkedin.com/pymk-results');
       return;
     }
-    for (i=0; i<profiles._total; ++i) {
+    length = profiles.values.length;
+    for (i=0; i<length; ++i) {
       cxn = profiles.values[i];
       if (cxn.id !== myProfileId && cxn.pictureUrl) {
         // only store employee if has pictureUrl
