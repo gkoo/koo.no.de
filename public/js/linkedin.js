@@ -754,7 +754,8 @@ $(function() {
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
-  socket = new io.Socket(null, {port: PORT, rememberTransport: false});
+  //socket = new io.Socket(null, {port: PORT, rememberTransport: false});
+  socket = new io.Socket(null, {port: PORT});
   socket.connect();
 
   // avoid problem where linkedin profile returns before we are done
