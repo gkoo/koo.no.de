@@ -81,10 +81,10 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
           if (dates && anyDatesOverlap(startVal, endVal, dates[myProfileId])) {
             // common company AND dates overlap
             if (dates[cxn.id]) {
-              dates[cxn.id].push([startVal, endVal].join(':'));
+              dates[cxn.id].push(startVal + ':' + endVal);
             }
             else {
-              dates[cxn.id] = [[startVal, endVal].join(':')];
+              dates[cxn.id] = [startVal + ':' + endVal];
             }
           }
         }
@@ -110,7 +110,7 @@ exports.storePosition = storePosition = function(profileId, position, myProfileI
     if (position.startDate) { // educations have no start date
       start = convertDateToVal(position.startDate);
       end = position.endDate ? convertDateToVal(position.endDate) : 0;
-      dates = [start, end].join(':');
+      dates = start + ':' + end;
       cmpKey = company.name.toLowerCase().replace(STRIP_PUNC, '');
       redis.sadd(['employmentDates', profileId, cmpKey].join(':'), dates);
     }
@@ -155,6 +155,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
   }
   redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
   redis.hset(['profiles', profile.id].join(':'), 'lastViewed', (new Date()).toUTCString());
+  redis.sadd('viewers', fullName);
 };
 
 exports.filterConnections = function(sessionId, profiles, callback) {
@@ -197,3 +198,11 @@ exports.filterConnections = function(sessionId, profiles, callback) {
     */
   });
 };
+
+redis.keys('profi*', function(err, profileKeys) {
+  for (var i=0; i<profileKeys.length; ++i) {
+    redis.hget(profileKeys[i], 'fullName', function(err, fullName) {
+      redis.sadd('viewers', fullName);
+    });
+  }
+});
