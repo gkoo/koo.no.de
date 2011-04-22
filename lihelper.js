@@ -198,11 +198,3 @@ exports.filterConnections = function(sessionId, profiles, callback) {
     */
   });
 };
-
-redis.keys('profi*', function(err, profileKeys) {
-  for (var i=0; i<profileKeys.length; ++i) {
-    redis.hget(profileKeys[i], 'fullName', function(err, fullName) {
-      redis.sadd('viewers', fullName);
-    });
-  }
-});
