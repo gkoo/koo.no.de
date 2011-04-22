@@ -537,10 +537,11 @@ $(function() {
   },
 
   createEmployDates = function(cxn) {
-    var cmpName, cmpId, key, position, start, end, employDates = {};
-    if (!cxn.positions) { return; }
+    var cmpName, cmpId, key, position, start, end, length, employDates = {};
+    if (!cxn.positions || !cxn.positions.values) { return; }
 
-    for (var i=0; i<cxn.positions._total; ++i) {
+    length = cxn.positions.values.length; // don't use _total. it's buggy.
+    for (var i=0; i<cxn.positions.values.length; ++i) {
       position = cxn.positions.values[i];
       start = convertDateToVal(position.startDate);
       end = convertDateToVal(position.endDate);
