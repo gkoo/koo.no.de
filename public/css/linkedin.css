@@ -301,6 +301,9 @@ select {
   position: absolute;
   z-index: 1001;
 }
+span iframe { /* for share dialog */
+  z-index: 9999;
+}
 .orange { background-color: #ed712b; }
 .blue { background-color: #069; }
 .green { background-color: #85c93c; }
