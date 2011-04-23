@@ -21,6 +21,8 @@ $(function() {
       myConnections   = {},
       myCompanies     = [],
       mySessionId     = 0,
+      relLeft         = 0, // for zoom, scale of 0-100
+      relRight        = 100, // for zoom, scale of 0-100
       // DOM ELEMENTS
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
@@ -236,10 +238,17 @@ $(function() {
   },
 
   doDrag = function(left) {
-    var positionRatio, timelinePos, i, company, startVal, endVal, oldCurrCompanies, myCompaniesLength, currCompaniesLength, coworkers;
+    var positionRatio, timelinePos, i, company, startVal, endVal, oldCurrCompanies, myCompaniesLength, currCompaniesLength, coworkers, relFrameWidth;
 
     // calculate how far along myPic is on the timeline.
-    positionRatio = (left - LEFT_BOUND)/(RIGHT_BOUND - LEFT_BOUND);
+    // example: frame is 50-100, pic is halfway through (rel: 50, abs: 75)
+    // end result should be: 3/4 or 75%
+    // relative position ratio is 1/2
+    // relFrameWidth is 1/2
+    // absolute position ratio is 1/2 * 1/2 + 50/100 = 1/4 + 1/2 = 3/4
+    positionRatio = (left - LEFT_BOUND)/(RIGHT_BOUND - LEFT_BOUND); // relative position ratio
+    relFrameWidth = (relRight - relLeft)/100;
+    positionRatio = positionRatio * relFrameWidth + relLeft/100; // absolute position ratio
 
     // calculate this position relative to our career timeline.
     timelinePos = (myCareerLength * positionRatio) + myCareerStart;
@@ -764,10 +773,10 @@ $(function() {
         right = tl_right;
       }
 
-      left  = (left-tl_left)/(tl_right-tl_left)*100;
-      right = (right-tl_left)/(tl_right-tl_left)*100;
+      relLeft  = (left-tl_left)/(tl_right-tl_left)*100;
+      relRight = (right-tl_left)/(tl_right-tl_left)*100;
 
-      doZoomIn(left, right);
+      doZoomIn(relLeft, relRight);
       cancelZoom();
     })
     .mousemove(selectZoomRange);
@@ -817,6 +826,7 @@ $(function() {
     });
   },
 
+  // TODO: restore info/date positions (right:0)
   doZoomOut = function() {
     timelineElem.find('.block div').each(function() {
       var _this     = $(this),
@@ -830,6 +840,8 @@ $(function() {
           origLeft  = _this.attr('data-li-left');
       _this.animate({ left: origLeft });
     });
+    relLeft = 0;
+    relRight = 100;
   },
 
   doPlay = function() {
