@@ -113,6 +113,16 @@ app.get('/linkedin', function(req, res){
   });
 });
 
+app.get('/linkedinbeta', function(req, res){
+  res.render('linkedinbeta', {
+    locals: {
+      title: 'LinkedIn Connection Timeline',
+      loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
+    },
+    layout: false
+  });
+});
+
 app.get('/*', function(req, res) {
   throw new NotFound;
 });

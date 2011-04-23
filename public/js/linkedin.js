@@ -2,12 +2,15 @@
 // TODO: test in IE (opacity/filter, etc)
 // TODO: setTimeout showerror
 // TODO: check to make sure a start/endDate without month shows correctly
+// TODO: investigate if using company names as class names is problematic
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
 // explain why a company is absent (no dates)
 
 var onLinkedInLoad;
+
+var doZoomIn;
 
 $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket, myCoworkers,
@@ -17,6 +20,8 @@ $(function() {
       timelineElem    = $('#timeline'),
       myPicElem       = $('#mypic'),
       messageElem     = $('#message'),
+      zoomInBtn       = $('#zoomInBtn'),
+      zoomOutBtn      = $('#zoomOutBtn'),
       playBtn         = $('#playBtn'),
       speedElem       = $('#speed'),
       signinElem      = $('#signin'),
@@ -368,6 +373,8 @@ $(function() {
                           .css('z-index', zindex) // ensure later blocks show over earlier blocks
                           .css('position', 'absolute')
                           .css('border-left', '1px solid #fff')
+                          .attr('data-li-left', left)
+                          .attr('data-li-width', width)
                           .addClass(color);
 
     newDate = $('<span/>').text(MONTHS_ABBR[position.startDate.month-1] +
@@ -376,11 +383,13 @@ $(function() {
                           .css('position', 'absolute')
                           .css('z-index', zindex)
                           .css('left', left)
-                          .attr('li-zindex', zindex);
+                          .attr('data-li-left', left)
+                          .attr('data-li-zindex', zindex);
 
     newInfo = $('<span/>').css('left', left)
                           .css('z-index', zindex)
-                          .attr('li-zindex', zindex)
+                          .attr('data-li-left', left)
+                          .attr('data-li-zindex', zindex)
                           .addClass('infoBlock')
                           .addClass(position.company.name.toLowerCase()
                                             .replace(/\s/g,'')
@@ -540,7 +549,7 @@ $(function() {
     var cmpName, cmpId, key, position, start, end, length, employDates = {};
     if (!cxn.positions || !cxn.positions.values) { return; }
 
-    length = cxn.positions.values.length; // don't use _total. it's buggy.
+    length = cxn.positions.values.length;
     for (var i=0; i<cxn.positions.values.length; ++i) {
       position = cxn.positions.values[i];
       start = convertDateToVal(position.startDate);
@@ -690,6 +699,57 @@ $(function() {
     });
   },
 
+  doZoomIn = function(newLeft, newRight) {
+    /*
+     * TRUTHS
+     * ======
+     * - Need to keep a ratio of curr width to original width
+     * - Need to keep a left offset against original left bound
+     * - Need to keep a right offset against original right bound
+     *
+     * We have two scales going on.
+     * 1) Scale of 0-100 (absolute position percentage)
+     * 2) Scale of 0-908 pixels (css.left)
+     * We should be able to go from one to another fairly easily.
+     *
+     * example of calculating new "left" and "width"
+     * 1) company LEFT = 75 (scale of 0-100) and WIDTH = 10
+     * 2) zoom in to LEFT = 50 and RIGHT = 100
+     * 3) new company LEFT = (75-50)/(100-50) = 25/50 = 1/2 = 50%
+     * 4) new company WIDTH = (10)/(100-50) = 10/50 = 1/5 = 20%
+     *
+     * STILL NEED TO FIGURE OUT:
+     * how to calculate what position in the timeline
+     */
+    timelineElem.find('.block div').each(function() {
+      var _this     = $(this),
+          origLeft  = parseInt(_this.attr('data-li-left'), 10),
+          origWidth = parseInt(_this.attr('data-li-width'), 10);
+      _this.animate({ left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%',
+                      width: origWidth/(newRight - newLeft) * 100 + '%' });
+    });
+    timelineElem.find('.date span,.info span').each(function() {
+      var _this     = $(this),
+          origLeft  = parseInt(_this.attr('data-li-left'), 10);
+      _this.animate({ left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%' });
+    });
+  },
+
+  doZoomOut = function() {
+    timelineElem.find('.block div').each(function() {
+      var _this     = $(this),
+          origLeft  = _this.attr('data-li-left'),
+          origWidth = _this.attr('data-li-width');
+      _this.animate({ left: origLeft,
+                      width: origWidth });
+    });
+    timelineElem.find('.date span,.info span').each(function() {
+      var _this     = $(this),
+          origLeft  = _this.attr('data-li-left');
+      _this.animate({ left: origLeft });
+    });
+  },
+
   doPlay = function() {
     var iconLeft, dur, totalDur, active, className,
         speeds = { slow     : 35000,
@@ -803,6 +863,16 @@ $(function() {
     else {
       doPause.apply(this);
     }
+  });
+
+  zoomInBtn.click(function(evt) {
+    evt.preventDefault();
+    doZoomIn(50, 100);
+  });
+
+  zoomOutBtn.click(function(evt) {
+    evt.preventDefault();
+    doZoomOut();
   });
 
   speedElem.children().click(function(evt) {
