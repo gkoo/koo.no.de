@@ -2,7 +2,7 @@
 // TODO: test in IE (opacity/filter, etc)
 // TODO: setTimeout showerror
 // TODO: check to make sure a start/endDate without month shows correctly
-// TODO: investigate if using company names as class names is problematic
+// TODO: investigate if using company names as class names is problematic (numbers, etc)
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
@@ -29,8 +29,7 @@ $(function() {
       timelineElem    = $('#timeline'),
       myPicElem       = $('#mypic'),
       messageElem     = $('#message'),
-      zoomInBtn       = $('#zoomInBtn'),
-      zoomOutBtn      = $('#zoomOutBtn'),
+      zoomBtn         = $('#zoomBtn'),
       playBtn         = $('#playBtn'),
       speedElem       = $('#speed'),
       signinElem      = $('#signin'),
@@ -44,7 +43,7 @@ $(function() {
       ioConnected     = 0,
       profileStored   = 0,
       cxnsLoaded      = 0,
-      zooming         = 0,
+      zoomed          = 0,
       selectingZoom   = 0,
       // CONSTANTS
       //PORT            = 8080,
@@ -742,8 +741,8 @@ $(function() {
 
   // Select a region to zoom by dragging the mouse
   setupSelectZoomRange = function() {
+    alert('using your cursor, select a section of the timeline to zoom in on!');
     timelineElem.hover(function() {
-      zooming = 1;
       timelineElem.css('cursor', 'crosshair');
     })
     .mousedown(function(evt) {
@@ -776,7 +775,7 @@ $(function() {
       relLeft  = (left-tl_left)/(tl_right-tl_left)*100;
       relRight = (right-tl_left)/(tl_right-tl_left)*100;
 
-      doZoomIn(relLeft, relRight);
+      doZoom(relLeft, relRight);
       cancelZoom();
     })
     .mousemove(selectZoomRange);
@@ -790,7 +789,9 @@ $(function() {
     timelineElem.css('cursor', '');
   },
 
-  doZoomIn = function(newLeft, newRight) {
+  // TODO: make myPic follow zoom as well?
+  // TODO: restore info/date positions (right:0)
+  doZoom = function(newLeft, newRight) {
     /*
      * TRUTHS
      * ======
@@ -812,36 +813,37 @@ $(function() {
      * STILL NEED TO FIGURE OUT:
      * how to calculate what position in the timeline
      */
-    timelineElem.find('.block div').each(function() {
+    var blocks = timelineElem.find('.block div'),
+        length = blocks.length;
+
+    newLeft  = typeof newLeft  !== 'undefined' ? newLeft  : 0;
+    newRight = typeof newRight !== 'undefined' ? newRight : 100;
+
+    blocks.each(function(index) {
       var _this     = $(this),
           origLeft  = parseInt(_this.attr('data-li-left'), 10),
-          origWidth = parseInt(_this.attr('data-li-width'), 10);
-      _this.animate({ left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%',
-                      width: origWidth/(newRight - newLeft) * 100 + '%' });
+          origWidth = parseInt(_this.attr('data-li-width'), 10),
+          options;
+
+      if (index === length-1) {
+        options = {
+          complete: function() { doDrag(myPicElem.position().left); }
+        };
+      }
+
+      _this.animate({
+        left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%',
+        width: origWidth/(newRight - newLeft) * 100 + '%'
+      }, options);
     });
     timelineElem.find('.date span,.info span').each(function() {
       var _this     = $(this),
           origLeft  = parseInt(_this.attr('data-li-left'), 10);
       _this.animate({ left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%' });
     });
-  },
 
-  // TODO: restore info/date positions (right:0)
-  doZoomOut = function() {
-    timelineElem.find('.block div').each(function() {
-      var _this     = $(this),
-          origLeft  = _this.attr('data-li-left'),
-          origWidth = _this.attr('data-li-width');
-      _this.animate({ left: origLeft,
-                      width: origWidth });
-    });
-    timelineElem.find('.date span,.info span').each(function() {
-      var _this     = $(this),
-          origLeft  = _this.attr('data-li-left');
-      _this.animate({ left: origLeft });
-    });
-    relLeft = 0;
-    relRight = 100;
+    relLeft  = newLeft;
+    relRight = newRight;
   },
 
   doPlay = function() {
@@ -964,14 +966,24 @@ $(function() {
     }
   });
 
-  zoomInBtn.click(function(evt) {
+  zoomBtn.click(function(evt) {
+    var _this = $(this);
+    myPicElem.stop(true);
+    playBtn.text('Play');
     evt.preventDefault();
-    setupSelectZoomRange();
-  });
 
-  zoomOutBtn.click(function(evt) {
-    evt.preventDefault();
-    doZoomOut();
+    if (!zoomed) {
+      // zoom in
+      setupSelectZoomRange();
+      zoomed = 1;
+      _this.text('Zoom Out');
+    }
+    else {
+      // zoom out
+      doZoom(0, 100); // reset
+      zoomed = 0;
+      _this.text('Zoom In');
+    }
   });
 
   speedElem.children().click(function(evt) {
