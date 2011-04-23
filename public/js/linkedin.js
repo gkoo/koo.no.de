@@ -10,11 +10,18 @@
 
 var onLinkedInLoad;
 
-var doZoomIn;
-
 $(function() {
   var ownProfile, myCareerStart, myCareerLength, socket, myCoworkers,
       today           = new Date(),
+      thisMonth       = today.getMonth()+1,
+      thisYear        = today.getFullYear(),
+      currTime        = 0,
+      currCompanies   = [], // what company(ies) we're at in the timeline
+      myProfileId     = -1,
+      myConnections   = {},
+      myCompanies     = [],
+      mySessionId     = 0,
+      // DOM ELEMENTS
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
       timelineElem    = $('#timeline'),
@@ -28,29 +35,24 @@ $(function() {
       logoElem        = $('#logo img'),
       tlStuffElem     = $('#timelineStuff'),
       headerElem      = $('#header'),
+      zoomSelectElem  = $('#zoomSelect'),
       topBlockElem    = timelineElem.children('.top.block'),
       bottomBlockElem = timelineElem.children('.bottom.block'),
-      thisMonth       = today.getMonth()+1,
-      thisYear        = today.getFullYear(),
+      // BOOLEAN FLAGS
       ioConnected     = 0,
       profileStored   = 0,
-      cxnsLoaded      = 0, // boolean flag
-      currTime        = 0,
-      currCompanies   = [], // what company(ies) we're at in the timeline
-      myProfileId     = -1,
-      myConnections   = {},
-      myCompanies     = [],
-      mySessionId     = 0,
+      cxnsLoaded      = 0,
+      zooming         = 0,
+      selectingZoom   = 0,
+      // CONSTANTS
       //PORT            = 8080,
       PORT            = 80,
       PIC_SIZE        = 80,
       BORDER_SIZE     = 1,
-      FRAME_WIDTH     = 1000,
       HEADER_WIDTH    = 290,
       HEADER_HEIGHT   = 126, // 76 + 50 padding
       TL_WIDTH        = 970,
       TL_HEIGHT       = 140,
-      TL_BLOCK_HT     = 30,
       TL_HZ_PADDING   = 20,
       HALF_HEIGHT     = 315,
       LEFT_BOUND      = TL_HZ_PADDING,
@@ -58,7 +60,8 @@ $(function() {
       MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       MONTHS_ABBR     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       COLORS          = ['orange', 'blue', 'green', 'purple', 'teal', 'red', 'yellow', 'magenta', 'grey'],
-      STRIP_PUNC      = /[^\w\s]/gi;
+      STRIP_PUNC      = /[^\w\s]/gi,
+      TL_TOP;
 
   convertDateFromVal = function(val) {
     var month = Math.floor(val%12) || 12;
@@ -104,8 +107,7 @@ $(function() {
                                 .append(link));
 
     messageElem.show();
-    messageElem.fadeTo('slow', 1, function() {
-    });
+    messageElem.fadeTo('slow', 1);
 
   },
 
@@ -261,7 +263,6 @@ $(function() {
           currCompanies.push(company);
         }
       }
-      // we're past our timeline position, so the remaining positions are irrelevant
     }
 
     currCompaniesLength = currCompanies.length;
@@ -699,6 +700,87 @@ $(function() {
     });
   },
 
+  // Function: adjustMouseCoords
+  // ---------------------------
+  // Browsers implement clientX, pageX, screenX, etc. differently,
+  // just use jQuery's pageX and adjust from document top-left.
+  adjustMouseCoords = function(mouseX, mouseY) {
+    // adjust mouseX and Y to be relative to timeline
+    return { x : mouseX - timelineElem.offset().left,
+             y : mouseY - TL_TOP };
+  },
+
+  // TODO: continue mousemove when mouse is outside of timeline
+  // TODO: allow moving of selection
+  // TODO: handles??? oh man...
+  selectZoomRange = function(evt) {
+    if (!selectingZoom) { return; }
+
+    var divLeft  = zoomSelectElem.attr('data-li-left'),
+        divTop   = zoomSelectElem.attr('data-li-top'),
+        coords   = adjustMouseCoords(evt.pageX, evt.pageY),
+        mouseX   = coords.x,
+        mouseY   = coords.y,
+        newLeft  = mouseX < divLeft ? mouseX : divLeft;
+        newTop   = mouseY < divTop ? mouseY : divTop;
+
+    zoomSelectElem.css('width', Math.abs(mouseX-divLeft) + 'px')
+                  .css('height', Math.abs(mouseY-divTop) + 'px')
+                  .css('left', newLeft + 'px')
+                  .css('top', newTop + 'px');
+    zoomSelectElem.show();
+  },
+
+  // Select a region to zoom by dragging the mouse
+  setupSelectZoomRange = function() {
+    timelineElem.hover(function() {
+      zooming = 1;
+      timelineElem.css('cursor', 'crosshair');
+    })
+    .mousedown(function(evt) {
+      if ($(evt.target).attr('id') === 'mypic') { return; }
+      evt.preventDefault();
+      selectingZoom = 1;
+      coords = adjustMouseCoords(evt.pageX, evt.pageY);
+      zoomSelectElem.css('left', coords.x + 'px')
+                    .css('top', coords.y + 'px')
+                    .css('opacity', 1)
+                    .attr('data-li-left', coords.x)
+                    .attr('data-li-top', coords.y)
+                    .hide();
+    })
+    .mouseup(function(evt) {
+      var left     = parseInt(zoomSelectElem.css('left'), 10),
+          width    = parseInt(zoomSelectElem.css('width'), 10),
+          right    = left+width,
+          tl_left  = TL_HZ_PADDING,
+          tl_right = TL_WIDTH+TL_HZ_PADDING;
+
+      selectingZoom = 0;
+      if (left < tl_left) {
+        left = tl_left;
+      }
+      if (right > tl_right) {
+        right = tl_right;
+      }
+
+      left  = (left-tl_left)/(tl_right-tl_left)*100;
+      right = (right-tl_left)/(tl_right-tl_left)*100;
+
+      doZoomIn(left, right);
+      cancelZoom();
+    })
+    .mousemove(selectZoomRange);
+  },
+
+  cancelZoom = function() {
+    zoomSelectElem.fadeTo('fast', 0, function() {
+      zoomSelectElem.hide();
+    });
+    timelineElem.unbind();
+    timelineElem.css('cursor', '');
+  },
+
   doZoomIn = function(newLeft, newRight) {
     /*
      * TRUTHS
@@ -780,6 +862,11 @@ $(function() {
     myPicElem.stop(stop);
   },
 
+  // Function: fixOverflow
+  // ---------------------
+  // Detect dates and infos whose widths would normally overflow into
+  // the right margin of the div and set them to be positioned by
+  // right:0 instead.
   fixOverflow = function() {
     var _this = $(this);
     if (_this.width() + _this.position().left > TL_WIDTH) {
@@ -799,7 +886,6 @@ $(function() {
     logoElem.fadeTo('slow', 1);
     // get own profile
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url,educations)").result(handleOwnProfile);
-    //IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url)").result(handleOwnProfile);
     // Pull in connection data
     IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url,educations)").result(handleConnections);
   };
@@ -845,6 +931,7 @@ $(function() {
         loadingElem.hide();
         // show body
         tlStuffElem.show();
+        TL_TOP = timelineElem.offset().top;
         // detect and fix div overflow for dates/infos!
         // need to wait til we're here since we're display:none until now.
         $('#timeline .date span').each(fixOverflow);
@@ -867,7 +954,7 @@ $(function() {
 
   zoomInBtn.click(function(evt) {
     evt.preventDefault();
-    doZoomIn(50, 100);
+    setupSelectZoomRange();
   });
 
   zoomOutBtn.click(function(evt) {
@@ -898,8 +985,8 @@ $(function() {
   $('#printCoworkers').click(function() {
     console.log(myCoworkers);
   });
+
   $('#printCompBtn').click(function() {
     console.log(myCompanies);
   });
-
 });

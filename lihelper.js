@@ -41,7 +41,7 @@ anyDatesOverlap = function(startVal, endVal, myDates) {
   length = myDates.length;
   for (i=0; i<length; ++i) {
     dates = myDates[i].split(':');
-    if (datesOverlap(startVal, endVal, parseInt(dates[0]), parseInt(dates[1]))) {
+    if (datesOverlap(startVal, endVal, parseInt(dates[0], 10), parseInt(dates[1], 10))) {
       return true;
     }
   }
@@ -100,7 +100,7 @@ redis.on("error", function (err) {
 
 exports.storePosition = storePosition = function(profileId, position, myProfileId) {
   var company = position.company,
-      cmpKey, i, start, end;
+      cmpKey, datesKey, i, start, end;
 
   if (company && company.name) {
     company.name = company.name.toLowerCase().replace(STRIP_PUNC, '');
@@ -112,7 +112,9 @@ exports.storePosition = storePosition = function(profileId, position, myProfileI
       end = position.endDate ? convertDateToVal(position.endDate) : 0;
       dates = start + ':' + end;
       cmpKey = company.name.toLowerCase().replace(STRIP_PUNC, '');
-      redis.sadd(['employmentDates', profileId, cmpKey].join(':'), dates);
+      datesKey = ['employmentDates', profileId, cmpKey].join(':');
+      redis.sadd(datesKey, dates);
+      redis.expire(datesKey, 1800);
     }
     //}
   }
