@@ -24,6 +24,7 @@ $(function() {
       relLeft         = 0, // for zoom, scale of 0-100
       relRight        = 100, // for zoom, scale of 0-100
       // DOM ELEMENTS
+      bodyElem        = $('#body'),
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
       timelineElem    = $('#timeline'),
@@ -55,6 +56,7 @@ $(function() {
       TL_WIDTH        = 970,
       TL_HEIGHT       = 140,
       TL_HZ_PADDING   = 20,
+      TOP_PADDING     = 20,
       HALF_HEIGHT     = 315,
       LEFT_BOUND      = TL_HZ_PADDING,
       RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2,
@@ -619,7 +621,7 @@ $(function() {
       else {
         randLeft = Math.floor(Math.random()*(HEADER_WIDTH));
         // underneath header ... don't allow them to go as high
-        randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + 20); // 30 is negative margin on timelineStuff
+        randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + TOP_PADDING);
       }
       currLink.addClass('upper')
               .css('top', HALF_HEIGHT+PIC_SIZE)
@@ -714,8 +716,8 @@ $(function() {
   // just use jQuery's pageX and adjust from document top-left.
   adjustMouseCoords = function(mouseX, mouseY) {
     // adjust mouseX and Y to be relative to timeline
-    return { x : mouseX - timelineElem.offset().left,
-             y : mouseY - TL_TOP };
+    return { x : mouseX - bodyElem.offset().left,
+             y : mouseY - TOP_PADDING };
   },
 
   // TODO: continue mousemove when mouse is outside of timeline
@@ -741,12 +743,15 @@ $(function() {
 
   // Select a region to zoom by dragging the mouse
   setupSelectZoomRange = function() {
-    alert('using your cursor, select a section of the timeline to zoom in on!');
-    timelineElem.hover(function() {
-      timelineElem.css('cursor', 'crosshair');
-    })
-    .mousedown(function(evt) {
-      if ($(evt.target).attr('id') === 'mypic') { return; }
+    tlStuffElem.mousedown(function(evt) {
+      var id = $(evt.target).attr('id');
+      if (id === 'mypic') { return; }
+      if (id === 'zoomBtn') {
+        cancelZoom();
+        zoomBtn.text('Zoom In');
+        return;
+      }
+
       evt.preventDefault();
       selectingZoom = 1;
       coords = adjustMouseCoords(evt.pageX, evt.pageY);
@@ -758,6 +763,8 @@ $(function() {
                     .hide();
     })
     .mouseup(function(evt) {
+      if (!selectingZoom) { return; }
+
       var left     = parseInt(zoomSelectElem.css('left'), 10),
           width    = parseInt(zoomSelectElem.css('width'), 10),
           right    = left+width,
@@ -776,17 +783,20 @@ $(function() {
       relRight = (right-tl_left)/(tl_right-tl_left)*100;
 
       doZoom(relLeft, relRight);
+      $('#zoomBtn').text('Zoom Out');
       cancelZoom();
     })
-    .mousemove(selectZoomRange);
+    .mousemove(selectZoomRange)
+    .addClass('zooming');
   },
 
   cancelZoom = function() {
     zoomSelectElem.fadeTo('fast', 0, function() {
       zoomSelectElem.hide();
     });
-    timelineElem.unbind();
-    timelineElem.css('cursor', '');
+    tlStuffElem.unbind();
+    tlStuffElem.removeClass('zooming');
+    selectingZoom = 0;
   },
 
   // TODO: make myPic follow zoom as well?
@@ -810,8 +820,6 @@ $(function() {
      * 3) new company LEFT = (75-50)/(100-50) = 25/50 = 1/2 = 50%
      * 4) new company WIDTH = (10)/(100-50) = 10/50 = 1/5 = 20%
      *
-     * STILL NEED TO FIGURE OUT:
-     * how to calculate what position in the timeline
      */
     var blocks = timelineElem.find('.block div'),
         length = blocks.length;
@@ -836,10 +844,25 @@ $(function() {
         width: origWidth/(newRight - newLeft) * 100 + '%'
       }, options);
     });
-    timelineElem.find('.date span,.info span').each(function() {
-      var _this     = $(this),
-          origLeft  = parseInt(_this.attr('data-li-left'), 10);
-      _this.animate({ left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%' });
+    timelineElem.find('.date span,.infoBlock').each(function() {
+      var _this         = $(this),
+          origLeft      = parseInt(_this.attr('data-li-left'), 10)
+          animateLeft   = ((origLeft - newLeft)/(newRight - newLeft) * 100) + '%';
+          /*
+          animLeftPx    = parseInt(animateLeft, 10)/100 * TL_WIDTH,
+          thisWidth     = _this.width();
+          */
+
+      /*
+      if (animLeftPx > 0 &&
+          animLeftPx < TL_WIDTH &&
+          animLeftPx + thisWidth > TL_WIDTH) {
+        // fix overflow
+        console.log('adjusting left');
+        animateLeft = (TL_WIDTH-thisWidth)/TL_WIDTH * 100 + '%';
+      }
+      */
+      _this.animate({ left: animateLeft });
     });
 
     relLeft  = newLeft;
@@ -848,9 +871,9 @@ $(function() {
 
   doPlay = function() {
     var iconLeft, dur, totalDur, active, className,
-        speeds = { slow     : 35000,
-                   med      : 25000,
-                   fast     : 8000,
+        speeds = { slow     : 25000,
+                   med      : 12000,
+                   fast     : 6000,
                    realfast : 2000 };
     $(this).text('Pause');
     myPicLeft = myPicElem.position().left;
@@ -882,10 +905,13 @@ $(function() {
   // the right margin of the div and set them to be positioned by
   // right:0 instead.
   fixOverflow = function() {
-    var _this = $(this);
-    if (_this.width() + _this.position().left > TL_WIDTH) {
-      _this.css('left', '');
-      _this.css('right', '0');
+    var _this = $(this),
+        mywidth = _this.width(),
+        newLeft;
+    if (mywidth + _this.position().left > TL_WIDTH) {
+      newLeft = (TL_WIDTH-mywidth)/TL_WIDTH * 100 + '%';
+      _this.css('left', newLeft)
+           .attr('data-li-left', newLeft);
     }
   },
 
@@ -957,7 +983,8 @@ $(function() {
 
   // Browser event handlers.
 
-  playBtn.click(function() {
+  playBtn.click(function(evt) {
+    evt.preventDefault();
     if ($(this).text() === 'Play') {
       doPlay.apply(this);
     }
@@ -968,18 +995,20 @@ $(function() {
 
   zoomBtn.click(function(evt) {
     var _this = $(this);
-    myPicElem.stop(true);
-    playBtn.text('Play');
     evt.preventDefault();
 
-    if (!zoomed) {
-      // zoom in
+    myPicElem.stop(true);
+    playBtn.text('Play');
+
+    if (_this.text() === 'Zoom In') {
       setupSelectZoomRange();
       zoomed = 1;
-      _this.text('Zoom Out');
+      _this.text('Cancel');
     }
-    else {
-      // zoom out
+    else if (_this.text() === 'Cancel') {
+      cancelZoom();
+    }
+    else if (_this.text() === 'Zoom Out') {
       doZoom(0, 100); // reset
       zoomed = 0;
       _this.text('Zoom In');
