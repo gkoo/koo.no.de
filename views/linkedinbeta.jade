@@ -31,15 +31,14 @@ html(lang="en")
       #message
       #timelineStuff
         #upper
-          script(type="IN/Share", data-url="http://koo.no.de/linkedin", data-counter="top")
+          script(type="IN/Share", data-url="http://koo.no.de/linkedin")
           #header
             p
               | Follow your career timeline and track the
               | connections you've made throughout the years!
             p
               | To start, press "Play" or drag your portrait!
-            a#zoomBtn(href='#') Zoom In
-            a#playBtn(href='#') Play
+            a#playBtn.btn(href='#') Play
             ul#speed
               li.med.active
                 a(href="#") Medium
@@ -52,6 +51,7 @@ html(lang="en")
                 a(href="#") Fast
               li.realfast
                 a(href="#") Really Fast
+            a#zoomBtn.btn(href='#') Zoom In
             //- #colorGrid
             //-   .orange
             //-   .blue

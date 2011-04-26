@@ -209,7 +209,7 @@ select {
   text-align: left;
   width: 460px;
 }
-#playBtn {
+.btn {
   border-width: 1px;
   border-style: solid;
   -moz-border-radius: 3px;
@@ -220,6 +220,7 @@ select {
   line-height: 1.35;
   margin: 0;
   overflow: visible;
+  outline: none;
   padding: 3px 10px 2px;
   *padding: 2px 10px 1px;
   text-decoration: none !important;
@@ -237,8 +238,8 @@ select {
   min-width: 35px;
   text-align: center;
 }
-#playBtn:hover,
-#playBtn.hover {
+.btn:hover,
+.btn.hover {
   background: #04608E;
   background: -moz-linear-gradient(top, #69A0B6 0, #69A0B6 1px, #277696 1px, #04608E 100%);
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0,#69A0B6), color-stop(5%,#69A0B6), color-stop(5%,#277696), color-stop(100%,#04608E));
@@ -247,12 +248,15 @@ select {
   border-color: #004a73;
   text-decoration: none;
 }
-#playBtn:active {
+.btn:active {
   background: #267696;
   background: -moz-linear-gradient(top, #025F8D 0, #267696 100%);
   background: -webkit-gradient(linear, left top, left bottom, color-stop(0,#025F8D), color-stop(100%,#267696));
   background: linear-gradient(top, #025F8D 0, #267696 100%);
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#025F8D', endColorstr='#267696',GradientType=0); border-color: #004a73;
+}
+#zoomBtn {
+  min-width: 55px;
 }
 #speed {
   color: #39c;
