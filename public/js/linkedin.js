@@ -363,7 +363,7 @@ $(function() {
     endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
     width = (endVal-startVal)/myCareerLength*100 + '%';
     zindex = Math.floor((startVal-myCareerStart)/myCareerLength*100); // (It's just the "left" css property; see next line.)
-    left = Math.floor((startVal-myCareerStart))/myCareerLength*100 + '%';
+    left = (startVal-myCareerStart)/myCareerLength*100 + '%';
     color = COLORS[count%COLORS.length];
     if (position.endDate) {
       compEndDate = ' - ' +
@@ -378,27 +378,27 @@ $(function() {
                compEndDate +
                ')';
 
-    newBlock = $('<div/>').css('height', '100%')
-                          .css('width', width)
-                          .css('left', left)
-                          .css('z-index', zindex) // ensure later blocks show over earlier blocks
-                          .css('position', 'absolute')
-                          .css('border-left', '1px solid #fff')
-                          .attr('data-li-left', left)
+    newBlock = $('<div/>').attr('data-li-left', left)
                           .attr('data-li-width', width)
-                          .addClass(color);
+                          .addClass(color)
+                          .css({'height':      '100%',
+                                'width':       width,
+                                'left':        left,
+                                'z-index':     zindex, // ensure later blocks show over earlier blocks
+                                'position':    'absolute',
+                                'border-left': '1px solid #fff'});
 
     newDate = $('<span/>').text(MONTHS_ABBR[position.startDate.month-1] +
                                  ' ' +
                                  position.startDate.year)
-                          .css('position', 'absolute')
-                          .css('z-index', zindex)
-                          .css('left', left)
+                          .css({'position': 'absolute',
+                                'z-index': zindex,
+                                'left': left})
                           .attr('data-li-left', left)
                           .attr('data-li-zindex', zindex);
 
-    newInfo = $('<span/>').css('left', left)
-                          .css('z-index', zindex)
+    newInfo = $('<span/>').css({'left': left,
+                                'z-index': zindex})
                           .attr('data-li-left', left)
                           .attr('data-li-zindex', zindex)
                           .addClass('infoBlock')
@@ -600,11 +600,11 @@ $(function() {
                         .attr('title', connection.firstName + ' ' + connection.lastName)
                         .attr('id', connection.id)
                         .attr('target', '_new')
-                        .css('-moz-transform', 'rotate(' + randRotate + 'deg)')
-                        .css('-webkit-transform', 'rotate(' + randRotate + 'deg)')
-                        .css('transform', 'rotate(' + randRotate + 'deg)')
-                        .css('position', 'absolute')
-                        .css('background-image', 'url('+connection.pictureUrl+')')
+                        .css({'-moz-transform': 'rotate(' + randRotate + 'deg)',
+                              '-webkit-transform': 'rotate(' + randRotate + 'deg)',
+                              'transform': 'rotate(' + randRotate + 'deg)',
+                              'position': 'absolute',
+                              'background-image': 'url('+connection.pictureUrl+')'})
                         .addClass('cxnPic');
     currLink.hover(function() {
       $(this).css('z-index', 1000);
@@ -624,8 +624,8 @@ $(function() {
         randTop = Math.floor(Math.random()*(HALF_HEIGHT-HEADER_HEIGHT-PIC_SIZE*5/4-30)) + (HEADER_HEIGHT + TOP_PADDING);
       }
       currLink.addClass('upper')
-              .css('top', HALF_HEIGHT+PIC_SIZE)
-              .css('left', randLeft)
+              .css({'top': HALF_HEIGHT+PIC_SIZE,
+                    'left': randLeft})
               .attr('li-top', randTop);
       $('#upper .pics').append(currLink);
     }
@@ -633,8 +633,8 @@ $(function() {
       randLeft = Math.floor(Math.random()*RIGHT_BOUND);
       randTop = Math.floor(Math.random()*(HALF_HEIGHT-PIC_SIZE-20)) + 10;
       currLink.addClass('lower')
-              .css('left', randLeft)
-              .css('top', PIC_SIZE*(-1.5))
+              .css({'left': randLeft,
+                    'top':  PIC_SIZE*(-1.5)})
               .attr('li-top', randTop);
       $('#lower .pics').append(currLink.addClass('lower'));
     }
@@ -734,10 +734,10 @@ $(function() {
         newLeft  = mouseX < divLeft ? mouseX : divLeft;
         newTop   = mouseY < divTop ? mouseY : divTop;
 
-    zoomSelectElem.css('width', Math.abs(mouseX-divLeft) + 'px')
-                  .css('height', Math.abs(mouseY-divTop) + 'px')
-                  .css('left', newLeft + 'px')
-                  .css('top', newTop + 'px');
+    zoomSelectElem.css({'width':  Math.abs(mouseX-divLeft) + 'px',
+                        'height': Math.abs(mouseY-divTop) + 'px',
+                        'left':   newLeft + 'px',
+                        'top':    newTop + 'px'});
     zoomSelectElem.show();
   },
 
@@ -755,9 +755,9 @@ $(function() {
       evt.preventDefault();
       selectingZoom = 1;
       coords = adjustMouseCoords(evt.pageX, evt.pageY);
-      zoomSelectElem.css('left', coords.x + 'px')
-                    .css('top', coords.y + 'px')
-                    .css('opacity', 1)
+      zoomSelectElem.css({'left': coords.x + 'px',
+                          'top': coords.y + 'px',
+                          'opacity': 1})
                     .attr('data-li-left', coords.x)
                     .attr('data-li-top', coords.y)
                     .hide();
@@ -765,8 +765,8 @@ $(function() {
     .mouseup(function(evt) {
       if (!selectingZoom) { return; }
 
-      var left     = parseInt(zoomSelectElem.css('left'), 10),
-          width    = parseInt(zoomSelectElem.css('width'), 10),
+      var left     = parseFloat(zoomSelectElem.css('left'), 10),
+          width    = parseFloat(zoomSelectElem.css('width'), 10),
           right    = left+width,
           tl_left  = TL_HZ_PADDING,
           tl_right = TL_WIDTH+TL_HZ_PADDING;
@@ -829,25 +829,40 @@ $(function() {
 
     blocks.each(function(index) {
       var _this     = $(this),
-          origLeft  = parseInt(_this.attr('data-li-left'), 10),
-          origWidth = parseInt(_this.attr('data-li-width'), 10),
-          options;
+          origLeft  = parseFloat(_this.attr('data-li-left'), 10),
+          origWidth = parseFloat(_this.attr('data-li-width'), 10),
+          options, animateLeft, animateWidth;
 
       if (index === length-1) {
+        // do a "doDrag" when the last timeline block is done animating.
         options = {
           complete: function() { doDrag(myPicElem.position().left); }
         };
       }
 
+      animateLeft = (origLeft - newLeft)/(newRight - newLeft) * 100 + '%';
+      animateWidth = origWidth/(newRight - newLeft) * 100 + '%';
+
       _this.animate({
-        left: (origLeft - newLeft)/(newRight - newLeft) * 100 + '%',
-        width: origWidth/(newRight - newLeft) * 100 + '%'
+        left: animateLeft,
+        width: animateWidth
       }, options);
     });
     timelineElem.find('.date span,.infoBlock').each(function() {
-      var _this         = $(this),
-          origLeft      = parseInt(_this.attr('data-li-left'), 10)
-          animateLeft   = ((origLeft - newLeft)/(newRight - newLeft) * 100) + '%';
+      var _this    = $(this),
+          origLeft = parseFloat(_this.attr('data-li-left'), 10),
+          rawLeft  = parseFloat(_this.attr('data-li-rawleft'), 10),
+          animateLeft;
+
+      if (newLeft === 0 && newRight === 100) {
+        // zooming out, just restore original left
+        animateLeft = origLeft + '%';
+      }
+      else {
+        // zooming in
+        origLeft = rawLeft ? rawLeft : origLeft;
+        animateLeft = ((origLeft - newLeft)/(newRight - newLeft) * 100) + '%';
+      }
           /*
           animLeftPx    = parseInt(animateLeft, 10)/100 * TL_WIDTH,
           thisWidth     = _this.width();
@@ -869,6 +884,7 @@ $(function() {
     relRight = newRight;
   },
 
+  // TODO: make play continue to next section when zoomed in.
   doPlay = function() {
     var iconLeft, dur, totalDur, active, className,
         speeds = { slow     : 25000,
@@ -905,12 +921,14 @@ $(function() {
   // the right margin of the div and set them to be positioned by
   // right:0 instead.
   fixOverflow = function() {
-    var _this = $(this),
-        mywidth = _this.width(),
+    var _this     = $(this),
+        mywidth   = _this.width(),
+        origLeft  = _this.attr('data-li-left'),
         newLeft;
     if (mywidth + _this.position().left > TL_WIDTH) {
       newLeft = (TL_WIDTH-mywidth)/TL_WIDTH * 100 + '%';
       _this.css('left', newLeft)
+           .attr('data-li-rawleft', origLeft)
            .attr('data-li-left', newLeft);
     }
   },
