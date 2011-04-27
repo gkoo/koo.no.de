@@ -46,6 +46,7 @@ $(function() {
       cxnsLoaded      = 0,
       zoomed          = 0,
       selectingZoom   = 0,
+      zoomDragging    = 0, // indicates user has initiated zoom by dragging
       // CONSTANTS
       //PORT            = 8080,
       PORT            = 80,
@@ -74,6 +75,17 @@ $(function() {
   convertDateToVal = function(date) {
     if (!date) { return 0; }
     return (date.year - 1900)*12 + date.month;
+  },
+
+  // Given a pixel value on the timeline, convert it to % value.
+  convertPxToPct = function(val) {
+    if (val < TL_HZ_PADDING) {
+      val = TL_HZ_PADDING;
+    }
+    else if (val > TL_HZ_PADDING + TL_WIDTH) {
+      val = TL_HZ_PADDING + TL_WIDTH;
+    }
+    return val/TL_WIDTH * 100;
   },
 
   myCareerNow = convertDateToVal({ month: thisMonth, year: thisYear }),
@@ -380,7 +392,7 @@ $(function() {
 
     newBlock = $('<div/>').attr('data-li-left', left)
                           .attr('data-li-width', width)
-                          .addClass(color)
+                          .addClass(color + ' tlBlock')
                           .css({'height':      '100%',
                                 'width':       width,
                                 'left':        left,
@@ -714,89 +726,11 @@ $(function() {
   // ---------------------------
   // Browsers implement clientX, pageX, screenX, etc. differently,
   // just use jQuery's pageX and adjust from document top-left.
+  // Units are in pixels.
   adjustMouseCoords = function(mouseX, mouseY) {
     // adjust mouseX and Y to be relative to timeline
     return { x : mouseX - bodyElem.offset().left,
              y : mouseY - TOP_PADDING };
-  },
-
-  // TODO: continue mousemove when mouse is outside of timeline
-  // TODO: allow moving of selection
-  // TODO: handles??? oh man...
-  selectZoomRange = function(evt) {
-    if (!selectingZoom) { return; }
-
-    var divLeft  = zoomSelectElem.attr('data-li-left'),
-        divTop   = zoomSelectElem.attr('data-li-top'),
-        coords   = adjustMouseCoords(evt.pageX, evt.pageY),
-        mouseX   = coords.x,
-        mouseY   = coords.y,
-        newLeft  = mouseX < divLeft ? mouseX : divLeft;
-        newTop   = mouseY < divTop ? mouseY : divTop;
-
-    zoomSelectElem.css({'width':  Math.abs(mouseX-divLeft) + 'px',
-                        'height': Math.abs(mouseY-divTop) + 'px',
-                        'left':   newLeft + 'px',
-                        'top':    newTop + 'px'});
-    zoomSelectElem.show();
-  },
-
-  // Select a region to zoom by dragging the mouse
-  setupSelectZoomRange = function() {
-    tlStuffElem.mousedown(function(evt) {
-      var id = $(evt.target).attr('id');
-      if (id === 'mypic') { return; }
-      if (id === 'zoomBtn') {
-        cancelZoom();
-        zoomBtn.text('Zoom In');
-        return;
-      }
-
-      evt.preventDefault();
-      selectingZoom = 1;
-      coords = adjustMouseCoords(evt.pageX, evt.pageY);
-      zoomSelectElem.css({'left': coords.x + 'px',
-                          'top': coords.y + 'px',
-                          'opacity': 1})
-                    .attr('data-li-left', coords.x)
-                    .attr('data-li-top', coords.y)
-                    .hide();
-    })
-    .mouseup(function(evt) {
-      if (!selectingZoom) { return; }
-
-      var left     = parseFloat(zoomSelectElem.css('left'), 10),
-          width    = parseFloat(zoomSelectElem.css('width'), 10),
-          right    = left+width,
-          tl_left  = TL_HZ_PADDING,
-          tl_right = TL_WIDTH+TL_HZ_PADDING;
-
-      selectingZoom = 0;
-      if (left < tl_left) {
-        left = tl_left;
-      }
-      if (right > tl_right) {
-        right = tl_right;
-      }
-
-      relLeft  = (left-tl_left)/(tl_right-tl_left)*100;
-      relRight = (right-tl_left)/(tl_right-tl_left)*100;
-
-      doZoom(relLeft, relRight);
-      $('#zoomBtn').text('Zoom Out');
-      cancelZoom();
-    })
-    .mousemove(selectZoomRange)
-    .addClass('zooming');
-  },
-
-  cancelZoom = function() {
-    zoomSelectElem.fadeTo('fast', 0, function() {
-      zoomSelectElem.hide();
-    });
-    tlStuffElem.unbind();
-    tlStuffElem.removeClass('zooming');
-    selectingZoom = 0;
   },
 
   // TODO: make myPic follow zoom as well?
@@ -884,6 +818,165 @@ $(function() {
     relRight = newRight;
   },
 
+  doMiscZoom = function(mouseLeft) {
+    var leftEdge, rightEdge, leftPct, rightPct;
+    if (mouseLeft < 0 || mouseLeft > TL_WIDTH) { return; }
+    mouseLeft = convertPxToPct(mouseLeft);
+    if (mouseLeft - 25 < 0) {
+      leftEdge = 0;
+      rightEdge = 50;
+    }
+    else if (mouseLeft + 25 > 100) {
+      leftEdge = 50;
+      rightEdge = 100;
+    }
+    else {
+      leftEdge = mouseLeft - 25;
+      rightEdge = mouseLeft + 25;
+    }
+    leftPct  = relLeft + leftEdge*(relRight-relLeft)/100
+    rightPct = relLeft + rightEdge*(relRight-relLeft)/100
+    doZoom(leftPct, rightPct);
+  },
+
+  doBlockZoom = function(evt) {
+    var target = $(evt.target),
+        left, width, right, coords;
+    if (target.attr('id') === 'mypic') { return evt.preventDefault(); }
+
+    if (target.hasClass('tlBlock')) {
+      // do zoom on edges of the block.
+      left = parseFloat(target.attr('data-li-left'), 10);
+      width = parseFloat(target.attr('data-li-width'), 10);
+      // TODO: detect left we're already zoomed to block
+      doZoom(left, left+width);
+    }
+    else {
+      coords = adjustMouseCoords(evt.pageX, evt.pageY);
+      if (coords.y > TL_TOP && coords.y < TL_TOP + TL_HEIGHT) {
+        doMiscZoom(coords.x);
+      }
+    }
+    zoomBtn.text('Zoom Out');
+  },
+
+  // TODO: continue mousemove when mouse is outside of timeline
+  // TODO: test really small zoom selections.
+  selectZoomRange = function(evt) {
+    if (!selectingZoom) { return; }
+
+    var divLeft  = zoomSelectElem.attr('data-li-left'),
+        divTop   = zoomSelectElem.attr('data-li-top'),
+        coords   = adjustMouseCoords(evt.pageX, evt.pageY),
+        mouseX   = coords.x,
+        mouseY   = coords.y,
+        newLeft  = mouseX < divLeft ? mouseX : divLeft;
+        newTop   = mouseY < divTop ? mouseY : divTop;
+
+    zoomDragging = 1;
+    zoomSelectElem.css({'width':  Math.abs(mouseX-divLeft) + 'px',
+                        'height': Math.abs(mouseY-divTop) + 'px',
+                        'left':   newLeft + 'px',
+                        'top':    newTop + 'px'});
+    zoomSelectElem.show();
+  },
+
+  hideZoomSelect = function(revertCursor/*optional*/) {
+    zoomSelectElem.fadeTo('fast', 0, function() {
+      zoomSelectElem.hide();
+      selectingZoom = zoomDragging = 0;
+      if (revertCursor) {
+        tlStuffElem.removeClass('zooming');
+        $('.tlBlock').unbind()
+                     .removeClass('hover');
+      }
+    });
+  },
+
+  // Select a region to zoom by dragging the mouse
+  setupSelectZoomRange = function() {
+    tlStuffElem.mousedown(function(evt) {
+      var id = $(evt.target).attr('id');
+      if (id === 'mypic') { return; }
+      if (id === 'zoomBtn') {
+        if (relLeft !== 0 || relRight !== 100) {
+          doZoom(0, 100);
+        }
+        cancelZoom();
+        zoomBtn.text('Zoom In');
+        return;
+      }
+
+      evt.preventDefault();
+      selectingZoom = 1;
+      coords = adjustMouseCoords(evt.pageX, evt.pageY);
+      zoomSelectElem.css({'left': coords.x + 'px',
+                          'top': coords.y + 'px',
+                          'opacity': 1})
+                    .attr('data-li-left', coords.x)
+                    .attr('data-li-top', coords.y)
+                    .hide();
+    })
+    .mouseup(function(evt) {
+      // TODO: clicking in padding doesn't seem to work.
+      if (!selectingZoom || !zoomDragging ) {
+        // just a click, don't capture selection.
+        selectingZoom = 0;
+        return evt.preventDefault();
+      }
+
+      var left     = parseFloat(zoomSelectElem.css('left'), 10),
+          width    = parseFloat(zoomSelectElem.css('width'), 10),
+          right    = left+width,
+          tl_left  = TL_HZ_PADDING,
+          tl_right = TL_WIDTH+TL_HZ_PADDING;
+
+      if (left < tl_left) {
+        left = tl_left;
+      }
+      if (right > tl_right) {
+        right = tl_right;
+      }
+
+      /*
+      relLeft  = (left-tl_left)/(tl_right-tl_left)*100;
+      relRight = (right-tl_left)/(tl_right-tl_left)*100;
+      */
+
+      /* 0-100 scale */
+      left  = (left-tl_left)/(tl_right-tl_left)*100;
+      right = (right-tl_left)/(tl_right-tl_left)*100;
+
+      /* adjust to relLeft, relRight */
+      leftPct  = relLeft + left*(relRight-relLeft)/100
+      rightPct = relLeft + right*(relRight-relLeft)/100
+
+      if (Math.floor(leftPct) !== Math.floor(rightPct)) {
+        doZoom(leftPct, rightPct);
+        zoomBtn.text('Zoom Out');
+      }
+
+      hideZoomSelect();
+    })
+    .mousemove(selectZoomRange)
+    .addClass('zooming');
+
+    timelineElem.click(doBlockZoom);
+
+    $('.tlBlock').hover(function() {
+      $(this).addClass('hover');
+    }, function() {
+      $(this).removeClass('hover');
+    });
+  },
+
+  cancelZoom = function() {
+    hideZoomSelect(true);
+    tlStuffElem.unbind();
+    timelineElem.unbind();
+    zoomDragging = selectingZoom = 0;
+  },
+
   // TODO: make play continue to next section when zoomed in.
   doPlay = function() {
     var iconLeft, dur, totalDur, active, className,
@@ -967,7 +1060,7 @@ $(function() {
   // connecting through socket.io
   socket.on('connect', function() {
     ioConnected = 1;
-    if (ownProfile) {
+    if (ownProfile && !profileStored) {
       // profile came back first
       handleOwnProfile(ownProfile);
     }
@@ -1020,7 +1113,6 @@ $(function() {
 
     if (_this.text() === 'Zoom In') {
       setupSelectZoomRange();
-      zoomed = 1;
       _this.text('Cancel');
     }
     else if (_this.text() === 'Cancel') {
@@ -1028,7 +1120,6 @@ $(function() {
     }
     else if (_this.text() === 'Zoom Out') {
       doZoom(0, 100); // reset
-      zoomed = 0;
       _this.text('Zoom In');
     }
   });
