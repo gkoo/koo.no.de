@@ -80,7 +80,7 @@ app.get('/', function(req, res){
   res.render('index', {
     locals: {
       page: 'index',
-      title: 'Some Guy\'s Site'
+      title: 'designed by an engineer'
     }
   });
 });
