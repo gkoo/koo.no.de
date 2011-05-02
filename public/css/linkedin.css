@@ -112,7 +112,7 @@ ul {
 #timelineStuff{
   margin-top: -30px;
 }
-#timelineStuff.zooming {
+.zooming {
   cursor: crosshair;
 }
 #signin {

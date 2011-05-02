@@ -48,8 +48,8 @@ $(function() {
       selectingZoom   = 0,
       zoomDragging    = 0, // indicates user has initiated zoom by dragging
       // CONSTANTS
-      //PORT            = 8080,
-      PORT            = 80,
+      PORT            = 8080,
+      //PORT            = 80,
       PIC_SIZE        = 80,
       BORDER_SIZE     = 1,
       HEADER_WIDTH    = 290,
@@ -886,7 +886,7 @@ $(function() {
       zoomSelectElem.hide();
       selectingZoom = zoomDragging = 0;
       if (revertCursor) {
-        tlStuffElem.removeClass('zooming');
+        $('body').removeClass('zooming');
         $('.tlBlock').unbind()
                      .removeClass('hover');
       }
@@ -895,6 +895,7 @@ $(function() {
 
   // Select a region to zoom by dragging the mouse
   setupSelectZoomRange = function() {
+    var doc = $(document);
     tlStuffElem.mousedown(function(evt) {
       var id = $(evt.target).attr('id');
       if (id === 'mypic') { return; }
@@ -916,8 +917,10 @@ $(function() {
                     .attr('data-li-left', coords.x)
                     .attr('data-li-top', coords.y)
                     .hide();
-    })
-    .mouseup(function(evt) {
+    });
+    $('body').addClass('zooming');
+
+    doc.mouseup(function(evt) {
       // TODO: clicking in padding doesn't seem to work.
       if (!selectingZoom || !zoomDragging ) {
         // just a click, don't capture selection.
@@ -958,8 +961,7 @@ $(function() {
 
       hideZoomSelect();
     })
-    .mousemove(selectZoomRange)
-    .addClass('zooming');
+    .mousemove(selectZoomRange);
 
     timelineElem.click(doBlockZoom);
 
@@ -975,6 +977,7 @@ $(function() {
     tlStuffElem.unbind();
     timelineElem.unbind();
     zoomDragging = selectingZoom = 0;
+    $(document).unbind();
   },
 
   // TODO: make play continue to next section when zoomed in.
