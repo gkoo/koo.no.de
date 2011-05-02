@@ -80,7 +80,7 @@ app.get('/', function(req, res){
   res.render('index', {
     locals: {
       page: 'index',
-      title: 'Designed By An Engineer'
+      title: 'designed by an engineer'
     }
   });
 });
@@ -118,6 +118,15 @@ app.get('/linkedinbeta', function(req, res){
     locals: {
       title: 'LinkedIn Connection Timeline',
       loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
+    },
+    layout: false
+  });
+});
+
+app.get('/linkedinnetwork', function(req, res){
+  res.render('linetwork', {
+    locals: {
+      title: 'LinkedIn Network',
     },
     layout: false
   });
