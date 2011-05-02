@@ -123,6 +123,15 @@ app.get('/linkedinbeta', function(req, res){
   });
 });
 
+app.get('/linkedinnetwork', function(req, res){
+  res.render('linetwork', {
+    locals: {
+      title: 'LinkedIn Network',
+    },
+    layout: false
+  });
+});
+
 app.get('/*', function(req, res) {
   throw new NotFound;
 });
