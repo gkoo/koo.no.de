@@ -121,6 +121,9 @@ $(function() {
     for (i=0; i<oldlength; ++i) {
       found = false;
       for (j=0; j<newlength; ++j) {
+        found = companiesOld[i].name === companiesNew[j].name
+                && convertDateToVal(companiesOld[i].startDate) === convertDateToVal(companiesNew[j].startDate)
+                && convertDateToVal(companiesOld[i].endDate) === convertDateToVal(companiesNew[j].endDate);
         if (companiesOld[i].name === companiesNew[j].name) {
           found = true;
           break;
