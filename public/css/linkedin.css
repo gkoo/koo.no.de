@@ -320,6 +320,10 @@ select {
   position: absolute;
   z-index: 1001;
 }
+.helpReload {
+  display: none;
+  margin-top: 15px;
+}
 span iframe { /* for share dialog */
   z-index: 9999;
 }

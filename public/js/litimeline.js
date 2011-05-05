@@ -45,6 +45,7 @@ $(function() {
       profileStored   = 0,
       cxnsLoaded      = 0,
       zoomed          = 0,
+      doneLoading     = 0, // used with reload message
       selectingZoom   = 0,
       zoomDragging    = 0, // indicates user has initiated zoom by dragging
       // CONSTANTS
@@ -66,11 +67,6 @@ $(function() {
       COLORS          = ['orange', 'blue', 'green', 'purple', 'teal', 'red', 'yellow', 'magenta', 'grey'],
       STRIP_PUNC      = /[^\w\s]/gi,
       TL_TOP;
-
-  convertDateFromVal = function(val) {
-    var month = Math.floor(val%12) || 12;
-    return { month: month, year: Math.floor(1900+(val-month)/12) };
-  },
 
   convertDateToVal = function(date) {
     if (!date) { return 0; }
@@ -415,7 +411,7 @@ $(function() {
                           .attr('data-li-zindex', zindex)
                           .addClass('infoBlock')
                           .addClass(position.company.name.toLowerCase()
-                                            .replace(/\s/g,'')
+                                            .replace(/\s/g,'') // strip spaces
                                             .replace(STRIP_PUNC, ''))
                           .append($('<span/>').addClass('compName')
                                               .text(position.company.name))
@@ -1044,7 +1040,7 @@ $(function() {
   onLinkedInLoad = function () {
     // hide loading
     loadingElem.fadeTo('slow', 0, function() {
-      loadingElem.children('p').text('Loading connections...');
+      loadingElem.children('p:nth-child(1)').text('Loading connections...');
     });
     loadingElem.hide();
     // show signin
@@ -1076,6 +1072,7 @@ $(function() {
         }
       }
       else if (message.type === 'filterConnectionsResult') {
+        doneLoading = 1;
         myCoworkers = message.coworkers;
         // fade out loading
         loadingElem.fadeTo('fast', 0);
@@ -1151,4 +1148,15 @@ $(function() {
   $('#printCompBtn').click(function() {
     console.log(myCompanies);
   });
+
+  // After 30 seconds, show message to reload.
+  setTimeout(function() {
+    var reloadLink = loadingElem.find('.helpReload');
+    if (!doneLoading) {
+      reloadLink.show().click(function(evt) {
+        window.location.reload();
+        evt.preventDefault();
+      });
+    }
+  }, 30000);
 });

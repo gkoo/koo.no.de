@@ -10,6 +10,10 @@
   #loading
     p= loadStatus
     img.spinner(src="/img/timeline_loader.gif")
+    p.helpReload
+      | It shouldn't be taking this long... Try
+      a(href="#")
+        = 'reloading?'
   div#logo
     img(src="/img/timeline_logo.png")
     .clear
