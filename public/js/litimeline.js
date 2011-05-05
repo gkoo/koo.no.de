@@ -214,7 +214,7 @@ $(function() {
   },
 
   updateCurrCompanies = function (currTime) {
-    var name, cmpKey, cmp,
+    var name, cmpKey, cmp, start,
         length = currCompanies.length;
     for (i=0; i<length; ++i) {
       cmp = currCompanies[i];
@@ -229,7 +229,8 @@ $(function() {
     companyNames = [];
     $('.infoBlock').css('opacity', 0);
     for (i=0; i<length; ++i) {
-      name = currCompanies[i].name.toLowerCase()
+      start = convertDateToVal(currCompanies[i].startDate);
+      name = [currCompanies[i].name.toLowerCase(), start].join('')
                                   .replace(/\s/g, '')
                                   .replace(STRIP_PUNC, '');
       $('.' + name).css('opacity', 1); // this is an .infoBlock
@@ -400,9 +401,9 @@ $(function() {
                           .attr('data-li-left', left)
                           .attr('data-li-zindex', zindex)
                           .addClass('infoBlock')
-                          .addClass(position.company.name.toLowerCase()
-                                            .replace(/\s/g,'') // strip spaces
-                                            .replace(STRIP_PUNC, ''))
+                          .addClass([position.company.name.toLowerCase(), startVal].join('')
+                                                .replace(/\s/g,'') // strip spaces
+                                                .replace(STRIP_PUNC, ''))
                           .append($('<span/>').addClass('compName')
                                               .text(position.company.name))
                           .append($('<span/>').addClass('compDate')
@@ -873,5 +874,5 @@ $(function() {
         evt.preventDefault();
       });
     }
-  }, 30000);
+  }, 45000);
 });
