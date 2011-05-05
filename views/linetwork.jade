@@ -6,7 +6,7 @@ html(lang="en")
     //- script(src='/socket.io/socket.io.js')
     script(src='/js/underscore-min.js')
     script(src='/js/backbone-min.js')
-    script(src='/js/linetwork.js')
+    script(src='/js/network.js')
     script(src='http://platform.linkedin.com/in.js')
       //- Prod
       //- | api_key: koMCmJ5xPVCzE97FspEZJtsbl8gZheAhv8SM4J7twaistnj1UyUJIWEoQPHo6n92
@@ -16,6 +16,7 @@ html(lang="en")
       | onLoad: onLinkedInLoad
     link(rel='stylesheet', href='/css/linetwork.css')
   body
+    input#debugBtn(value="Print myAppController", type="button")
     #main
       #featured-pics.pics
       #all-pics.pics
