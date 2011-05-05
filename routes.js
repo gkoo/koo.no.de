@@ -109,7 +109,7 @@ app.get('/linkedin', function(req, res){
       title: 'LinkedIn Connection Timeline',
       loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
     },
-    layout: false
+    layout: 'lilayout'
   });
 });
 
@@ -118,6 +118,15 @@ app.get('/linkedinbeta', function(req, res){
     locals: {
       title: 'LinkedIn Connection Timeline',
       loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
+    },
+    layout: false
+  });
+});
+
+app.get('/superpic', function(req, res){
+  res.render('superpicture', {
+    locals: {
+      title: 'Super Picture',
     },
     layout: false
   });

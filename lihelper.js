@@ -125,6 +125,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
       idKey = ['id', sessionId].join(':'),
       fullName  = [profile.firstName, profile.lastName].join(' '),
       keyValuePairs = [keyPrefix],
+      lastViewed = (new Date()).toUTCString(),
       i, company;
 
   if (sessionId) {
@@ -156,8 +157,8 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
     callback(sessionId);
   }
   redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
-  redis.hset(['profiles', profile.id].join(':'), 'lastViewed', (new Date()).toUTCString());
-  redis.sadd('viewers', fullName);
+  redis.hset(['profiles', profile.id].join(':'), 'lastViewed', lastViewed);
+  redis.hset('viewlog', [fullName, profile.id].join(':'), lastViewed);
 };
 
 exports.filterConnections = function(sessionId, profiles, callback) {
