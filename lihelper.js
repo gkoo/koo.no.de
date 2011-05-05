@@ -156,6 +156,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
     // so we don't load connections before we're ready.
     callback(sessionId);
   }
+  // do some logging
   redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
   redis.hset(['profiles', profile.id].join(':'), 'lastViewed', lastViewed);
   redis.hset('viewlog', [fullName, profile.id].join(':'), lastViewed);
@@ -192,12 +193,5 @@ exports.filterConnections = function(sessionId, profiles, callback) {
         });
       }
     });
-    /*
-    if (!profiles || !profiles.values) { return; }
-    for (i=0; i<profiles.values.length; ++i) {
-      storeProfile(profiles.values[i], { myProfileId: myProfileId });
-    }
-    callback();
-    */
   });
 };

@@ -1,8 +1,6 @@
 // TODO: make pics more likely to go on bottom
 // TODO: test in IE (opacity/filter, etc)
-// TODO: setTimeout showerror
 // TODO: check to make sure a start/endDate without month shows correctly
-// TODO: investigate if using company names as class names is problematic (numbers, etc)
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
@@ -24,30 +22,23 @@ $(function() {
       relLeft         = 0, // for zoom, scale of 0-100
       relRight        = 100, // for zoom, scale of 0-100
       // DOM ELEMENTS
-      bodyElem        = $('#body'),
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
       timelineElem    = $('#timeline'),
       myPicElem       = $('#mypic'),
       messageElem     = $('#message'),
-      zoomBtn         = $('#zoomBtn'),
       playBtn         = $('#playBtn'),
       speedElem       = $('#speed'),
       signinElem      = $('#signin'),
       logoElem        = $('#logo img'),
       tlStuffElem     = $('#timelineStuff'),
-      headerElem      = $('#header'),
-      zoomSelectElem  = $('#zoomSelect'),
       topBlockElem    = timelineElem.children('.top.block'),
       bottomBlockElem = timelineElem.children('.bottom.block'),
       // BOOLEAN FLAGS
       ioConnected     = 0,
       profileStored   = 0,
       cxnsLoaded      = 0,
-      zoomed          = 0,
       doneLoading     = 0, // used with reload message
-      selectingZoom   = 0,
-      zoomDragging    = 0, // indicates user has initiated zoom by dragging
       // CONSTANTS
       //PORT            = 8080,
       PORT            = 80,
@@ -62,7 +53,6 @@ $(function() {
       HALF_HEIGHT     = 315,
       LEFT_BOUND      = TL_HZ_PADDING,
       RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2,
-      MONTHS          = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
       MONTHS_ABBR     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       COLORS          = ['orange', 'blue', 'green', 'purple', 'teal', 'red', 'yellow', 'magenta', 'grey'],
       STRIP_PUNC      = /[^\w\s]/gi,
@@ -184,7 +174,7 @@ $(function() {
   // Given the current position on the timeline, is the connection
   // at the same company as the user?
   isConcurrentEmployee = function (cxnDates) {
-    var i, theirDate, start, end,
+    var i, start, end,
         theirLength = cxnDates.length,
         myCurrTime = Math.floor(currTime);
 
@@ -202,7 +192,7 @@ $(function() {
   },
 
   showExistingPictures = function (coworkers, currTime) {
-    var pic, isConcurrent, length, myDates;
+    var pic, isConcurrent, myDates;
     if (!coworkers) { return; }
 
     myDates = coworkers[myProfileId];
@@ -365,7 +355,7 @@ $(function() {
 
   createTimelineBlock = function(position, count, topCompDates, bottomCompDates) {
     //create a little sectionbar on the timeline for this company.
-    var startVal, endVal, newBlock, newDate, newInfo, tmpStart, color, zindex, compDate, topHasRoom, botHasRoom, left,
+    var startVal, endVal, newBlock, newDate, newInfo, color, zindex, compDate, topHasRoom, botHasRoom, left,
         compEndDate = '';
     startVal = convertDateToVal(position.startDate);
     endVal = position.endDate ? convertDateToVal(position.endDate) : myCareerNow;
@@ -441,7 +431,7 @@ $(function() {
   },
 
   handleOwnPositions = function (positions) {
-    var i, position, company, width, left, companyLength, positionsSorted,
+    var i, position, company, tmpStart,
         topCompDates = [],
         bottomCompDates = [],
         length = positions.length;
@@ -565,11 +555,11 @@ $(function() {
   },
 
   createEmployDates = function(cxn) {
-    var cmpName, cmpId, key, position, start, end, length, employDates = {};
+    var cmpName, position, start, end, length, i, employDates = {};
     if (!cxn.positions || !cxn.positions.values) { return; }
 
     length = cxn.positions.values.length;
-    for (var i=0; i<cxn.positions.values.length; ++i) {
+    for (i=0; i<cxn.positions.values.length; ++i) {
       position = cxn.positions.values[i];
       start = convertDateToVal(position.startDate);
       end = convertDateToVal(position.endDate);
@@ -587,8 +577,7 @@ $(function() {
   },
 
   storeConnection = function (connection) {
-    var i, j, newCxn, cmpName, startDate, endDate, datesLength, length = myCompanies.length;
-    newCxn = {};
+    var newCxn = {};
     newCxn.id               = connection.id;
     newCxn.pictureUrl       = connection.pictureUrl;
     newCxn.publicProfileUrl = connection.publicProfileUrl;
@@ -669,7 +658,7 @@ $(function() {
   },
 
   handleConnections = function(profiles) {
-    var i, profile, position, company, length, cxn;
+    var i, length, cxn;
     cxnsLoaded = 1;
     if (!profileStored) {
       // don't load connections before profile is done being stored.
@@ -718,264 +707,10 @@ $(function() {
     });
   },
 
-  // Function: adjustMouseCoords
-  // ---------------------------
-  // Browsers implement clientX, pageX, screenX, etc. differently,
-  // just use jQuery's pageX and adjust from document top-left.
-  // Units are in pixels.
-  adjustMouseCoords = function(mouseX, mouseY) {
-    // adjust mouseX and Y to be relative to timeline
-    return { x : mouseX - bodyElem.offset().left,
-             y : mouseY - TOP_PADDING };
-  },
-
-  // TODO: make myPic follow zoom as well?
-  // TODO: restore info/date positions (right:0)
-  doZoom = function(newLeft, newRight) {
-    /*
-     * TRUTHS
-     * ======
-     * - Need to keep a ratio of curr width to original width
-     * - Need to keep a left offset against original left bound
-     * - Need to keep a right offset against original right bound
-     *
-     * We have two scales going on.
-     * 1) Scale of 0-100 (absolute position percentage)
-     * 2) Scale of 0-908 pixels (css.left)
-     * We should be able to go from one to another fairly easily.
-     *
-     * example of calculating new "left" and "width"
-     * 1) company LEFT = 75 (scale of 0-100) and WIDTH = 10
-     * 2) zoom in to LEFT = 50 and RIGHT = 100
-     * 3) new company LEFT = (75-50)/(100-50) = 25/50 = 1/2 = 50%
-     * 4) new company WIDTH = (10)/(100-50) = 10/50 = 1/5 = 20%
-     *
-     */
-    var blocks = timelineElem.find('.block div'),
-        length = blocks.length;
-
-    newLeft  = typeof newLeft  !== 'undefined' ? newLeft  : 0;
-    newRight = typeof newRight !== 'undefined' ? newRight : 100;
-
-    blocks.each(function(index) {
-      var _this     = $(this),
-          origLeft  = parseFloat(_this.attr('data-li-left'), 10),
-          origWidth = parseFloat(_this.attr('data-li-width'), 10),
-          options, animateLeft, animateWidth;
-
-      if (index === length-1) {
-        // do a "doDrag" when the last timeline block is done animating.
-        options = {
-          complete: function() { doDrag(myPicElem.position().left); }
-        };
-      }
-
-      animateLeft = (origLeft - newLeft)/(newRight - newLeft) * 100 + '%';
-      animateWidth = origWidth/(newRight - newLeft) * 100 + '%';
-
-      _this.animate({
-        left: animateLeft,
-        width: animateWidth
-      }, options);
-    });
-    timelineElem.find('.date span,.infoBlock').each(function() {
-      var _this    = $(this),
-          origLeft = parseFloat(_this.attr('data-li-left'), 10),
-          rawLeft  = parseFloat(_this.attr('data-li-rawleft'), 10),
-          animateLeft;
-
-      if (newLeft === 0 && newRight === 100) {
-        // zooming out, just restore original left
-        animateLeft = origLeft + '%';
-      }
-      else {
-        // zooming in
-        origLeft = rawLeft ? rawLeft : origLeft;
-        animateLeft = ((origLeft - newLeft)/(newRight - newLeft) * 100) + '%';
-      }
-          /*
-          animLeftPx    = parseInt(animateLeft, 10)/100 * TL_WIDTH,
-          thisWidth     = _this.width();
-          */
-
-      /*
-      if (animLeftPx > 0 &&
-          animLeftPx < TL_WIDTH &&
-          animLeftPx + thisWidth > TL_WIDTH) {
-        // fix overflow
-        console.log('adjusting left');
-        animateLeft = (TL_WIDTH-thisWidth)/TL_WIDTH * 100 + '%';
-      }
-      */
-      _this.animate({ left: animateLeft });
-    });
-
-    relLeft  = newLeft;
-    relRight = newRight;
-  },
-
-  doMiscZoom = function(mouseLeft) {
-    var leftEdge, rightEdge, leftPct, rightPct;
-    if (mouseLeft < 0 || mouseLeft > TL_WIDTH) { return; }
-    mouseLeft = convertPxToPct(mouseLeft);
-    if (mouseLeft - 25 < 0) {
-      leftEdge = 0;
-      rightEdge = 50;
-    }
-    else if (mouseLeft + 25 > 100) {
-      leftEdge = 50;
-      rightEdge = 100;
-    }
-    else {
-      leftEdge = mouseLeft - 25;
-      rightEdge = mouseLeft + 25;
-    }
-    leftPct  = relLeft + leftEdge*(relRight-relLeft)/100
-    rightPct = relLeft + rightEdge*(relRight-relLeft)/100
-    doZoom(leftPct, rightPct);
-  },
-
-  doBlockZoom = function(evt) {
-    var target = $(evt.target),
-        left, width, right, coords;
-    if (target.attr('id') === 'mypic') { return evt.preventDefault(); }
-
-    if (target.hasClass('tlBlock')) {
-      // do zoom on edges of the block.
-      left = parseFloat(target.attr('data-li-left'), 10);
-      width = parseFloat(target.attr('data-li-width'), 10);
-      // TODO: detect left we're already zoomed to block
-      doZoom(left, left+width);
-    }
-    else {
-      coords = adjustMouseCoords(evt.pageX, evt.pageY);
-      if (coords.y > TL_TOP && coords.y < TL_TOP + TL_HEIGHT) {
-        doMiscZoom(coords.x);
-      }
-    }
-    zoomBtn.text('Zoom Out');
-  },
-
-  // TODO: continue mousemove when mouse is outside of timeline
-  // TODO: test really small zoom selections.
-  selectZoomRange = function(evt) {
-    if (!selectingZoom) { return; }
-
-    var divLeft  = zoomSelectElem.attr('data-li-left'),
-        divTop   = zoomSelectElem.attr('data-li-top'),
-        coords   = adjustMouseCoords(evt.pageX, evt.pageY),
-        mouseX   = coords.x,
-        mouseY   = coords.y,
-        newLeft  = mouseX < divLeft ? mouseX : divLeft;
-        newTop   = mouseY < divTop ? mouseY : divTop;
-
-    zoomDragging = 1;
-    zoomSelectElem.css({'width':  Math.abs(mouseX-divLeft) + 'px',
-                        'height': Math.abs(mouseY-divTop) + 'px',
-                        'left':   newLeft + 'px',
-                        'top':    newTop + 'px'});
-    zoomSelectElem.show();
-  },
-
-  hideZoomSelect = function(revertCursor/*optional*/) {
-    zoomSelectElem.fadeTo('fast', 0, function() {
-      zoomSelectElem.hide();
-      selectingZoom = zoomDragging = 0;
-      if (revertCursor) {
-        tlStuffElem.removeClass('zooming');
-        $('.tlBlock').unbind()
-                     .removeClass('hover');
-      }
-    });
-  },
-
-  // Select a region to zoom by dragging the mouse
-  setupSelectZoomRange = function() {
-    tlStuffElem.mousedown(function(evt) {
-      var id = $(evt.target).attr('id');
-      if (id === 'mypic') { return; }
-      if (id === 'zoomBtn') {
-        if (relLeft !== 0 || relRight !== 100) {
-          doZoom(0, 100);
-        }
-        cancelZoom();
-        zoomBtn.text('Zoom In');
-        return;
-      }
-
-      evt.preventDefault();
-      selectingZoom = 1;
-      coords = adjustMouseCoords(evt.pageX, evt.pageY);
-      zoomSelectElem.css({'left': coords.x + 'px',
-                          'top': coords.y + 'px',
-                          'opacity': 1})
-                    .attr('data-li-left', coords.x)
-                    .attr('data-li-top', coords.y)
-                    .hide();
-    })
-    .mouseup(function(evt) {
-      // TODO: clicking in padding doesn't seem to work.
-      if (!selectingZoom || !zoomDragging ) {
-        // just a click, don't capture selection.
-        selectingZoom = 0;
-        return evt.preventDefault();
-      }
-
-      var left     = parseFloat(zoomSelectElem.css('left'), 10),
-          width    = parseFloat(zoomSelectElem.css('width'), 10),
-          right    = left+width,
-          tl_left  = TL_HZ_PADDING,
-          tl_right = TL_WIDTH+TL_HZ_PADDING;
-
-      if (left < tl_left) {
-        left = tl_left;
-      }
-      if (right > tl_right) {
-        right = tl_right;
-      }
-
-      /*
-      relLeft  = (left-tl_left)/(tl_right-tl_left)*100;
-      relRight = (right-tl_left)/(tl_right-tl_left)*100;
-      */
-
-      /* 0-100 scale */
-      left  = (left-tl_left)/(tl_right-tl_left)*100;
-      right = (right-tl_left)/(tl_right-tl_left)*100;
-
-      /* adjust to relLeft, relRight */
-      leftPct  = relLeft + left*(relRight-relLeft)/100
-      rightPct = relLeft + right*(relRight-relLeft)/100
-
-      if (Math.floor(leftPct) !== Math.floor(rightPct)) {
-        doZoom(leftPct, rightPct);
-        zoomBtn.text('Zoom Out');
-      }
-
-      hideZoomSelect();
-    })
-    .mousemove(selectZoomRange)
-    .addClass('zooming');
-
-    timelineElem.click(doBlockZoom);
-
-    $('.tlBlock').hover(function() {
-      $(this).addClass('hover');
-    }, function() {
-      $(this).removeClass('hover');
-    });
-  },
-
-  cancelZoom = function() {
-    hideZoomSelect(true);
-    tlStuffElem.unbind();
-    timelineElem.unbind();
-    zoomDragging = selectingZoom = 0;
-  },
 
   // TODO: make play continue to next section when zoomed in.
   doPlay = function() {
-    var iconLeft, dur, totalDur, active, className,
+    var dur, totalDur, active, className,
         speeds = { slow     : 25000,
                    med      : 12000,
                    fast     : 6000,
@@ -1098,26 +833,6 @@ $(function() {
     }
     else {
       doPause.apply(this);
-    }
-  });
-
-  zoomBtn.click(function(evt) {
-    var _this = $(this);
-    evt.preventDefault();
-
-    myPicElem.stop(true);
-    playBtn.text('Play');
-
-    if (_this.text() === 'Zoom In') {
-      setupSelectZoomRange();
-      _this.text('Cancel');
-    }
-    else if (_this.text() === 'Cancel') {
-      cancelZoom();
-    }
-    else if (_this.text() === 'Zoom Out') {
-      doZoom(0, 100); // reset
-      _this.text('Zoom In');
     }
   });
 
