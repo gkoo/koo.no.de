@@ -228,7 +228,6 @@ $(function() {
       }
 
       start = convertDateToVal(currCompanies[i].startDate);
-      end   = convertDateToVal(currCompanies[i].endDate);
       name  = [currCompanies[i].name.toLowerCase(), start].join('')
                                     .replace(/\s/g, '')
                                     .replace(STRIP_PUNC, '');
