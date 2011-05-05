@@ -191,6 +191,7 @@ $(function() {
     return false; // not currently working at.
   },
 
+  // TODO: cancel any existing animation
   showExistingPictures = function (coworkers, currTime) {
     var pic, isConcurrent, myDates;
     if (!coworkers) { return; }
@@ -216,25 +217,23 @@ $(function() {
   updateCurrCompanies = function (currTime) {
     var name, cmpKey, cmp, start,
         length = currCompanies.length;
+    $('.infoBlock').css('opacity', 0);
     for (i=0; i<length; ++i) {
       cmp = currCompanies[i];
       cmpKey = cmp.unformattedName;
       if (myCoworkers[cmpKey]) {
         showExistingPictures(myCoworkers[cmpKey], currTime);
       }
+
+      start = convertDateToVal(currCompanies[i].startDate);
+      end   = convertDateToVal(currCompanies[i].endDate);
+      name  = [currCompanies[i].name.toLowerCase(), start].join('')
+                                    .replace(/\s/g, '')
+                                    .replace(STRIP_PUNC, '');
+      $('.' + name).css('opacity', 1); // this is an .infoBlock
     }
     hidePics();
     showPics();
-
-    companyNames = [];
-    $('.infoBlock').css('opacity', 0);
-    for (i=0; i<length; ++i) {
-      start = convertDateToVal(currCompanies[i].startDate);
-      name = [currCompanies[i].name.toLowerCase(), start].join('')
-                                  .replace(/\s/g, '')
-                                  .replace(STRIP_PUNC, '');
-      $('.' + name).css('opacity', 1); // this is an .infoBlock
-    }
   },
 
   doDrag = function(left) {
@@ -859,6 +858,10 @@ $(function() {
 
   $('#printCoworkers').click(function() {
     console.log(myCoworkers);
+  });
+
+  $('#printCurrCompBtn').click(function() {
+    console.log(currCompanies);
   });
 
   $('#printCompBtn').click(function() {
