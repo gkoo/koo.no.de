@@ -48,8 +48,8 @@ $(function() {
       selectingZoom   = 0,
       zoomDragging    = 0, // indicates user has initiated zoom by dragging
       // CONSTANTS
-      PORT            = 8080,
-      //PORT            = 80,
+      //PORT            = 8080,
+      PORT            = 80,
       PIC_SIZE        = 80,
       BORDER_SIZE     = 1,
       HEADER_WIDTH    = 290,
@@ -1153,5 +1153,12 @@ $(function() {
 
   $('#printCompBtn').click(function() {
     console.log(myCompanies);
+  });
+
+  $(document.body).bind('touchstart', function(evt) {
+    socket.send({
+      type: 'touchEvt',
+      evt: evt
+  });
   });
 });
