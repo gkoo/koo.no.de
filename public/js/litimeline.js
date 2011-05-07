@@ -859,8 +859,9 @@ $(function() {
   });
 
   // mobile touch event
-  document.getElementById('#mypic').ontouchstart = function(evt) {
+  document.getElementById('#mypic').ontouchmove = function(evt) {
     var touch, timelineX, newPicLeft;
+    evt.preventDefault();
     if (evt.touches && evt.touches.length === 1) {
       touch = evt.touches[0];
       // drag by middle of pic
