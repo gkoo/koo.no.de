@@ -1,6 +1,7 @@
 // TODO: make pics more likely to go on bottom
 // TODO: test in IE (opacity/filter, etc)
 // TODO: check to make sure a start/endDate without month shows correctly
+// TODO: allow user to move cxnPIcs around
 //
 // FUTURE ENHANCEMENTS?
 // explain why a connection is absent (no picture)
@@ -51,8 +52,8 @@ $(function() {
       TL_HZ_PADDING   = 20,
       TOP_PADDING     = 20,
       HALF_HEIGHT     = 315,
-      LEFT_BOUND      = TL_HZ_PADDING,
-      RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2,
+      LEFT_BOUND      = TL_HZ_PADDING, // left bound for picture left edge
+      RIGHT_BOUND     = TL_HZ_PADDING + TL_WIDTH - PIC_SIZE - BORDER_SIZE*2, // right bound for picture left edge
       MONTHS_ABBR     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       COLORS          = ['orange', 'blue', 'green', 'purple', 'teal', 'red', 'yellow', 'magenta', 'grey'],
       STRIP_PUNC      = /[^\w\s]/gi,
@@ -109,7 +110,6 @@ $(function() {
 
     messageElem.show();
     messageElem.fadeTo('slow', 1);
-
   },
 
   isSameCompanies = function(companiesOld, companiesNew) {
@@ -543,11 +543,6 @@ $(function() {
                      .fadeTo('fast', 1);
     timelineElem.fadeTo('fast', 1);
     myPicElem.css('top', (TL_HEIGHT - PIC_SIZE)/2-BORDER_SIZE);
-    myPicElem.draggable({
-      axis : 'x',
-      drag: doDragWrapper,
-      containment: 'parent'
-    });
 
     if (profile.positions && profile.positions.values) {
       // TODO: check if only one position
@@ -856,6 +851,26 @@ $(function() {
   function() {
     speedElem.removeClass('hover');
   });
+
+  myPicElem.draggable({
+    axis : 'x',
+    drag: doDragWrapper,
+    containment: 'parent'
+  });
+
+  // mobile touch event
+  document.getElementById('#mypic').ontouchstart = function(evt) {
+    var touch, timelineX, newPicLeft;
+    if (evt.touches && evt.touches.length === 1) {
+      touch = evt.touches[0];
+      // drag by middle of pic
+      timelineX = touch.pageX - $('#body').position().left;
+      newPicLeft = timelineX - PIC_SIZE/2 - BORDER_SIZE;
+      if (newPicLeft >= LEFT_BOUND && newPicLeft <= RIGHT_BOUND) {
+        doDrag(newPicLeft);
+      }
+    }
+  };
 
   $('#printCoworkers').click(function() {
     console.log(myCoworkers);

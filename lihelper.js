@@ -1,6 +1,4 @@
 var redis = require('redis').createClient(),
-    fs    = require('fs'),
-    log   = fs.createWriteStream('err.log', {'flags': 'a'}),
 
 STRIP_PUNC = /[^\w\s]/gi,
 
@@ -94,20 +92,13 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
     }
   }
   callback(null, coworkers);
-},
-
-writeErrorLog = function(errMsg) {
-  if (!errMsg) { return; }
-  fs.open('err.log', 'a', 666, function(err, fd) {
-    var buffer = (new Date).toString() + ': ' + errMsg + '\n';
-    log.write(buffer);
-  });
 };
 
 redis.on("error", function (err) {
-  writeErrorLog(errMsg);
+  console.log(err);
 });
 
+// only called for user
 exports.storePosition = storePosition = function(profileId, position, myProfileId) {
   var company = position.company,
       cmpKey, datesKey, i, start, end;
@@ -130,6 +121,7 @@ exports.storePosition = storePosition = function(profileId, position, myProfileI
   }
 };
 
+// only called for user
 exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
   var keyPrefix = ['profiles', profile.id].join(':'),
       idKey = ['id', sessionId].join(':'),
@@ -176,14 +168,14 @@ exports.filterConnections = function(sessionId, profiles, callback) {
   redis.get(['id', sessionId].join(':'), function(err, myProfileId) {
     var i;
     if (err) {
-      writeErrorLog(err);
+      console.log(err);
       return;
     }
     redis.keys(['employmentDates', myProfileId, '*'].join(':'), function(err, dateKeys) {
       // find all employmentDates for user and populate employmentDates object
       var i, companyName, employmentDates = {}, cmpKeys = [], count = 0;
       if (err) {
-        writeErrorLog(err);
+        console.log(err);
         return;
       }
       for (i=0; i<dateKeys.length; ++i) {
@@ -191,7 +183,7 @@ exports.filterConnections = function(sessionId, profiles, callback) {
         redis.smembers(dateKeys[i], function(err, dates) {
           // dates for "companyName"
           var cmpKey;
-          if (err) { writeErrorLog(err); return; }
+          if (err) { console.log(err); return; }
 
           cmpKey = dateKeys[count].split(':')[2]; // counting on redis to return responses in order.
           cmpKeys.push(cmpKey);
