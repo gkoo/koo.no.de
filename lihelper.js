@@ -95,7 +95,7 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
 };
 
 redis.on("error", function (err) {
-  console.log(err);
+  console.log("Redis error " + err);
 });
 
 // only called for user
@@ -127,7 +127,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
       idKey = ['id', sessionId].join(':'),
       fullName  = [profile.firstName, profile.lastName].join(' '),
       keyValuePairs = [keyPrefix],
-      lastViewed = (new Date()).toString(),
+      lastViewed = (new Date()).toUTCString(),
       i, company;
 
   if (sessionId) {
