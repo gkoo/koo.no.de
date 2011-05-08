@@ -166,7 +166,8 @@ $(function() {
       _this.removeClass('picToShow');
       if (!_this.hasClass('picShowing')) {
         _this.addClass('picShowing')
-             .animate({ top: _this.attr('li-top')+'px' });
+             .animate({ top: _this.attr('li-top')+'px' },
+                      { queue: false });
       }
     });
   },
@@ -204,7 +205,8 @@ $(function() {
         pic = $('#' + id);
         if (pic) {
           isConcurrent = isConcurrentEmployee(coworkers[id]);
-          if (pic && isConcurrent) {
+          if (pic && isConcurrent && !pic.hasClass('picToShow')) {
+            // toggle this picture to show
             pic.addClass('picToShow');
             pic.removeClass('picToHide'); // in case coworker overlaps in two simultaneous companies
           }
