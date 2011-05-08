@@ -67,7 +67,7 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
     cxn = connections.values[i];
     if (cxn.positions && cxn.positions._total && cxn.pictureUrl) { // don't care about cxn if no picture
       positions = cxn.positions.values;
-      for (j=0; j<cxn.positions._total; ++j) {
+      for (j=0; j<cxn.positions.values.length; ++j) {
         company = positions[j].company;
         if (company.name) {
           // use company name, since company id's aren't ubiquitous in all profiles
@@ -148,7 +148,7 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
   redis.hmset(keyValuePairs);
 
   if (profile.positions && profile.positions._total) {
-    for (i = 0; i<profile.positions._total; ++i) {
+    for (i = 0; i<profile.positions.values.length; ++i) {
       storePosition(profile.id, profile.positions.values[i]);
     }
   }
