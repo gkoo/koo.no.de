@@ -858,21 +858,6 @@ $(function() {
     containment: 'parent'
   });
 
-  // mobile touch event
-  document.getElementById('#mypic').ontouchmove = function(evt) {
-    var touch, timelineX, newPicLeft;
-    evt.preventDefault();
-    if (evt.touches && evt.touches.length === 1) {
-      touch = evt.touches[0];
-      // drag by middle of pic
-      timelineX = touch.pageX - $('#body').position().left;
-      newPicLeft = timelineX - PIC_SIZE/2 - BORDER_SIZE;
-      if (newPicLeft >= LEFT_BOUND && newPicLeft <= RIGHT_BOUND) {
-        doDrag(newPicLeft);
-      }
-    }
-  };
-
   $('#printCoworkers').click(function() {
     console.log(myCoworkers);
   });
@@ -895,4 +880,21 @@ $(function() {
       });
     }
   }, 45000);
+});
+
+$(document).ready(function() {
+  // mobile touch event
+  document.getElementById('mypic').ontouchmove = function(evt) {
+    var touch, timelineX, newPicLeft;
+    evt.preventDefault();
+    if (evt.touches && evt.touches.length === 1) {
+      touch = evt.touches[0];
+      // drag by middle of pic
+      timelineX = touch.pageX - $('#body').position().left;
+      newPicLeft = timelineX - PIC_SIZE/2 - BORDER_SIZE;
+      if (newPicLeft >= LEFT_BOUND && newPicLeft <= RIGHT_BOUND) {
+        doDrag(newPicLeft);
+      }
+    }
+  };
 });
