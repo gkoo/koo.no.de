@@ -733,8 +733,7 @@ $(function() {
   },
 
   doPause = function() {
-    $(this).text('Play');
-    myPicElem.stop(stop);
+    stopMyPicAnim();
   },
 
   // Function: fixOverflow
@@ -753,6 +752,23 @@ $(function() {
            .attr('data-li-rawleft', origLeft)
            .attr('data-li-left', newLeft);
     }
+  },
+
+  stopMyPicAnim = function() {
+    myPicElem.stop(true);
+    playBtn.text('Play');
+  },
+
+  changeSpeed = function(el) {
+    var _this = $(el);
+    if (_this.hasClass('active')) { return; }
+    speedElem.children('.hide').removeClass('hide');
+    speedElem.children('.active')
+             .removeClass()
+             .addClass(_this.attr('class') + ' active');
+    speedElem.find('.active a').text(_this.text());
+    _this.addClass('hide');
+    speedElem.removeClass('hover');
   },
 
   onLinkedInAuth = function() {
@@ -835,15 +851,7 @@ $(function() {
   });
 
   speedElem.children().click(function(evt) {
-    var _this = $(this);
-    if (_this.hasClass('active')) { return evt.preventDefault(); }
-    speedElem.children('.hide').removeClass('hide');
-    speedElem.children('.active')
-             .removeClass()
-             .addClass(_this.attr('class') + ' active');
-    speedElem.find('.active a').text(_this.text());
-    _this.addClass('hide');
-    speedElem.removeClass('hover');
+    changeSpeed(this);
     evt.preventDefault();
   }),
 
@@ -883,11 +891,12 @@ $(function() {
     }
   }, 45000);
 
-  // mobile touch event
+  // mobile touch event for mypic
   document.getElementById('mypic').ontouchmove = function(evt) {
     var touch, timelineX, newPicLeft;
     evt.preventDefault();
     if (evt.touches && evt.touches.length === 1) {
+      stopMyPicAnim();
       touch = evt.touches[0];
       // drag by middle of pic
       timelineX = touch.pageX - $('#body').position().left;
@@ -899,12 +908,22 @@ $(function() {
     }
   };
 
-  document.getElementById('speed').ontouchstart = function() {
-    if (speedElem.hasClass('hover')) {
-      speedElem.removeClass('hover');
-    }
-    else {
-      speedElem.addClass('hover');
+  // mobile touch event for speed menu
+  document.getElementById('speed').ontouchstart = function(evt) {
+    var target;
+    evt.preventDefault();
+    if (evt.touches && evt.touches.length === 1) {
+      if (speedElem.hasClass('hover')) {
+        target = evt.touches[0].target;
+        if (target.nodeType === 3) { // handle when target is text node
+          target = $(target).closest('li');
+        }
+        changeSpeed(target);
+        speedElem.removeClass('hover');
+      }
+      else {
+        speedElem.addClass('hover');
+      }
     }
   };
 });
