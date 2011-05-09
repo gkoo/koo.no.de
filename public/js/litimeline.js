@@ -398,18 +398,20 @@ $(function() {
                           .attr('data-li-left', left)
                           .attr('data-li-zindex', zindex);
 
-    newInfo = $('<span/>').css({'left': left,
-                                'z-index': zindex})
-                          .attr('data-li-left', left)
-                          .attr('data-li-zindex', zindex)
-                          .addClass('infoBlock')
-                          .addClass([position.company.name.toLowerCase(), startVal].join('')
-                                                .replace(/\s/g,'') // strip spaces
-                                                .replace(STRIP_PUNC, ''))
-                          .append($('<span/>').addClass('compName')
-                                              .text(position.company.name))
-                          .append($('<span/>').addClass('compDate')
-                                              .text(compDate));
+    if (position.company && position.company.name) {
+      newInfo = $('<span/>').css({'left': left,
+                                  'z-index': zindex})
+                            .attr('data-li-left', left)
+                            .attr('data-li-zindex', zindex)
+                            .addClass('infoBlock')
+                            .addClass([position.company.name.toLowerCase(), startVal].join('')
+                                                  .replace(/\s/g,'') // strip spaces
+                                                  .replace(STRIP_PUNC, ''))
+                            .append($('<span/>').addClass('compName')
+                                                .text(position.company.name))
+                            .append($('<span/>').addClass('compDate')
+                                                .text(compDate));
+    }
 
     topHasRoom = timelineHasRoom(topCompDates, startVal, endVal);
     botHasRoom = timelineHasRoom(bottomCompDates, startVal, endVal);
@@ -441,6 +443,8 @@ $(function() {
 
     timelineElem.hide()
     myCareerStart = convertDateToVal(positions[0].startDate);
+
+    // need to split these two for loops up so that we can calculate careerLength/careerStart, etc.
     for (i=0; i<length; ++i) {
       position = positions[i];
       company = position.company;
