@@ -893,6 +893,7 @@ $(function() {
       timelineX = touch.pageX - $('#body').position().left;
       newPicLeft = timelineX - PIC_SIZE/2 - BORDER_SIZE;
       if (newPicLeft >= LEFT_BOUND && newPicLeft <= RIGHT_BOUND) {
+        myPicElem.css('left', newPicLeft+'px');
         doDrag(newPicLeft);
       }
     }
