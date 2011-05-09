@@ -882,9 +882,7 @@ $(function() {
       });
     }
   }, 45000);
-});
 
-$(document).ready(function() {
   // mobile touch event
   document.getElementById('mypic').ontouchmove = function(evt) {
     var touch, timelineX, newPicLeft;
