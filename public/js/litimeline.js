@@ -898,4 +898,13 @@ $(function() {
       }
     }
   };
+
+  document.getElementById('speed').ontouchstart(function() {
+    if (speedElem.hasClass('hover')) {
+      speedElem.removeClass('hover');
+    }
+    else {
+      speedElem.addClass('hover');
+    }
+  });
 });
