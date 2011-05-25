@@ -794,7 +794,7 @@ $(function() {
       if (!doneLoading) {
         reloadLink.show();
         if ($.browser.msie) {
-          reloadLink.children('ieWarn').show();
+          reloadLink.children('.ieWarn').show();
         }
         reloadLink.find('a').click(function(evt) {
           window.location.reload();
