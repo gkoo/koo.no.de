@@ -46,7 +46,10 @@ var PORT    = 80,
 initGrid();
 
 io = io.listen(app, {
-  transports: ['htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling']
+  transports: ['htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling'],
+  transportOptions: {
+    htmlfile: { closeTimeout: 30000 } // IE is slow. increase timeout for networks with 1400+ connections
+  }
 });
 
 io.on('connection', function(client) {
