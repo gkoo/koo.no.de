@@ -793,7 +793,7 @@ $(function() {
     helpTimeout = setTimeout(function() {
       if (!doneLoading) {
         reloadLink.show();
-        if (jQuery.browser.msie) {
+        if ($.browser.msie) {
           reloadLink.children('ieWarn').show();
         }
         reloadLink.find('a').click(function(evt) {
