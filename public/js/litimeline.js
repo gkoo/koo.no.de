@@ -802,6 +802,8 @@ $(function() {
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
+  IN.Event.on(IN, 'load', onLinkedInLoad);
+
   socket = new io.Socket(null, {port: PORT, rememberTransport: false});
   socket.connect();
 
