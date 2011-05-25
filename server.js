@@ -48,6 +48,7 @@ initGrid();
 io = io.listen(app);
 
 io.on('connection', function(client) {
+  /*
   if (!players[client.sessionId]) {
     players[client.sessionId] = { id: nextId++ };
   }
@@ -57,6 +58,7 @@ io.on('connection', function(client) {
   else {
     client.send({ grid: null });
   }
+  */
 
   client.on('message', function(message) {
     if ('type' in message) {
@@ -106,25 +108,15 @@ io.on('connection', function(client) {
         // use sessionId from message because sometimes
         // socket.IO switches protocols and gives client a new sessionId
         li.filterConnections(message.sessionId, message.profiles, function(err, coworkers) {
+          console.log('coworkers:');
+          console.log(coworkers);
           client.send({ type: 'filterConnectionsResult',
                         coworkers: coworkers });
         });
       }
-      /*
-      else if (message.type === 'getConnectionsByCompany' && message.companies) {
-        li.getConnectionsByCompany(client.sessionId, message.companies, function(err, connections) {
-          if (err) { console.log(err); }
-
-          else if (connections) {
-            client.send({
-              type: 'connectionsByCompanyResult',
-              companies: message.companies,
-              connections: connections
-            });
-          }
-        });
+      else if (message.type === 'touchEvt') {
+        console.log(message.evt);
       }
-      */
     }
   });
 
