@@ -61,8 +61,8 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
     coworkers[cmpKey][myProfileId] = employDates[cmpKey];
   }
 
+  console.log('cxnLength: ' + cxnLength);
   for (i=0; i<cxnLength; ++i) {
-  //for (i=0; i<10; ++i) {
     // loop through connections
     cxn = connections.values[i];
     if (cxn.positions && cxn.positions.values && cxn.positions.values.length && cxn.pictureUrl) { // don't care about cxn if no picture
@@ -90,7 +90,9 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
         }
       }
     }
+    console.log('i: ' + i);
   }
+  console.log('finished loop');
   callback(null, coworkers);
 };
 
