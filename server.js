@@ -45,7 +45,9 @@ var PORT    = 80,
 
 initGrid();
 
-io = io.listen(app);
+io = io.listen(app, {
+  transports: ['xhr-multipart', 'xhr-polling', 'jsonp-polling']
+});
 
 io.on('connection', function(client) {
   /*
