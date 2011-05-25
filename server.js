@@ -110,6 +110,7 @@ io.on('connection', function(client) {
         li.filterConnections(message.sessionId, message.profiles, function(err, coworkers) {
           console.log('coworkers:');
           console.log(coworkers);
+          console.log('length: ' + JSON.stringify(coworkers).length);
           client.send({ type: 'filterConnectionsResult',
                         coworkers: coworkers });
         });
