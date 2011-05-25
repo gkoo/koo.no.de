@@ -61,7 +61,6 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
     coworkers[cmpKey][myProfileId] = employDates[cmpKey];
   }
 
-  console.log('cxnLength: ' + cxnLength);
   for (i=0; i<cxnLength; ++i) {
     // loop through connections
     cxn = connections.values[i];
@@ -90,9 +89,7 @@ findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, call
         }
       }
     }
-    console.log('i: ' + i);
   }
-  console.log('finished loop');
   callback(null, coworkers);
 };
 
@@ -167,14 +164,12 @@ exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
 };
 
 exports.filterConnections = function(sessionId, profiles, callback) {
-  console.log('sessionId: ' + sessionId);
   redis.get(['id', sessionId].join(':'), function(err, myProfileId) {
     var i;
     if (err) {
       console.log(err);
       return;
     }
-    console.log('redis.keys on employmentDates:'+myProfileId+':*');
     redis.keys(['employmentDates', myProfileId, '*'].join(':'), function(err, dateKeys) {
       // find all employmentDates for user and populate employmentDates object
       var i, companyName, employmentDates = {}, cmpKeys = [], count = 0;
@@ -183,7 +178,6 @@ exports.filterConnections = function(sessionId, profiles, callback) {
         return;
       }
       for (i=0; i<dateKeys.length; ++i) {
-        console.log(dateKeys[i]);
         // for each dateKey (usually there's only one), add dates to profile
         redis.smembers(dateKeys[i], function(err, dates) {
           // dates for "companyName"

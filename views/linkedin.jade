@@ -11,10 +11,19 @@
   #loading
     p= loadStatus
     img.spinner(src="/img/timeline_loader.gif")
-    p.helpReload
-      | It shouldn't be taking this long... Try
-      a(href="#")
-        = 'reloading?'
+    .helpReload
+      p.suggestReload
+        | It shouldn't be taking this long... Try
+        a(href="#")
+          = 'reloading?'
+      p.ieWarn
+        | It looks like you're using Internet Explorer. You may have better luck using a modern browser such as
+        a(href="http://www.getfirefox.com")
+          = 'Firefox'
+        |  or
+        a(href="http://www.google.com/chrome/")
+          = 'Chrome'
+        | .
   div#logo
     img(src="/img/timeline_logo.png")
     .clear
@@ -33,13 +42,13 @@
           li.med.active
             a(href="#") Medium
             span.arrow
-          li.slow
+          li.slow.speedBtn
             a(href="#") Slow
-          li.med.hide
+          li.med.hide.speedBtn
             a(href="#") Medium
-          li.fast
+          li.fast.speedBtn
             a(href="#") Fast
-          li.realfast
+          li.realfast.speedBtn
             a(href="#") Really Fast
         //- a#zoomBtn.btn(href='#') Zoom In
         //- #colorGrid

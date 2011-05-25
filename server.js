@@ -110,9 +110,6 @@ io.on('connection', function(client) {
         // use sessionId from message because sometimes
         // socket.IO switches protocols and gives client a new sessionId
         li.filterConnections(message.sessionId, message.profiles, function(err, coworkers) {
-          console.log('coworkers:');
-          console.log(coworkers);
-          console.log('length: ' + JSON.stringify(coworkers).length);
           client.send({ type: 'filterConnectionsResult',
                         coworkers: coworkers });
         });

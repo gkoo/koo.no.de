@@ -10,7 +10,7 @@
 var onLinkedInLoad;
 
 $(function() {
-  var ownProfile, myCareerStart, myCareerLength, socket, myCoworkers,
+  var ownProfile, myCareerStart, myCareerLength, socket, myCoworkers, helpTimeout,
       today           = new Date(),
       thisMonth       = today.getMonth()+1,
       thisYear        = today.getFullYear(),
@@ -779,6 +779,29 @@ $(function() {
 
   changeLoadingMsg = function(str) {
     loadingElem.children('p:nth-child(1)').text(str);
+    resetHelpTimeout();
+  },
+
+  resetHelpTimeout = function() {
+    // After 60 seconds, show message to reload.
+    var reloadLink = loadingElem.find('.helpReload');
+    if (helpTimeout) {
+      // clear any existing timeout.
+      clearTimeout(helpTimeout);
+      reloadLink.hide();
+    };
+    helpTimeout = setTimeout(function() {
+      if (!doneLoading) {
+        reloadLink.show();
+        if (jQuery.browser.msie) {
+          reloadLink.children('ieWarn').show();
+        }
+        reloadLink.find('a').click(function(evt) {
+          window.location.reload();
+          evt.preventDefault();
+        });
+      }
+    }, 1000);
   },
 
   onLinkedInAuth = function() {
@@ -892,16 +915,7 @@ $(function() {
     console.log(myCompanies);
   });
 
-  // After 30 seconds, show message to reload.
-  setTimeout(function() {
-    var reloadLink = loadingElem.find('.helpReload');
-    if (!doneLoading) {
-      reloadLink.show().click(function(evt) {
-        window.location.reload();
-        evt.preventDefault();
-      });
-    }
-  }, 45000);
+  resetHelpTimeout();
 
   // mobile touch event for mypic
   document.getElementById('mypic').ontouchmove = function(evt) {
