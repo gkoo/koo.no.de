@@ -801,7 +801,7 @@ $(function() {
           evt.preventDefault();
         });
       }
-    }, 1000);
+    }, 60000);
   },
 
   onLinkedInAuth = function() {
@@ -817,6 +817,8 @@ $(function() {
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url,educations)").result(handleOwnProfile);
     // Pull in connection data
     IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url,educations)").result(handleConnections);
+    resetHelpTimeout();
+
   };
 
   onLinkedInLoad = function () {
@@ -831,7 +833,7 @@ $(function() {
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
-  IN.Event.on(IN, 'frameworkLoaded', onLinkedInLoad);
+  //IN.Event.on(IN, 'frameworkLoaded', onLinkedInLoad);
 
   socket = new io.Socket(null, {port: PORT, rememberTransport: false});
   socket.connect();
@@ -914,8 +916,6 @@ $(function() {
   $('#printCompBtn').click(function() {
     console.log(myCompanies);
   });
-
-  resetHelpTimeout();
 
   // mobile touch event for mypic
   document.getElementById('mypic').ontouchmove = function(evt) {
