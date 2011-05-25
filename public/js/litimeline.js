@@ -661,6 +661,7 @@ $(function() {
 
   handleConnections = function(profiles) {
     var i, length, cxn;
+    changeLoadingMsg('Loading your connections...');
     cxnsLoaded = 1;
     if (!profileStored) {
       // don't load connections before profile is done being stored.
@@ -691,6 +692,7 @@ $(function() {
         //profiles.values.splice(i--, 1);
       }
     }
+    changeLoadingMsg('Processing connection data...');
     socket.send({
       type: 'filterConnections',
       profiles: profiles,
@@ -775,6 +777,10 @@ $(function() {
     speedElem.removeClass('hover');
   },
 
+  changeLoadingMsg = function(str) {
+    loadingElem.children('p:nth-child(1)').text(str);
+  },
+
   onLinkedInAuth = function() {
     // hide signin
     signinElem.fadeTo('fast', 0);
@@ -793,7 +799,7 @@ $(function() {
   onLinkedInLoad = function () {
     // hide loading
     loadingElem.fadeTo('slow', 0, function() {
-      loadingElem.children('p:nth-child(1)').text('Loading connections...');
+      changeLoadingMsg('Loading your profile...');
     });
     loadingElem.hide();
     // show signin
