@@ -102,7 +102,7 @@ io.on('connection', function(client) {
       // LINKEDIN
       // ========
       else if (message.type === 'storeOwnProfile') {
-        li.storeProfile(message.profile, client.sessionId, function(sessionId) {
+        li.storeOwnProfile(message.profile, client.sessionId, function(sessionId) {
           client.send({ type: 'storeOwnProfileComplete', sessionId: sessionId });
         });
       }
