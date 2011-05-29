@@ -1,7 +1,9 @@
 var express = require('express'),
-    sys = require('sys'),
+    //sys = require('sys'),
+    //fs = require('fs'),
     app = express.createServer(),
     dimSize = 30,
+    //logStream = fs.createWriteStream('./request.log', { flags: 'a' }),
     stupidLoadStatuses = ['Plugging in computer...',
                           'Untangling cords...',
                           'Oiling gears...',
@@ -18,6 +20,7 @@ app.configure(function(){
   app.use(express.bodyParser());
   app.use(express.methodOverride());
   app.use(express.static(__dirname + '/public'));
+  //app.use(express.logger({ stream: logStream }));
   app.use(app.router); // IMPORTANT! keep this line last.
 });
 
@@ -32,7 +35,7 @@ function NotFound(msg){
     Error.captureStackTrace(this, arguments.callee);
 }
 
-sys.inherits(NotFound, Error);
+//sys.inherits(NotFound, Error);
 
 app.get('/404', function(req, res){
   throw new NotFound;
@@ -41,6 +44,7 @@ app.get('/500', function(req, res){
   throw new Error('keyboard cat!');
 });
 app.error(function(err, req, res, next){
+  console.log(err);
   if (err instanceof NotFound) {
     res.render('404', {
       locals: {
@@ -76,7 +80,6 @@ app.configure('production', function(){
 // Routes
 
 app.get('/', function(req, res){
-  console.log('here');
   res.render('index', {
     locals: {
       page: 'index',
@@ -123,14 +126,16 @@ app.get('/linkedinbeta', function(req, res){
   });
 });
 
-app.get('/superpic', function(req, res){
-  res.render('superpicture', {
+/*
+app.get('/touchtest', function(req, res) {
+  res.render('touchtest', {
     locals: {
-      title: 'Super Picture',
-    },
-    layout: false
+      page: 'touchtest',
+      title: 'touchtest'
+    }
   });
 });
+*/
 
 app.get('/linkedinnetwork', function(req, res){
   res.render('linetwork', {
