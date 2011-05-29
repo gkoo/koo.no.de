@@ -64,6 +64,7 @@ exports.filterConnections = function(sessionId, profiles, callback) {
       }
     });
   });
+  console.log('done with filterConnections');
 };
 
 // only called for user
@@ -96,4 +97,5 @@ exports.storeOwnProfile = storeOwnProfile = function(profile, sessionId, callbac
   redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
   redis.hset(['profiles', profile.id].join(':'), 'lastViewed', lastViewed);
   redis.hset('viewlog', [fullName, profile.id].join(':'), lastViewed);
+  console.log('done with storeOwnProfile');
 };
