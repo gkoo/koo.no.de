@@ -1,11 +1,7 @@
 // TODO: make pics more likely to go on bottom
-// TODO: test in IE (opacity/filter, etc)
-// TODO: check to make sure a start/endDate without month shows correctly
 // TODO: allow user to move cxnPIcs around
-//
-// FUTURE ENHANCEMENTS?
-// explain why a connection is absent (no picture)
-// explain why a company is absent (no dates)
+// TODO: web workers?
+// TODO: improve error reporting from server-side
 
 var onLinkedInLoad;
 
@@ -17,11 +13,17 @@ $(function() {
       currTime        = 0,
       currCompanies   = [], // what company(ies) we're at in the timeline
       myProfileId     = -1,
-      myConnections   = {},
+      myConnections   = null,
       myCompanies     = [],
       mySessionId     = 0,
       relLeft         = 0, // for zoom, scale of 0-100
       relRight        = 100, // for zoom, scale of 0-100
+      hasTransitions  = 0, // flag for transitionSupport
+      // WEB WORKERS
+      hasWebWorkers   = typeof window.Worker !== 'undefined',
+      profileWorker,
+      cxnWorker,
+      employmentDates,
       // DOM ELEMENTS
       picElems        = $('.pics'),
       loadingElem     = $('#loading'),
@@ -35,6 +37,7 @@ $(function() {
       tlStuffElem     = $('#timelineStuff'),
       topBlockElem    = timelineElem.children('.top.block'),
       bottomBlockElem = timelineElem.children('.bottom.block'),
+      cxnPics,
       // BOOLEAN FLAGS
       ioConnected     = 0,
       profileStored   = 0,
@@ -133,15 +136,34 @@ $(function() {
     return true;
   },
 
+  // Function: animateTop
+  // ====================
+  // Helper function for sliding of connection pictures.
+  // Uses CSS3 transforms if browser supports it, otherwise
+  // falls back on jQuery's animate.
+  animateTop = function(pic, topVal, rotateVal) {
+    if (hasTransitions) {
+      pic.css('top', topVal + 'px');
+      pic.css({'-moz-transform':     rotateVal,
+               '-webkit-transform':  rotateVal,
+               'transform':          rotateVal});
+    }
+    else {
+      pic.animate({ top: topVal + 'px' },
+                  { queue: false });
+    }
+  },
+
   hidePic = function(pic) {
     pic.removeClass('picShowing')
        .removeClass('picToShow')
        .removeClass('picToHide');
     if (pic.hasClass('upper')) {
-      pic.animate({ top: HALF_HEIGHT+PIC_SIZE + 'px' });
+      animateTop(pic, HALF_HEIGHT+PIC_SIZE, 'rotate(0deg)');
     }
     else {
-      pic.animate({ top: PIC_SIZE*(-1.5) + 'px' });
+      // pic.animate({ top: PIC_SIZE*(-1.5) + 'px' });
+      animateTop(pic, PIC_SIZE*(-1.5), 'rotate(0deg)');
     }
   },
 
@@ -165,9 +187,13 @@ $(function() {
       var _this = $(this);
       _this.removeClass('picToShow');
       if (!_this.hasClass('picShowing')) {
-        _this.addClass('picShowing')
+        _this.addClass('picShowing');
+             /*
              .animate({ top: _this.attr('li-top')+'px' },
                       { queue: false });
+             */
+        animateTop(_this, _this.attr('li-top'), _this.attr('li-rotate'));
+        //_this.css('top', _this.attr('li-top')+'px');
       }
     });
   },
@@ -470,6 +496,7 @@ $(function() {
     timelineElem.show();
   },
 
+
   // Function: addEducationToPositions
   // ---------------------------------
   // Treat educations like normal "companies" for the purposes of our timeline
@@ -515,14 +542,17 @@ $(function() {
         }
       }
     }
-  }
+  },
 
   handleOwnProfile = function (profile) {
-    var pic;
+    var pic, data = {
+      type: 'storeOwnProfile',
+      profile: profile
+    };
     if (!profile) {
       return showErrorMsg();
     }
-    if (!ioConnected) {
+    if (!hasWebWorkers && !ioConnected) {
       ownProfile = profile;
       return;
     }
@@ -534,12 +564,25 @@ $(function() {
       return;
     }
     addEducationToPositions(profile);
-    socket.send({
-      type: 'storeOwnProfile',
-      profile: profile
-    });
+    if (hasWebWorkers) {
+      console.log('profile web worker');
+      profileWorker = new Worker('/js/profileWorker.js');
+      profileWorker.postMessage(data);
+      profileWorker.addEventListener('message', function(evt) {
+        console.log('profile web worker done');
+        if (evt.data) {
+          employmentDates = evt.data.employmentDates;
+          profileStored = 1;
+          if (myConnections) {
+            handleConnections(myConnections);
+          }
+        }
+      }, false);
+    }
+    else {
+      socket.send(data);
+    }
     myProfileId = profile.id;
-
 
     if (!profile.pictureUrl) {
       profile.pictureUrl = '/img/icon_no_photo_80x80.png';
@@ -578,33 +621,45 @@ $(function() {
     return employDates;
   },
 
-  storeConnection = function (connection) {
-    var newCxn = {};
-    newCxn.id               = connection.id;
-    newCxn.pictureUrl       = connection.pictureUrl;
-    newCxn.publicProfileUrl = connection.publicProfileUrl;
-    newCxn.fullName         = connection.firstName + ' ' + connection.lastName;
-    newCxn.employmentDates  = createEmployDates(connection);
-    myConnections[connection.id]  = newCxn;
+  setPicTransition = function(el, val) {
+  },
+
+  cxnPicDragStart = function(evt, ui) {
+    // remove css transition property for smooth dragging
+    $(evt.target).removeClass('ease');
+  },
+
+  cxnPicDragStop = function(evt, ui) {
+    // put back css transition property
+    $(evt.target).addClass('ease')
+                 .attr('li-top', ui.position.top);
   },
 
   createCxnPic = function(connection) {
-    var randRotate, randTop, randLeft, currLink;
-    randRotate = Math.floor(Math.random()*20)-10;
+    var randTop, randLeft, currLink, profRequest, url,
+        randRotate = 'rotate(' + (Math.floor(Math.random()*20)-10) + 'deg)';
 
-    if (!connection.publicProfileUrl) {
-      connection.publicProfileUrl = '#';
+    profRequest = connection.siteStandardProfileRequest;
+    if (!profRequest || !profRequest.url) {
+      url = '#';
     }
-    currLink = $('<a/>').attr('href', connection.publicProfileUrl)
+    else {
+      url = profRequest.url;
+    }
+
+    currLink = $('<a/>').attr('href', url)
                         .attr('title', connection.firstName + ' ' + connection.lastName)
                         .attr('id', connection.id)
                         .attr('target', '_new')
-                        .css({'-moz-transform': 'rotate(' + randRotate + 'deg)',
-                              '-webkit-transform': 'rotate(' + randRotate + 'deg)',
-                              'transform': 'rotate(' + randRotate + 'deg)',
-                              'position': 'absolute',
-                              'background-image': 'url('+connection.pictureUrl+')'})
-                        .addClass('cxnPic');
+                        .attr('li-rotate', randRotate)
+                        .addClass('cxnPic ease')
+                        .css({'position': 'absolute',
+                              'background-image': 'url('+connection.pictureUrl+')'});
+    if (!hasTransitions) {
+      currLink.css({'-moz-transform':     randRotate,
+                    '-webkit-transform':  randRotate,
+                    'transform':          randRotate});
+    }
     currLink.hover(function() {
       $(this).css('z-index', 1000);
     }, function() {
@@ -660,7 +715,12 @@ $(function() {
   },
 
   handleConnections = function(profiles) {
-    var i, length, cxn;
+    var i, length, cxn,
+        data = {
+          type: 'filterConnections',
+          profiles: profiles,
+          sessionId: mySessionId
+        };
     changeLoadingMsg('Loading your connections...');
     cxnsLoaded = 1;
     if (!profileStored) {
@@ -681,7 +741,7 @@ $(function() {
       cxn = profiles.values[i];
       if (cxn.id !== myProfileId && cxn.pictureUrl) {
         // only store employee if has pictureUrl
-        storeConnection(cxn);
+        //storeConnection(cxn);
         // pic doesn't exist; let's create it
         if (!$('#' + cxn.id).length) {
           createCxnPic(cxn);
@@ -692,12 +752,29 @@ $(function() {
         //profiles.values.splice(i--, 1);
       }
     }
+    cxnPics = $('.cxnPic');
+    cxnPics.draggable({ distance: 5,
+                        start: cxnPicDragStart,
+                        stop: cxnPicDragStop,
+                        containment: 'parent' });
     changeLoadingMsg('Processing connection data...');
-    socket.send({
-      type: 'filterConnections',
-      profiles: profiles,
-      sessionId: mySessionId
-    });
+
+    if (hasWebWorkers) {
+      console.log('cxn worker');
+      cxnWorker = new Worker('/js/cxnWorker.js');
+      data.employmentDates = employmentDates;
+      data.myProfileId = myProfileId;
+      cxnWorker.postMessage(data);
+      cxnWorker.addEventListener('message', function(evt) {
+        console.log('cxn worker done');
+        if (evt.data) {
+          filterConnectionsResult(evt.data.coworkers);
+        }
+      }, false);
+    }
+    else {
+      socket.send(data);
+    }
   },
 
   doGKAnimate = function() {
@@ -720,9 +797,11 @@ $(function() {
                    fast     : 6000,
                    realfast : 2000 };
     $(this).text('Pause');
+    cxnPics.draggable('disable'); // prevent any dragging of connections
     myPicLeft = myPicElem.position().left;
     active = speedElem.children('.active');
-    className = active.attr('class').replace(/\s?active\s?/, '');
+    className = active.attr('class').replace(/\s?active\s?/, '')
+                                    .replace(/\s?speedBtn\s?/, '');
     totalDur = speeds[className];
     dur = (RIGHT_BOUND - myPicLeft)*totalDur/RIGHT_BOUND;
     myPicElem.animate({ left: RIGHT_BOUND + 'px' },
@@ -734,6 +813,7 @@ $(function() {
       },
       complete: function() {
         playBtn.text('Play');
+        cxnPics.draggable('enable');
       }
     });
   },
@@ -762,6 +842,7 @@ $(function() {
 
   stopMyPicAnim = function() {
     myPicElem.stop(true);
+    cxnPics.draggable('enable');
     playBtn.text('Play');
   },
 
@@ -782,9 +863,12 @@ $(function() {
     resetHelpTimeout();
   },
 
-  resetHelpTimeout = function() {
+  resetHelpTimeout = function(delay) {
     // After 60 seconds, show message to reload.
     var reloadLink = loadingElem.find('.helpReload');
+    if (!delay) {
+      delay = 60000;
+    }
     if (helpTimeout) {
       // clear any existing timeout.
       clearTimeout(helpTimeout);
@@ -796,12 +880,31 @@ $(function() {
         if ($.browser.msie) {
           reloadLink.children('.ieWarn').show();
         }
-        reloadLink.find('a').click(function(evt) {
+        reloadLink.find('.suggestReload a').click(function(evt) {
           window.location.reload();
           evt.preventDefault();
         });
       }
-    }, 60000);
+    }, delay);
+  },
+
+  filterConnectionsResult = function(coworkers) {
+    doneLoading = 1;
+    myCoworkers = coworkers;
+    // fade out loading
+    loadingElem.fadeTo('fast', 0);
+    loadingElem.hide();
+    // show body
+    tlStuffElem.show();
+    TL_TOP = timelineElem.offset().top;
+    // detect and fix div overflow for dates/infos!
+    // need to wait til we're here since we're display:none until now.
+    $('#timeline .date span').each(fixOverflow);
+    $('.infoBlock').each(fixOverflow);
+    tlStuffElem.fadeTo('slow', 1);
+    if (!hasWebWorkers) {
+      socket.disconnect();
+    }
   },
 
   onLinkedInAuth = function() {
@@ -816,7 +919,9 @@ $(function() {
     // get own profile
     IN.API.Raw("/people/~:(id,first-name,last-name,positions,picture-url,educations)").result(handleOwnProfile);
     // Pull in connection data
-    IN.API.Raw("/people/~/connections:(id,first-name,last-name,positions,picture-url,public-profile-url,educations)").result(handleConnections);
+    IN.API.Connections("me")
+      .fields("id", "first-name", "last-name","positions","picture-url","educations","site-standard-profile-request:(url)")
+      .result(handleConnections);
     resetHelpTimeout();
 
   };
@@ -835,45 +940,40 @@ $(function() {
 
   //IN.Event.on(IN, 'frameworkLoaded', onLinkedInLoad);
 
-  socket = new io.Socket(null, {port: PORT, rememberTransport: false});
-  socket.connect();
+  if (!hasWebWorkers) {
+    socket = new io.Socket(null, {port: PORT, rememberTransport: false});
+    socket.connect();
 
-  // avoid problem where linkedin profile returns before we are done
-  // connecting through socket.io
-  socket.on('connect', function() {
-    ioConnected = 1;
-    if (ownProfile && !profileStored) {
-      // profile came back first
-      handleOwnProfile(ownProfile);
-    }
-  });
-  socket.on('message', function(message) {
-    if (message.type !== 'undefined') {
-      if (message.type === 'storeOwnProfileComplete') {
-        mySessionId = message.sessionId;
-        //handle connections
-        profileStored = 1;
-        if (cxnsLoaded) {
-          handleConnections(myConnections);
+    // avoid problem where linkedin profile returns before we are done
+    // connecting through socket.io
+    socket.on('connect', function() {
+      ioConnected = 1;
+      if (ownProfile && !profileStored) {
+        // profile came back first
+        handleOwnProfile(ownProfile);
+      }
+    });
+    socket.on('message', function(message) {
+      if (message.type !== 'undefined') {
+        if (message.type === 'storeOwnProfileComplete') {
+          mySessionId = message.sessionId;
+          //handle connections
+          profileStored = 1;
+          if (myConnections) {
+            handleConnections(myConnections);
+          }
+        }
+        else if (message.type === 'filterConnectionsResult') {
+          filterConnectionsResult(message.coworkers);
         }
       }
-      else if (message.type === 'filterConnectionsResult') {
-        doneLoading = 1;
-        myCoworkers = message.coworkers;
-        // fade out loading
-        loadingElem.fadeTo('fast', 0);
-        loadingElem.hide();
-        // show body
-        tlStuffElem.show();
-        TL_TOP = timelineElem.offset().top;
-        // detect and fix div overflow for dates/infos!
-        // need to wait til we're here since we're display:none until now.
-        $('#timeline .date span').each(fixOverflow);
-        $('.infoBlock').each(fixOverflow);
-        tlStuffElem.fadeTo('slow', 1);
-      }
-    }
-  });
+    });
+  }
+
+  // Detect CSS3 transition support.
+  if (document.body.style.MozTransition !== undefined || document.body.style.webkitTransition !== undefined) {
+    hasTransitions = 1;
+  }
 
   // Browser event handlers.
 
@@ -916,6 +1016,8 @@ $(function() {
   $('#printCompBtn').click(function() {
     console.log(myCompanies);
   });
+
+  resetHelpTimeout(10000);
 
   // mobile touch event for mypic
   document.getElementById('mypic').ontouchmove = function(evt) {

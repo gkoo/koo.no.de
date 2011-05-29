@@ -1,30 +1,11 @@
-var redis = require('redis').createClient(),
+var redis         = require('redis').createClient(),
+    profileWorker = require('./public/js/profileWorker.js'),
+    cxnWorker     = require('./public/js/cxnWorker.js'),
 
 STRIP_PUNC = /[^\w\s]/gi,
 
-storePosition, storeProfile, getConnectionsByCompany,
+storePosition, storeOwnProfile, getConnectionsByCompany,
 
-datesOverlap = function(startVal1, endVal1, startVal2, endVal2) {
-  if (!startVal1 || !startVal2) { return false; } // require both startVals
-
-  if (endVal1 && endVal2) {
-    // all dates exist
-    // NO  1 1 2 2
-    // NO  2 2 1 1
-    // YES everything else
-    return (endVal1 > startVal2 && startVal1 < endVal2);
-  }
-
-  if (!endVal1 && !endVal2) { return true; } // both dates ongoing
-
-  if (!endVal1) { // all exist except endVal1
-    return startVal1 < endVal2;
-  }
-
-  return startVal2 < endVal1; // endVal1 && !endVal2
-},
-
-// loops through myDates and sees if any are overlapping.
 convertDateToVal = function(date) {
   var yearVal;
   if (!date) {
@@ -32,65 +13,6 @@ convertDateToVal = function(date) {
   }
   yearVal = (date.year - 1900)*12;
   return date.month ? yearVal + date.month : yearVal + 1;
-},
-
-anyDatesOverlap = function(startVal, endVal, myDates) {
-  var i, length, dates;
-  if (!myDates) { return 0; }
-
-  length = myDates.length;
-  for (i=0; i<length; ++i) {
-    dates = myDates[i].split(':');
-    if (datesOverlap(startVal, endVal, parseInt(dates[0], 10), parseInt(dates[1], 10))) {
-      return true;
-    }
-  }
-  // made it through without any dates overlapping.
-  return false;
-},
-
-findRelevantCxns = function(myProfileId, employDates, connections, cmpKeys, callback) {
-  var i, j, cxn, positions, company, cmpKey, startVal, endVal, dates,
-      cxnLength = connections.values.length,
-      coworkers = {}; // hash where key is companyId/companyName and value is array of cxnId's
-
-  for (cmpKey in employDates) {
-    if (!coworkers[cmpKey]) {
-      coworkers[cmpKey] = {};
-    }
-    coworkers[cmpKey][myProfileId] = employDates[cmpKey];
-  }
-
-  for (i=0; i<cxnLength; ++i) {
-    // loop through connections
-    cxn = connections.values[i];
-    if (cxn.positions && cxn.positions.values && cxn.positions.values.length && cxn.pictureUrl) { // don't care about cxn if no picture
-      positions = cxn.positions.values;
-      for (j=0; j<cxn.positions.values.length; ++j) {
-        company = positions[j].company;
-        if (company.name) {
-          // use company name, since company id's aren't ubiquitous in all profiles
-          cmpKey = company.name.toLowerCase().replace(STRIP_PUNC, '');
-
-          // TODO: check for name as well, (handling non-standardized comp name)
-          startVal = convertDateToVal(positions[j].startDate);
-          endVal = convertDateToVal(positions[j].endDate);
-
-          dates = coworkers[cmpKey];
-          if (dates && anyDatesOverlap(startVal, endVal, dates[myProfileId])) {
-            // common company AND dates overlap
-            if (dates[cxn.id]) {
-              dates[cxn.id].push(startVal + ':' + endVal);
-            }
-            else {
-              dates[cxn.id] = [startVal + ':' + endVal];
-            }
-          }
-        }
-      }
-    }
-  }
-  callback(null, coworkers);
 };
 
 redis.on("error", function (err) {
@@ -98,69 +20,14 @@ redis.on("error", function (err) {
 });
 
 // only called for user
-exports.storePosition = storePosition = function(profileId, position, myProfileId) {
-  var company = position.company,
-      cmpKey, datesKey, i, start, end;
+exports.storePosition = storePosition = function(profileId, position) {
+  var formattedDates = profileWorker.formatPositionDates(position);
 
-  if (company && company.name) {
-    company.name = company.name.toLowerCase().replace(STRIP_PUNC, '');
-    //if (isRelevantCompany(company.name)) {
-      // this is a connection
-      //redis.sadd(['coworkers', myProfileId, company.name].join(':'), profileId);
-    if (position.startDate) { // educations have no start date
-      start = convertDateToVal(position.startDate);
-      end = position.endDate ? convertDateToVal(position.endDate) : 0;
-      dates = start + ':' + end;
-      cmpKey = company.name.toLowerCase().replace(STRIP_PUNC, '');
-      datesKey = ['employmentDates', profileId, cmpKey].join(':');
-      redis.sadd(datesKey, dates);
-      redis.expire(datesKey, 1800);
-    }
-    //}
+  if (typeof formattedDates !== 'undefined') {
+    datesKey = ['employmentDates', profileId, formattedDates.cmpName].join(':');
+    redis.sadd(datesKey, formattedDates.dates);
+    redis.expire(datesKey, 1800);
   }
-};
-
-// only called for user
-exports.storeProfile = storeProfile = function(profile, sessionId, callback) {
-  var keyPrefix = ['profiles', profile.id].join(':'),
-      idKey = ['id', sessionId].join(':'),
-      fullName  = [profile.firstName, profile.lastName].join(' '),
-      keyValuePairs = [keyPrefix],
-      lastViewed = (new Date()).toUTCString(),
-      i, company;
-
-  if (sessionId) {
-    redis.set(idKey, profile.id); // for future lookups
-    redis.expire(idKey, 900);
-  }
-
-  keyValuePairs.push('id', profile.id);
-  if (profile.firstName || profile.lastName) {
-    keyValuePairs.push('fullName', fullName);
-  }
-  if (profile.pictureUrl) {
-    keyValuePairs.push('pictureUrl', profile.pictureUrl);
-  }
-  if (profile.publicProfileUrl) {
-    keyValuePairs.push('publicProfileUrl', profile.publicProfileUrl);
-  }
-  redis.hmset(keyValuePairs);
-
-  if (profile.positions && profile.positions.values && profile.positions.values.length) {
-    for (i = 0; i<profile.positions.values.length; ++i) {
-      storePosition(profile.id, profile.positions.values[i]);
-    }
-  }
-
-  if (callback) {
-    // send signal that own profile has been stored,
-    // so we don't load connections before we're ready.
-    callback(sessionId);
-  }
-  // do some logging
-  redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
-  redis.hset(['profiles', profile.id].join(':'), 'lastViewed', lastViewed);
-  redis.hset('viewlog', [fullName, profile.id].join(':'), lastViewed);
 };
 
 exports.filterConnections = function(sessionId, profiles, callback) {
@@ -172,7 +39,7 @@ exports.filterConnections = function(sessionId, profiles, callback) {
     }
     redis.keys(['employmentDates', myProfileId, '*'].join(':'), function(err, dateKeys) {
       // find all employmentDates for user and populate employmentDates object
-      var i, companyName, employmentDates = {}, cmpKeys = [], count = 0;
+      var i, companyName, employmentDates = {}, count = 0;
       if (err) {
         console.log(err);
         return;
@@ -181,17 +48,15 @@ exports.filterConnections = function(sessionId, profiles, callback) {
         // for each dateKey (usually there's only one), add dates to profile
         redis.smembers(dateKeys[i], function(err, dates) {
           // dates for "companyName"
-          var cmpKey;
           if (err) { console.log(err); return; }
 
-          cmpKey = dateKeys[count].split(':')[2]; // counting on redis to return responses in order.
-          cmpKeys.push(cmpKey);
+          var cmpKey = dateKeys[count].split(':')[2]; // counting on redis to return responses in order.
           if (!employmentDates) { employmentDates = {}; }
 
           // associate these dates with the company
           employmentDates[cmpKey] = dates;
           if (count === dateKeys.length-1) {
-            findRelevantCxns(myProfileId, employmentDates, profiles, cmpKeys, callback);
+            cxnWorker.findRelevantCxns(myProfileId, employmentDates, profiles, callback);
           } else {
             ++count;
           }
@@ -199,4 +64,36 @@ exports.filterConnections = function(sessionId, profiles, callback) {
       }
     });
   });
+};
+
+// only called for user
+exports.storeOwnProfile = storeOwnProfile = function(profile, sessionId, callback) {
+  var idKey = ['id', sessionId].join(':'),
+      fullName  = [profile.firstName, profile.lastName].join(' '),
+      lastViewed = (new Date()).toUTCString(),
+      position, datesKey;
+
+  if (sessionId) {
+    redis.set(idKey, profile.id); // for future lookups
+    redis.expire(idKey, 900);
+  }
+
+  profileWorker.storeFormattedPositionDates(profile, function(cmpEmployDates) {
+    if (typeof cmpEmployDates !== 'undefined') {
+      datesKey = ['employmentDates', profile.id, cmpEmployDates.cmpName].join(':');
+      redis.sadd(datesKey, cmpEmployDates.dates);
+      redis.expire(datesKey, 1800);
+    }
+  });
+
+  if (callback) {
+    // send signal that own profile has been stored,
+    // so we don't load connections before we're ready.
+    callback(sessionId);
+  }
+
+  // do some logging
+  redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
+  redis.hset(['profiles', profile.id].join(':'), 'lastViewed', lastViewed);
+  redis.hset('viewlog', [fullName, profile.id].join(':'), lastViewed);
 };
