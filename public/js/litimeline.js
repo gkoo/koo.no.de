@@ -60,6 +60,7 @@ $(function() {
       MONTHS_ABBR     = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
       COLORS          = ['orange', 'blue', 'green', 'purple', 'teal', 'red', 'yellow', 'magenta', 'grey'],
       STRIP_PUNC      = /[^\w\s]/gi,
+      APP_NAME        = 'timeline',
       TL_TOP;
 
   convertDateToVal = function(date) {
@@ -546,6 +547,7 @@ $(function() {
 
   handleOwnProfile = function (profile) {
     var pic, data = {
+      app: APP_NAME,
       type: 'storeOwnProfile',
       profile: profile
     };
@@ -565,11 +567,9 @@ $(function() {
     }
     addEducationToPositions(profile);
     if (hasWebWorkers) {
-      console.log('profile web worker');
       profileWorker = new Worker('/js/profileWorker.js');
       profileWorker.postMessage(data);
       profileWorker.addEventListener('message', function(evt) {
-        console.log('profile web worker done');
         if (evt.data) {
           employmentDates = evt.data.employmentDates;
           profileStored = 1;
@@ -717,6 +717,7 @@ $(function() {
   handleConnections = function(profiles) {
     var i, length, cxn,
         data = {
+          app: APP_NAME,
           type: 'filterConnections',
           profiles: profiles,
           sessionId: mySessionId
@@ -760,13 +761,11 @@ $(function() {
     changeLoadingMsg('Processing connection data...');
 
     if (hasWebWorkers) {
-      console.log('cxn worker');
       cxnWorker = new Worker('/js/cxnWorker.js');
       data.employmentDates = employmentDates;
       data.myProfileId = myProfileId;
       cxnWorker.postMessage(data);
       cxnWorker.addEventListener('message', function(evt) {
-        console.log('cxn worker done');
         if (evt.data) {
           filterConnectionsResult(evt.data.coworkers);
         }

@@ -4,8 +4,6 @@ var redis         = require('redis').createClient(),
 
 STRIP_PUNC = /[^\w\s]/gi,
 
-storePosition, storeOwnProfile, getConnectionsByCompany,
-
 convertDateToVal = function(date) {
   var yearVal;
   if (!date) {
@@ -13,14 +11,10 @@ convertDateToVal = function(date) {
   }
   yearVal = (date.year - 1900)*12;
   return date.month ? yearVal + date.month : yearVal + 1;
-};
-
-redis.on("error", function (err) {
-  console.log("Redis error " + err);
-});
+},
 
 // only called for user
-exports.storePosition = storePosition = function(profileId, position) {
+storePosition = function(profileId, position) {
   var formattedDates = profileWorker.formatPositionDates(position);
 
   if (typeof formattedDates !== 'undefined') {
@@ -28,9 +22,9 @@ exports.storePosition = storePosition = function(profileId, position) {
     redis.sadd(datesKey, formattedDates.dates);
     redis.expire(datesKey, 1800);
   }
-};
+},
 
-exports.filterConnections = function(sessionId, profiles, callback) {
+filterConnections = function(sessionId, profiles, callback) {
   redis.get(['id', sessionId].join(':'), function(err, myProfileId) {
     var i;
     if (err) {
@@ -64,11 +58,10 @@ exports.filterConnections = function(sessionId, profiles, callback) {
       }
     });
   });
-  console.log('done with filterConnections');
-};
+},
 
 // only called for user
-exports.storeOwnProfile = storeOwnProfile = function(profile, sessionId, callback) {
+storeOwnProfile = function(profile, sessionId, callback) {
   var idKey = ['id', sessionId].join(':'),
       fullName  = [profile.firstName, profile.lastName].join(' '),
       lastViewed = (new Date()).toUTCString(),
@@ -97,5 +90,24 @@ exports.storeOwnProfile = storeOwnProfile = function(profile, sessionId, callbac
   redis.hincrby(['profiles', profile.id].join(':'), 'count', 1);
   redis.hset(['profiles', profile.id].join(':'), 'lastViewed', lastViewed);
   redis.hset('viewlog', [fullName, profile.id].join(':'), lastViewed);
-  console.log('done with storeOwnProfile');
 };
+
+exports.handleMessage = function(msg, client) {
+  if (msg.type === 'storeOwnProfile') {
+    storeOwnProfile(msg.profile, client.sessionId, function(sessionId) {
+      client.send({ type: 'storeOwnProfileComplete', sessionId: sessionId });
+    });
+  }
+  else if (msg.type === 'filterConnections') {
+    // use sessionId from message because sometimes
+    // socket.IO switches protocols and gives client a new sessionId
+    filterConnections(msg.sessionId, msg.profiles, function(err, coworkers) {
+      client.send({ type: 'filterConnectionsResult',
+                    coworkers: coworkers });
+    });
+  }
+};
+
+redis.on("error", function (err) {
+  console.log("Redis error " + err);
+});

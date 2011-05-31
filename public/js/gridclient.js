@@ -3,9 +3,12 @@ var socket            = null,
     mouseIsDown       = false,
     currColorClass    = 'black',
     username          = '',
-    PLAYER_ID_PREFIX  = 'player-';
+    PLAYER_ID_PREFIX  = 'player-',
+    APP_NAME          = 'grid',
+    //PORT              = 8080,
+    PORT              = 80,
 
-var getCellByCoord = function(x, y) {
+getCellByCoord = function(x, y) {
   // blah! nth-child is 1-indexed. why??
   var row = $(grid).children('li:nth-child('+(y+1)+')'),
       col = null;
@@ -73,9 +76,10 @@ doDraw = function(el) {
 
     toggleCell({ cell: el, currColorClass: color });
     socket.send({
+      app:  APP_NAME,
       type: 'toggle',
-      x: elemCoord.x,
-      y: elemCoord.y,
+      x:    elemCoord.x,
+      y:    elemCoord.y,
       currColorClass: currColorClass,
       username: username
     });
@@ -130,7 +134,7 @@ handleNameChange = function() {
 $(document).ready(function() {
 
   grid  = document.getElementById('grid');
-  socket = new io.Socket(null, {port: 80, rememberTransport: false});
+  socket = new io.Socket(null, {port: PORT, rememberTransport: false});
   socket.connect();
 
   socket.on('message', function(obj) {
@@ -202,7 +206,10 @@ $(document).ready(function() {
     var target = $(evt.target);
     if (target.attr('id') === 'clearBtn') {
       $('#grid ul li').removeClass();
-      socket.send({ type: 'clear' });
+      socket.send({
+        app: APP_NAME,
+        type: 'clear'
+      });
     }
     // Initiate setting name.
     else if (target.attr('id') === 'editNameBtn') {
