@@ -19,17 +19,7 @@ io = io.listen(app, {
 });
 
 io.on('connection', function(client) {
-  /*
-  if (!players[client.sessionId]) {
-    players[client.sessionId] = { id: nextId++ };
-  }
-  if (gridDirty) {
-    client.send({ grid: grid });
-  }
-  else {
-    client.send({ grid: null });
-  }
-  */
+  gridMod.initConnection(client);
 
   client.on('message', function(message) {
     if ('app' in message) {

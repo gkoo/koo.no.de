@@ -8,6 +8,7 @@ var DIMSIZE = 30,
     gridDirty = false,    // whether anything is on the grid yet
     players = {},         // a hash of all currently active players
     nextId = 0,           // the next id to assign the next player
+
     // Init grid.
     initGrid = function() {
       for (var i=0; i<DIMSIZE; ++i) {
@@ -17,6 +18,7 @@ var DIMSIZE = 30,
         }
       }
     },
+
     getColorId = function(colorName) {
       var i=0;
       if (typeof colorName !== 'string') { return -1; }
@@ -46,7 +48,6 @@ exports.handleMessage = function(msg, client) {
     }
     else if (msg.type === 'clear') {
       client.broadcast(msg);
-      console.log('clearing grid');
       initGrid();
       gridDirty = false;
     }
@@ -69,3 +70,15 @@ exports.handleMessage = function(msg, client) {
     }
   }
 };
+
+exports.initConnection = function(client) {
+  if (!players[client.sessionId]) {
+    players[client.sessionId] = { id: nextId++ };
+  }
+  if (gridDirty) {
+    client.send({ grid: grid });
+  }
+  else {
+    client.send({ grid: null });
+  }
+}
