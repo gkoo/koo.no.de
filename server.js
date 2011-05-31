@@ -14,9 +14,12 @@ var PORT    = 80,
 
 
 
+/*
 io = io.listen(app, {
   transports: ['htmlfile', 'xhr-multipart', 'xhr-polling', 'jsonp-polling']
 });
+*/
+io = io.listen(app);
 
 io.on('connection', function(client) {
   gridMod.initConnection(client);
