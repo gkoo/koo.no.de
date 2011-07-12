@@ -88,12 +88,12 @@ app.get('/grid', function(req, res){
 });
 
 app.get('/faces', function(req, res){
-  res.render('face', {
+  res.render('faces', {
     locals: {
-      page: 'face',
+      page: 'faces',
       title: 'Faces Of Your LinkedIn Network',
     },
-    layout: 'facelayout'
+    layout: 'faceslayout'
   });
 });
 

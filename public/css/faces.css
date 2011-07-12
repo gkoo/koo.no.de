@@ -1,0 +1,125 @@
+body {
+  background-color: #000;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+a {
+  color: #00B7FF;
+}
+
+ul, li {
+  list-style-type: none;
+}
+
+p {
+  margin: 0;
+}
+
+#main {
+  color: #fff;
+  text-align: center;
+}
+
+.cxnWrapper {
+  margin: 0 auto;
+  width: 960px;
+}
+
+.categories {
+  display: none;
+  margin-left: 250px;
+  padding: 0;
+}
+
+.categories li {
+  float: left;
+  margin: 0 10px;
+  text-align: center;
+  width: 216px;
+}
+
+.cxns,
+.cxns .cxn {
+  margin: 0;
+  padding: 0;
+  width: 960px;
+}
+
+.cxns .cxn {
+  clear: left;
+  height: 102px;
+  text-align: left;
+}
+
+.cxns img {
+  float: left;
+
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+}
+.name {
+  float: left;
+  height: 20px;
+  padding-top: 10px;
+  text-align: left;
+  width: 150px;
+}
+.attrInfo { /* ul */
+  float: left;
+  height: 80px;
+  margin-left: 20px;
+  padding-left: 0;
+}
+
+.attrInfo li {
+  background-color: #fff;
+  background-position: center center;
+  background-repeat: no-repeat;
+  color: #000;
+  float: left;
+  margin: 0 10px;
+  padding: 20px;
+  text-align: center;
+
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+
+  width: 176px;
+  height: 40px;
+}
+
+.attrInfo li.happy {
+  background-image: url(/img/emoticons/Smile.png);
+}
+
+.attrInfo li.sad {
+  background-image: url(/img/emoticons/Sad.png);
+}
+
+.attrInfo li.neutral {
+  background-image: url(/img/emoticons/Neutral.png);
+}
+
+.attrInfo li.angry {
+  background-image: url(/img/emoticons/Angry.png);
+}
+
+.attrInfo li.surprised {
+  background-image: url(/img/emoticons/Surprised.png);
+}
+
+.attrInfo li.surprised {
+  background-image: url(/img/emoticons/Surprised.png);
+}
+
+.attrInfo li.redx {
+  background-image: url(/img/emoticons/redx.png);
+}
+
+.attrInfo li.greencheck {
+  background-image: url(/img/emoticons/greencheck.png);
+}

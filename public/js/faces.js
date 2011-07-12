@@ -1,10 +1,12 @@
 var onLinkedInLoad;
 $(function() {
   var appView,
+      REDX = 'redx',
+      GREENCHECK = 'greencheck',
       // DEV
-      // face_api_key = '41be1e8bc43f9b5d79b421cd8995ba5f',
+      face_api_key = '41be1e8bc43f9b5d79b421cd8995ba5f',
       // PROD
-      face_api_key = 'e736bb672063697ac00f2bcc14f291ba',
+      // face_api_key = 'e736bb672063697ac00f2bcc14f291ba',
       faceClient = new Face_ClientAPI(face_api_key),
       cxnList = $('.cxns');
 
@@ -39,16 +41,19 @@ $(function() {
       return this.el;
     },
     renderPhotoAttrs: function(photoAttrs) {
+      if (photoAttrs.mood) {
+        this.renderAttrClass(photoAttrs.mood.value);
+      }
       if (photoAttrs.glasses) {
-        this.renderAttr(photoAttrs.glasses.value);
+        this.renderAttrClass(photoAttrs.glasses.value === 'true' ? GREENCHECK : REDX);
       }
       if (photoAttrs.smiling) {
-        this.renderAttr(photoAttrs.smiling.value);
-      }
-      if (photoAttrs.mood) {
-        this.renderAttr(photoAttrs.mood.value);
+        this.renderAttrClass(photoAttrs.smiling.value === 'true' ? GREENCHECK : REDX);
       }
       return this.attrInfo;
+    },
+    renderAttrClass: function(className) {
+      this.attrInfo.append($('<li>').addClass(className));
     },
     renderAttr: function(text) {
       this.attrInfo.append($('<li>').text(text));
@@ -169,8 +174,9 @@ $(function() {
 
   onLinkedInAuth = function() {
     IN.API.Connections("me")
-      .fields(['firstName','lastName','id','pictureUrl'])
+      .fields(['firstName','lastName','id','pictureUrl','site-standard-profile-request:(url)'])
       .result(handleConnectionsResult);
+    $('.categories').show();
   };
 
   onLinkedInLoad = function() {
