@@ -1,3 +1,6 @@
+// TODO: cache results on server
+// TODO: filters
+
 var onLinkedInLoad;
 $(function() {
   var appView,
@@ -41,14 +44,19 @@ $(function() {
       return this.el;
     },
     renderPhotoAttrs: function(photoAttrs) {
+      var glassesVal = photoAttrs.glasses.value,
+          smileVal = photoAttrs.smiling.value;
       if (photoAttrs.mood) {
         this.renderAttrClass(photoAttrs.mood.value);
+        this.el.addClass(photoAttrs.mood.value);
       }
       if (photoAttrs.glasses) {
-        this.renderAttrClass(photoAttrs.glasses.value === 'true' ? GREENCHECK : REDX);
+        this.renderAttrClass(glassesVal === 'true' ? GREENCHECK : REDX);
+        this.el.addClass(glassesVal === 'true' ? 'glasses' : 'noglasses');
       }
       if (photoAttrs.smiling) {
-        this.renderAttrClass(photoAttrs.smiling.value === 'true' ? GREENCHECK : REDX);
+        this.renderAttrClass(smileVal === 'true' ? GREENCHECK : REDX);
+        this.el.addClass(smileVal === 'true' ? 'smile' : 'nosmile');
       }
       return this.attrInfo;
     },
@@ -94,6 +102,8 @@ $(function() {
     initialize: function() {
       _.bindAll(this, 'handleFaceResult');
       this.cxnListElem = this.$('.cxnWrapper');
+      this.el = $(this.el);
+      this.$('.filterDropdown').attr('value', 'all-filter');
     },
 
     render: function() {
@@ -128,6 +138,15 @@ $(function() {
         }
         if (cxn.get('pictureUrl') !== photo.url) { alert('urls don\'t match; something is wrong'); }
       }
+    },
+
+    doFilter: function() {
+      var filterVal = this.$('.filterDropdown').attr('value');
+      this.$('.cxns').removeClass().addClass('cxns').addClass(filterVal);
+    },
+
+    events: {
+      'click #filterBtn': "doFilter"
     }
   }),
 

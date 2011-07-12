@@ -123,3 +123,41 @@ p {
 .attrInfo li.greencheck {
   background-image: url(/img/emoticons/greencheck.png);
 }
+
+.cxns.happy-filter li,
+.cxns.sad-filter li,
+.cxns.neutral-filter li,
+.cxns.angry-filter li,
+.cxns.surprised-filter li,
+.cxns.glasses-filter li,
+.cxns.noglasses-filter li,
+.cxns.smile-filter li,
+.cxns.nosmile-filter li {
+  display: none;
+}
+
+.cxns.all-filter li,
+.cxns.happy-filter li.happy,
+.cxns.sad-filter li.sad,
+.cxns.neutral-filter li.neutral,
+.cxns.angry-filter li.angry,
+.cxns.surprised-filter li.surprised,
+.cxns.glasses-filter li.glasses,
+.cxns.noglasses-filter li.noglasses,
+.cxns.smile-filter li.smile,
+.cxns.nosmile-filter li.nosmile
+{
+  display: block;
+}
+
+.cxns.happy-filter .attrInfo li,
+.cxns.sad-filter .attrInfo li,
+.cxns.neutral-filter .attrInfo li,
+.cxns.angry-filter .attrInfo li,
+.cxns.surprised-filter .attrInfo li,
+.cxns.glasses-filter .attrInfo li,
+.cxns.noglasses-filter .attrInfo li,
+.cxns.smile-filter .attrInfo li,
+.cxns.nosmile-filter .attrInfo li {
+  display: block;
+}

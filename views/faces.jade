@@ -1,6 +1,21 @@
 h1= title
 script(type="IN/Login")
 .cxnWrapper
+  p
+    span Filter By:&nbsp;
+    select.filterDropdown
+      option(value="all-filter", selected="true") All
+      option(value="happy-filter") Happy
+      option(value="neutral-filter") Neutral
+      option(value="sad-filter") Sad
+      option(value="angry-filter") Angry
+      option(value="surprised-filter") Surprised
+      option(value="glasses-filter") Glasses
+      option(value="noglasses-filter") No Glasses
+      option(value="smile-filter") Smiling
+      option(value="nosmile-filter") No Smiling
+
+    input#filterBtn(type="button", value="Go!")
   ul.categories
     li.mooooood Mood
     li.glasses Glasses
@@ -12,9 +27,3 @@ script(type="text/javascript", src="/js/underscore.js")
 script(type="text/javascript", src="/js/backbone.js")
 script(type="text/javascript", src="/js/face_api_client.js")
 script(type="text/javascript", src="/js/faces.js")
-//- Prod koMCmJ5xPVCzE97FspEZJtsbl8gZheAhv8SM4J7twaistnj1UyUJIWEoQPHo6n92
-//- Dev y8JAzL_jJwPMkPPpN3CACsxArbVnDw73JGH4K0FYKVgqlTq78qh15fKJ-II9Eb5E
-script(type="text/javascript", src="http://platform.linkedin.com/in.js")
-  | api_key: koMCmJ5xPVCzE97FspEZJtsbl8gZheAhv8SM4J7twaistnj1UyUJIWEoQPHo6n92
-  | authorize: true
-  | onLoad: onLinkedInLoad
