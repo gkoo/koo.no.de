@@ -149,7 +149,7 @@ $(function() {
     },
 
     events: {
-      'click #filterBtn': "doFilter"
+      'change .filterDropdown': "doFilter"
     }
   }),
 
