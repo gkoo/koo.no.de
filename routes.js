@@ -87,7 +87,7 @@ app.get('/grid', function(req, res){
   });
 });
 
-app.get('/face', function(req, res){
+app.get('/faces', function(req, res){
   res.render('face', {
     locals: {
       page: 'face',
