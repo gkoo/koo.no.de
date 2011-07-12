@@ -1,7 +1,11 @@
 var onLinkedInLoad;
 $(function() {
   var appView,
-      faceClient = new Face_ClientAPI('41be1e8bc43f9b5d79b421cd8995ba5f');
+      // DEV
+      // face_api_key = '41be1e8bc43f9b5d79b421cd8995ba5f',
+      // PROD
+      face_api_key = 'e736bb672063697ac00f2bcc14f291ba',
+      faceClient = new Face_ClientAPI(face_api_key),
       cxnList = $('.cxns');
 
   ConnectionModel = Backbone.Model.extend(),
