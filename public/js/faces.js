@@ -18,7 +18,7 @@ $(function() {
   ConnectionView = Backbone.View.extend({
     initialize: function() {
       _.bindAll(this, 'render', 'renderPhotoAttrs', 'renderAttr');
-      this.el = $(this.el).addClass('cxn');
+      $(this.el).addClass('cxn');
       this.model.bind('change', this.render);
     },
     tagName: 'li',
@@ -27,36 +27,39 @@ $(function() {
       var img = $('<img>').attr('src', this.model.get('pictureUrl')),
           nameElem = $('<div>').addClass('name').text(this.model.get('firstName') + ' ' + this.model.get('lastName')),
           photoAttrs = this.model.get('photoAttributes'),
+          el = $(this.el),
           attributesElem;
-      this.el.empty().append(nameElem).append(img);
+      el.empty().append(nameElem).append(img);
       if (photoAttrs) {
         this.attrInfo = $('<ul>').addClass('attrInfo');
         if (photoAttrs.face === false) {
           this.renderAttr('???');
           this.renderAttr('???');
           this.renderAttr('???');
+          el.addClass('nophoto');
         }
         else {
-          this.el.append(this.renderPhotoAttrs(photoAttrs));
+          el.append(this.renderPhotoAttrs(photoAttrs));
         }
-        this.el.append(this.attrInfo);
+        el.append(this.attrInfo);
       }
-      return this.el;
+      return el;
     },
     renderPhotoAttrs: function(photoAttrs) {
       var glassesVal = photoAttrs.glasses.value,
-          smileVal = photoAttrs.smiling.value;
+          smileVal = photoAttrs.smiling.value,
+          el = $(this.el);
       if (photoAttrs.mood) {
         this.renderAttrClass(photoAttrs.mood.value);
-        this.el.addClass(photoAttrs.mood.value);
+        el.addClass(photoAttrs.mood.value);
       }
       if (photoAttrs.glasses) {
         this.renderAttrClass(glassesVal === 'true' ? GREENCHECK : REDX);
-        this.el.addClass(glassesVal === 'true' ? 'glasses' : 'noglasses');
+        el.addClass(glassesVal === 'true' ? 'glasses' : 'noglasses');
       }
       if (photoAttrs.smiling) {
         this.renderAttrClass(smileVal === 'true' ? GREENCHECK : REDX);
-        this.el.addClass(smileVal === 'true' ? 'smile' : 'nosmile');
+        el.addClass(smileVal === 'true' ? 'smile' : 'nosmile');
       }
       return this.attrInfo;
     },

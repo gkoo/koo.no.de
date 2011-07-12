@@ -132,7 +132,8 @@ p {
 .cxns.glasses-filter li,
 .cxns.noglasses-filter li,
 .cxns.smile-filter li,
-.cxns.nosmile-filter li {
+.cxns.nosmile-filter li,
+.cxns.nophoto-filter li {
   display: none;
 }
 
@@ -145,7 +146,8 @@ p {
 .cxns.glasses-filter li.glasses,
 .cxns.noglasses-filter li.noglasses,
 .cxns.smile-filter li.smile,
-.cxns.nosmile-filter li.nosmile
+.cxns.nosmile-filter li.nosmile,
+.cxns.nophoto-filter li.nophoto
 {
   display: block;
 }
@@ -158,6 +160,7 @@ p {
 .cxns.glasses-filter .attrInfo li,
 .cxns.noglasses-filter .attrInfo li,
 .cxns.smile-filter .attrInfo li,
-.cxns.nosmile-filter .attrInfo li {
+.cxns.nosmile-filter .attrInfo li,
+.cxns.nophoto-filter .attrInfo li  {
   display: block;
 }
