@@ -5,7 +5,7 @@
 
 var PORT    = 80,
     routes  = require('./routes.js'),
-    li      = require('./lihelper.js'),
+    //li      = require('./lihelper.js'),
     gridMod = require('./gridserver.js'),
     io      = require('socket.io'),
     app     = routes.app;
@@ -29,9 +29,11 @@ io.on('connection', function(client) {
       if (message.app === 'grid') {
         gridMod.handleMessage(message, client);
       }
+      /*
       else if (message.app == 'timeline') {
         li.handleMessage(message, client);
       }
+      */
     }
   });
 

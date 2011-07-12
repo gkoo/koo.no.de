@@ -67,7 +67,6 @@ app.error(function(err, req, res){
   });
 });
 
-/*
 app.configure('development', function(){
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
 });
@@ -75,18 +74,8 @@ app.configure('development', function(){
 app.configure('production', function(){
   app.use(express.errorHandler());
 });
-*/
 
 // Routes
-
-app.get('/', function(req, res){
-  res.render('index', {
-    locals: {
-      page: 'index',
-      title: 'designed by an engineer'
-    }
-  });
-});
 
 app.get('/grid', function(req, res){
   res.render('grid', {
@@ -98,57 +87,30 @@ app.get('/grid', function(req, res){
   });
 });
 
-app.get('/blog', function(req, res){
-  res.render('blog', {
+app.get('/face', function(req, res){
+  res.render('face', {
     locals: {
-      title: 'Blog'
+      page: 'face',
+      title: 'Faces Of Your LinkedIn Network',
+    },
+    layout: 'facelayout'
+  });
+});
+
+app.get('/', function(req, res){
+  res.render('index', {
+    locals: {
+      page: 'index',
+      title: 'designed by an engineer'
     }
-  });
-});
-
-app.get('/linkedin', function(req, res){
-  res.render('linkedin', {
-    locals: {
-      title: 'LinkedIn Connection Timeline',
-      loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
-    },
-    layout: 'lilayout'
-  });
-});
-
-app.get('/linkedinbeta', function(req, res){
-  res.render('linkedinbeta', {
-    locals: {
-      title: 'LinkedIn Connection Timeline',
-      loadStatus: stupidLoadStatuses[Math.floor(Math.random()*stupidLoadStatuses.length)]
-    },
-    layout: false
   });
 });
 
 /*
-app.get('/touchtest', function(req, res) {
-  res.render('touchtest', {
-    locals: {
-      page: 'touchtest',
-      title: 'touchtest'
-    }
-  });
-});
-*/
-
-app.get('/linkedinnetwork', function(req, res){
-  res.render('linetwork', {
-    locals: {
-      title: 'LinkedIn Network',
-    },
-    layout: false
-  });
-});
-
 app.get('/*', function(req, res) {
   throw new NotFound;
 });
+*/
 
 
 // export app instance into the Routes module object

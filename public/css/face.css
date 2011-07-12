@@ -1,0 +1,59 @@
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+ul, li {
+  list-style-type: none;
+}
+
+p {
+  margin: 0;
+}
+
+.categories {
+  height: 80px;
+  margin-left: 80px;
+  padding: 0;
+}
+
+.categories li {
+  border: 1px solid #000;
+  float: left;
+  width: 80px;
+  height: 80px;
+}
+
+.cxns,
+.cxns .cxn {
+  margin: 0;
+  padding: 0;
+  width: 960px;
+}
+
+.cxns .cxn {
+  clear: left;
+  height: 102px;
+}
+
+.cxns img {
+  border: 1px solid #000;
+  float: left;
+}
+.name {
+  height: 20px;
+}
+.attrInfo {
+  height: 80px;
+}
+
+.attrInfo li {
+  border: 1px solid #000;
+  float: left;
+  width: 80px;
+  height: 80px;
+}
