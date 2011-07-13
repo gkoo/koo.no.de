@@ -1,10 +1,11 @@
 h1= title
 script(type="IN/Login")
 .cxnWrapper
-  p
+  p.filter
     span Filter By:&nbsp;
     select.filterDropdown
       option(value="all-filter", selected="true") All
+      option(value="self-filter", selected="true") Me
       option(value="happy-filter") Happy
       option(value="neutral-filter") Neutral
       option(value="sad-filter") Sad

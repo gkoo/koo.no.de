@@ -27,8 +27,12 @@ p {
   width: 960px;
 }
 
-.categories {
+.filter,
+.categories, {
   display: none;
+}
+
+.categories {
   margin-left: 250px;
   padding: 0;
 }
@@ -124,6 +128,7 @@ p {
   background-image: url(/img/emoticons/greencheck.png);
 }
 
+.cxns.self-filter li,
 .cxns.happy-filter li,
 .cxns.sad-filter li,
 .cxns.neutral-filter li,
@@ -138,6 +143,7 @@ p {
 }
 
 .cxns.all-filter li,
+.cxns.self-filter li.self,
 .cxns.happy-filter li.happy,
 .cxns.sad-filter li.sad,
 .cxns.neutral-filter li.neutral,
@@ -152,6 +158,7 @@ p {
   display: block;
 }
 
+.cxns.self-filter .attrInfo li,
 .cxns.happy-filter .attrInfo li,
 .cxns.sad-filter .attrInfo li,
 .cxns.neutral-filter .attrInfo li,

@@ -1,5 +1,5 @@
 // TODO: cache results on server
-// TODO: filters
+// TODO: detect when one of the filters has no results
 
 var onLinkedInLoad;
 $(function() {
@@ -11,7 +11,9 @@ $(function() {
       // PROD
       face_api_key = 'e736bb672063697ac00f2bcc14f291ba',
       faceClient = new Face_ClientAPI(face_api_key),
-      cxnList = $('.cxns');
+      cxnList = $('.cxns'),
+      ownProfile,
+      connections,
 
   ConnectionModel = Backbone.Model.extend(),
 
@@ -25,10 +27,17 @@ $(function() {
     className: 'cxn',
     render: function() {
       var img = $('<img>').attr('src', this.model.get('pictureUrl')),
-          nameElem = $('<div>').addClass('name').text(this.model.get('firstName') + ' ' + this.model.get('lastName')),
+          nameLink = $('<a>').text(this.model.get('firstName') + ' ' + this.model.get('lastName'))
+                             .attr({ 'href': this.model.get('siteStandardProfileRequest').url,
+                                     'target': '_new' }),
+          nameElem = $('<div>').addClass('name')
+                               .append(nameLink),
           photoAttrs = this.model.get('photoAttributes'),
           el = $(this.el),
           attributesElem;
+      if (this.model.get('isSelf')) {
+        el.addClass('self');
+      }
       el.empty().append(nameElem).append(img);
       if (photoAttrs) {
         this.attrInfo = $('<ul>').addClass('attrInfo');
@@ -157,29 +166,27 @@ $(function() {
     faceClient.faces_detect(urls, appView.handleFaceResult);
   },
 
-  handleConnectionsResult = function(result) {
+  processProfiles = function(profiles) {
     var i = 0,
         picUrlList = [],
         MAX_DETECT = 30, // Face API limits to 30 urls
-        values, cxn, newPic, len;
+        cxn, newPic, len;
 
-    if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }
-    values = result.values;
     // purge all cxns with nonexistent/private pictures
-    for (len = values.length; i<len; ++i) {
-      cxn = values[i];
+    for (len = profiles.length; i<len; ++i) {
+      cxn = profiles[i];
       if (typeof cxn.pictureUrl !== 'string' || cxn.pictureUrl === 'private') {
         // NONEXISTENT OR PRIVATE PICTURE
-        values.splice(i, 1);
+        profiles.splice(i, 1);
         --len;
         --i;
       }
     }
     i=0;
-    appView.addCxns(values);
+    appView.addCxns(profiles);
     while (i < len) {
       // all cxns should have picture at this point
-      cxn = values[i];
+      cxn = profiles[i];
       cxn.cid = cxn.id; // add cid property for Backbone
       picUrlList.push(cxn.pictureUrl);
       if (picUrlList.length === MAX_DETECT) {
@@ -194,11 +201,42 @@ $(function() {
     }
   },
 
+  handleConnectionsResult = function(result) {
+    if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }
+    connections = result.values;
+    if (ownProfile) {
+      processProfiles(ownProfile.concat(connections));
+    }
+    else {
+      connections = result.values;
+    }
+  },
+
+  handleOwnProfile = function(result) {
+    var ownProf;
+    if (!result || !result.values || result.values.length === 0 ) { console.log('no own profile?'); return; }
+    ownProf = result.values[0];
+    if (!ownProf.pictureUrl) {
+      console.log('no own picture!');
+      return;
+    }
+    ownProf.isSelf = true; // set flag so we can detect self later
+    ownProfile = result.values;
+    if (connections) {
+      processProfiles(ownProfile.concat(connections));
+    }
+  },
+
   onLinkedInAuth = function() {
+    var fields = ['firstName','lastName','id','pictureUrl','site-standard-profile-request:(url)'];
+    IN.API.Profile("me")
+          .fields(fields)
+          .result(handleOwnProfile);
     IN.API.Connections("me")
-      .fields(['firstName','lastName','id','pictureUrl','site-standard-profile-request:(url)'])
-      .result(handleConnectionsResult);
+          .fields(fields)
+          .result(handleConnectionsResult);
     $('.categories').show();
+    $('.filter').show();
   };
 
   onLinkedInLoad = function() {
