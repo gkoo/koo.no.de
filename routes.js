@@ -1,16 +1,10 @@
 var express = require('express'),
     //sys = require('sys'),
     //fs = require('fs'),
+    faceModule = require('./faces_module.js'),
     app = express.createServer(),
-    dimSize = 30,
+    dimSize = 30;
     //logStream = fs.createWriteStream('./request.log', { flags: 'a' }),
-    stupidLoadStatuses = ['Plugging in computer...',
-                          'Untangling cords...',
-                          'Oiling gears...',
-                          'Pondering the meaning of existence...',
-                          'Please insert floppy disk...',
-                          'Doing some spring cleaning...',
-                          'Changing batteries...'];
 
 // Configuration
 
@@ -76,6 +70,23 @@ app.configure('production', function(){
 });
 
 // Routes
+
+app.post('/facecache-get', function(req, res){
+  if (req.xhr) {
+    faceModule.retrieveCached(req.body, function(err, arr) {
+      if (err) { console.log(err); }
+      else {
+        res.send({ attrs: arr });
+      }
+    });
+  }
+});
+
+app.post('/facecache-set', function(req, res){
+  if (req.xhr && req.body) {
+    faceModule.cacheAttributes(req.body);
+  }
+});
 
 app.get('/grid', function(req, res){
   res.render('grid', {

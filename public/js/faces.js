@@ -4,16 +4,15 @@
 var onLinkedInLoad;
 $(function() {
   var appView,
-      REDX = 'redx',
-      GREENCHECK = 'greencheck',
-      // DEV
-      // face_api_key = '41be1e8bc43f9b5d79b421cd8995ba5f',
-      // PROD
-      face_api_key = 'e736bb672063697ac00f2bcc14f291ba',
-      faceClient = new Face_ClientAPI(face_api_key),
-      cxnList = $('.cxns'),
+      REDX            = 'redx',
+      GREENCHECK      = 'greencheck',
+      cxnList         = $('.cxns'),
+      //mode            = 'dev',
+      mode            = 'prod',
       ownProfile,
       connections,
+      face_api_key    = mode === 'dev' ? '41be1e8bc43f9b5d79b421cd8995ba5f' : 'e736bb672063697ac00f2bcc14f291ba',
+      faceClient      = new Face_ClientAPI(face_api_key),
 
   ConnectionModel = Backbone.Model.extend(),
 
@@ -112,7 +111,7 @@ $(function() {
     el: document.getElementById('main'),
 
     initialize: function() {
-      _.bindAll(this, 'handleFaceResult');
+      _.bindAll(this, 'handleFaceResult', 'processProfiles', 'fetchAttributes');
       this.cxnListElem = this.$('.cxnWrapper');
       this.el = $(this.el);
       this.$('.filterDropdown').attr('value', 'all-filter');
@@ -130,7 +129,7 @@ $(function() {
     },
 
     handleFaceResult: function(urls, response) {
-      var i, len, photos, photo, cxn;
+      var i, len, photos, photo, cxn, attrs, allCachedAttrs = [], data = {};
       //console.log(response);
       if (response.status !== 'success') {
         console.log('Status: ' + response.status);
@@ -146,15 +145,87 @@ $(function() {
           cxn.set({ 'photoAttributes': { face: false } });
         }
         else {
-          cxn.set({ 'photoAttributes': photo.tags[0].attributes });
+          attrs = photo.tags[0].attributes;
+          cxn.set({ 'photoAttributes': attrs });
+          // push url and attributes to store into redis using mset
+          allCachedAttrs.push(photo.url);
+          allCachedAttrs.push(JSON.stringify(attrs));
         }
         if (cxn.get('pictureUrl') !== photo.url) { alert('urls don\'t match; something is wrong'); }
+      }
+      if (allCachedAttrs.length) {
+        data.attrs = allCachedAttrs;
+        $.post('/facecache-set', data);
       }
     },
 
     doFilter: function() {
       var filterVal = this.$('.filterDropdown').attr('value');
       this.$('.cxns').removeClass().addClass('cxns').addClass(filterVal);
+    },
+
+    processProfiles: function(urls, cachedAttrs) {
+      var i = 0,
+          picUrlList = [],
+          MAX_DETECT = 30, // Face API limits to 30 urls
+          url, newPic, len, attributes;
+
+      if (urls.length != cachedAttrs.length) {
+        console.log('url lengths don\'t match! alert! alert!');
+        return;
+      }
+      len = urls.length;
+      while (i < len) {
+        if (cachedAttrs[i] != null) {
+          // photo attributes are cached
+          cxn = this.cxnList.detect(function(cxn) {
+            return cxn.get('pictureUrl') === urls[i];
+          });
+          cxn.set({ 'photoAttributes': JSON.parse(cachedAttrs[i]) });
+        }
+        else {
+          // photo attributes are not cached
+          picUrlList.push(urls[i]);
+          if (picUrlList.length === MAX_DETECT) {
+            callFaceDetect(picUrlList.join(','));
+            picUrlList = [];
+          }
+        }
+        ++i;
+      }
+      if (picUrlList.length) {
+        // if there are any leftover pictures
+        callFaceDetect(picUrlList.join(','));
+      }
+    },
+
+    fetchAttributes: function(profiles) {
+      var i, len, cxn, urls = [], data = {}, _this = this;
+
+      // Remove all profiles without pictures
+      for (i=0, len = profiles.length; i<len; ++i) {
+        cxn = profiles[i];
+        if (typeof cxn.pictureUrl !== 'string' || cxn.pictureUrl === 'private') {
+          // NONEXISTENT OR PRIVATE PICTURE
+          profiles.splice(i, 1);
+          --len;
+          --i;
+        }
+        else {
+          urls.push(cxn.pictureUrl);
+        }
+      }
+
+      this.addCxns(profiles);
+      if (urls.length) {
+        data.urls = urls;
+        $.post('/facecache-get', data, function(data) {
+          _this.processProfiles(urls, data.attrs);
+        });
+      }
+      else {
+        console.log('no urls. what?');
+      }
     },
 
     events: {
@@ -166,46 +237,11 @@ $(function() {
     faceClient.faces_detect(urls, appView.handleFaceResult);
   },
 
-  processProfiles = function(profiles) {
-    var i = 0,
-        picUrlList = [],
-        MAX_DETECT = 30, // Face API limits to 30 urls
-        cxn, newPic, len;
-
-    // purge all cxns with nonexistent/private pictures
-    for (len = profiles.length; i<len; ++i) {
-      cxn = profiles[i];
-      if (typeof cxn.pictureUrl !== 'string' || cxn.pictureUrl === 'private') {
-        // NONEXISTENT OR PRIVATE PICTURE
-        profiles.splice(i, 1);
-        --len;
-        --i;
-      }
-    }
-    i=0;
-    appView.addCxns(profiles);
-    while (i < len) {
-      // all cxns should have picture at this point
-      cxn = profiles[i];
-      cxn.cid = cxn.id; // add cid property for Backbone
-      picUrlList.push(cxn.pictureUrl);
-      if (picUrlList.length === MAX_DETECT) {
-        callFaceDetect(picUrlList.join(','));
-        picUrlList = [];
-      }
-      ++i;
-    }
-    if (picUrlList.length) {
-      // if there are any leftover pictures
-      callFaceDetect(picUrlList.join(','));
-    }
-  },
-
   handleConnectionsResult = function(result) {
     if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }
     connections = result.values;
     if (ownProfile) {
-      processProfiles(ownProfile.concat(connections));
+      appView.fetchAttributes(ownProfile.concat(connections));
     }
     else {
       connections = result.values;
@@ -223,7 +259,7 @@ $(function() {
     ownProf.isSelf = true; // set flag so we can detect self later
     ownProfile = result.values;
     if (connections) {
-      processProfiles(ownProfile.concat(connections));
+      appView.fetchAttributes(ownProfile.concat(connections));
     }
   },
 
