@@ -25,14 +25,18 @@ $(function() {
     tagName: 'li',
     className: 'cxn',
     render: function() {
-      var img = $('<img>').attr('src', this.model.get('pictureUrl')),
-          nameLink = $('<a>').text(this.model.get('firstName') + ' ' + this.model.get('lastName'))
-                             .attr({ 'href': this.model.get('siteStandardProfileRequest').url,
-                                     'target': '_new' }),
-          nameElem = $('<div>').addClass('name')
-                               .append(nameLink),
-          photoAttrs = this.model.get('photoAttributes'),
-          el = $(this.el),
+      var img         = $('<img>').attr('src', this.model.get('pictureUrl')),
+          firstName   = this.model.get('firstName') || '',
+          lastName    = this.model.get('lastName') || '',
+          sspr        = this.model.get('siteStandardProfileRequest'),
+          profileUrl  = sspr && sspr.url ? sspr.url : '#',
+          nameLink    = $('<a>').text([firstName, lastName].join(' '))
+                                .attr({ 'href': profileUrl,
+                                        'target': '_new' }),
+          nameElem    = $('<div>').addClass('name')
+                                  .append(nameLink),
+          photoAttrs  = this.model.get('photoAttributes'),
+          el          = $(this.el),
           attributesElem;
       if (this.model.get('isSelf')) {
         el.addClass('self');
