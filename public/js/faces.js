@@ -12,7 +12,7 @@ $(function() {
       ownProfile,
       connections,
       face_api_key    = mode === 'dev' ? '41be1e8bc43f9b5d79b421cd8995ba5f' : 'e736bb672063697ac00f2bcc14f291ba',
-      faceClient      = new Face_ClientAPI(face_api_key),
+      //faceClient      = new Face_ClientAPI(face_api_key),
 
   ConnectionModel = Backbone.Model.extend(),
 
@@ -180,7 +180,7 @@ $(function() {
       }
       len = urls.length;
       while (i < len) {
-        if (cachedAttrs[i] != null) {
+        if (cachedAttrs[i] !== null) {
           // photo attributes are cached
           cxn = this.cxnList.detect(function(cxn) {
             return cxn.get('pictureUrl') === urls[i];
@@ -204,7 +204,7 @@ $(function() {
     },
 
     fetchAttributes: function(profiles) {
-      var i, len, cxn, urls = [], data = {}, _this = this;
+      var i, len, cxn, data = {}, _this = this;
 
       // Remove all profiles without pictures
       for (i=0, len = profiles.length; i<len; ++i) {
@@ -215,16 +215,13 @@ $(function() {
           --len;
           --i;
         }
-        else {
-          urls.push(cxn.pictureUrl);
-        }
       }
 
       this.addCxns(profiles);
-      if (urls.length) {
-        data.urls = urls;
+      if (profiles.length) {
+        data.profiles = profiles;
         $.post('/facecache-get', data, function(data) {
-          _this.processProfiles(urls, data.attrs);
+          //_this.processProfiles(urls, data.attrs);
         });
       }
       else {
@@ -245,7 +242,8 @@ $(function() {
     if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }
     connections = result.values;
     if (ownProfile) {
-      appView.fetchAttributes(ownProfile.concat(connections));
+      connections.unshift(ownProfile);
+      appView.fetchAttributes(connections);
     }
     else {
       connections = result.values;
@@ -261,14 +259,15 @@ $(function() {
       return;
     }
     ownProf.isSelf = true; // set flag so we can detect self later
-    ownProfile = result.values;
+    ownProfile = result.values[0];
     if (connections) {
-      appView.fetchAttributes(ownProfile.concat(connections));
+      connections.unshift(ownProfile);
+      appView.fetchAttributes(connections);
     }
   },
 
   onLinkedInAuth = function() {
-    var fields = ['firstName','lastName','id','pictureUrl','site-standard-profile-request:(url)'];
+    var fields = ['firstName','lastName','id','pictureUrl','three-current-positions:(title)','site-standard-profile-request:(url)'];
     IN.API.Profile("me")
           .fields(fields)
           .result(handleOwnProfile);

@@ -86,6 +86,7 @@ app.post('/facecache-set', function(req, res){
   if (req.xhr && req.body) {
     faceModule.cacheAttributes(req.body);
   }
+  res.send('200 OK');
 });
 
 app.get('/grid', function(req, res){
