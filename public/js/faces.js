@@ -4,26 +4,25 @@
 var onLinkedInLoad;
 $(function() {
   var appView,
-      REDX            = 'redx',
-      GREENCHECK      = 'greencheck',
+      NO              = 'no',
+      YES             = 'yes',
       cxnList         = $('.cxns'),
-      //mode            = 'dev',
-      mode            = 'prod',
       ownProfile,
       connections,
-      face_api_key    = mode === 'dev' ? '41be1e8bc43f9b5d79b421cd8995ba5f' : 'e736bb672063697ac00f2bcc14f291ba',
-      //faceClient      = new Face_ClientAPI(face_api_key),
 
   ConnectionModel = Backbone.Model.extend(),
 
   ConnectionView = Backbone.View.extend({
+    tagName: 'li',
+
+    className: 'cxn',
+
     initialize: function() {
-      _.bindAll(this, 'render', 'renderPhotoAttrs', 'renderAttr');
+      _.bindAll(this, 'render', 'renderPhotoAttrs');
       $(this.el).addClass('cxn');
       this.model.bind('change', this.render);
     },
-    tagName: 'li',
-    className: 'cxn',
+
     render: function() {
       var img         = $('<img>').attr('src', this.model.get('pictureUrl')),
           firstName   = this.model.get('firstName') || '',
@@ -32,8 +31,14 @@ $(function() {
           profileUrl  = sspr && sspr.url ? sspr.url : '#',
           nameLink    = $('<a>').text([firstName, lastName].join(' '))
                                 .attr({ 'href': profileUrl,
-                                        'target': '_new' }),
+                                        'target': '_new' })
+                                .addClass('profileLink'),
+          picLink     = $('<a>').attr({ 'href': profileUrl,
+                                        'target': '_new' })
+                                .append(img)
+                                .addClass('picLink'),
           nameElem    = $('<div>').addClass('name')
+                                  .append(picLink)
                                   .append(nameLink),
           photoAttrs  = this.model.get('photoAttributes'),
           el          = $(this.el),
@@ -41,46 +46,48 @@ $(function() {
       if (this.model.get('isSelf')) {
         el.addClass('self');
       }
-      el.empty().append(nameElem).append(img);
+      el.empty().append(nameElem);
       if (photoAttrs) {
         this.attrInfo = $('<ul>').addClass('attrInfo');
         if (photoAttrs.face === false) {
-          this.renderAttr('???');
-          this.renderAttr('???');
-          this.renderAttr('???');
-          el.addClass('nophoto');
+          this.renderAttrClass('noattrs', 'first');
+          this.renderAttrClass('noattrs');
+          this.renderAttrClass('noattrs', 'last');
+          el.addClass('noattrs');
         }
         else {
           el.append(this.renderPhotoAttrs(photoAttrs));
         }
-        el.append(this.attrInfo);
+        el.prepend(this.attrInfo);
       }
       return el;
     },
+
     renderPhotoAttrs: function(photoAttrs) {
       var glassesVal = photoAttrs.glasses.value,
           smileVal = photoAttrs.smiling.value,
           el = $(this.el);
       if (photoAttrs.mood) {
-        this.renderAttrClass(photoAttrs.mood.value);
+        this.renderAttrClass(photoAttrs.mood.value, 'first');
         el.addClass(photoAttrs.mood.value);
       }
       if (photoAttrs.glasses) {
-        this.renderAttrClass(glassesVal === 'true' ? GREENCHECK : REDX);
+        this.renderAttrClass(glassesVal === 'true' ? YES : NO);
         el.addClass(glassesVal === 'true' ? 'glasses' : 'noglasses');
       }
       if (photoAttrs.smiling) {
-        this.renderAttrClass(smileVal === 'true' ? GREENCHECK : REDX);
+        this.renderAttrClass((smileVal === 'true' ? YES : NO), 'last');
         el.addClass(smileVal === 'true' ? 'smile' : 'nosmile');
       }
       return this.attrInfo;
     },
-    renderAttrClass: function(className) {
-      this.attrInfo.append($('<li>').addClass(className));
+
+    renderAttrClass: function(type, secondaryClass) {
+      this.attrInfo.append($('<li>').append($('<img>').addClass([type, secondaryClass].join(' '))
+                                                      .attr({ alt: type,
+                                                              src: ['/img/emoticons/', type, '.png'].join('') }))
+                                    .addClass(secondaryClass));
     },
-    renderAttr: function(text) {
-      this.attrInfo.append($('<li>').text(text));
-    }
   }),
 
   ConnectionList = Backbone.Collection.extend({
@@ -168,38 +175,22 @@ $(function() {
       this.$('.cxns').removeClass().addClass('cxns').addClass(filterVal);
     },
 
-    processProfiles: function(urls, cachedAttrs) {
+    // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
+    // objects.
+    processProfiles: function(cachedAttrs) {
       var i = 0,
           picUrlList = [],
           MAX_DETECT = 30, // Face API limits to 30 urls
           url, newPic, len, attributes;
 
-      if (urls.length != cachedAttrs.length) {
-        console.log('url lengths don\'t match! alert! alert!');
-        return;
-      }
-      len = urls.length;
-      while (i < len) {
+      for (len = cachedAttrs.length; i<len; ++i) {
         if (cachedAttrs[i] !== null) {
-          // photo attributes are cached
+          attributes = JSON.parse(cachedAttrs[i]);
           cxn = this.cxnList.detect(function(cxn) {
-            return cxn.get('pictureUrl') === urls[i];
+            return cxn.get('pictureUrl') === attributes.url;
           });
-          cxn.set({ 'photoAttributes': JSON.parse(cachedAttrs[i]) });
+          cxn.set({ 'photoAttributes': attributes });
         }
-        else {
-          // photo attributes are not cached
-          picUrlList.push(urls[i]);
-          if (picUrlList.length === MAX_DETECT) {
-            callFaceDetect(picUrlList.join(','));
-            picUrlList = [];
-          }
-        }
-        ++i;
-      }
-      if (picUrlList.length) {
-        // if there are any leftover pictures
-        callFaceDetect(picUrlList.join(','));
       }
     },
 
@@ -221,7 +212,8 @@ $(function() {
       if (profiles.length) {
         data.profiles = profiles;
         $.post('/facecache-get', data, function(data) {
-          //_this.processProfiles(urls, data.attrs);
+          _this.processProfiles(data.attrs);
+          console.log(data);
         });
       }
       else {

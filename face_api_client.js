@@ -19,16 +19,14 @@ FaceAPI = function() {
       // Assume this is an array object. Just concat with comma.
       urls = urls.join(',');
     }
-    if (typeof options !== 'undefined') {
-      if (options.attributes) {
-        this.options.attributes = options.attributes;
-      }
-      else {
-        delete this.options.attributes;
-      }
-    }
     if (this.keysSet()) {
       this.options.path = '/faces/detect.json?api_key=' + this.api_key + '&api_secret=' + this.api_secret + '&urls=' + urls;
+      if (typeof options !== 'undefined') {
+        if (options.attributes) {
+          this.options.path += '&attributes=' + options.attributes;
+        }
+      }
+      //console.log('[FaceAPI] Issuing request to ' + this.options.host + this.options.path);
       req = http.get(this.options, function(res) {
         console.log('[FaceAPI] STATUS: ' + res.statusCode);
         res.setEncoding('utf8');

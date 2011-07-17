@@ -73,11 +73,8 @@ app.configure('production', function(){
 
 app.post('/facecache-get', function(req, res){
   if (req.xhr) {
-    faceModule.retrieveCached(req.body, function(err, arr) {
-      if (err) { console.log(err); }
-      else {
-        res.send({ attrs: arr });
-      }
+    faceModule.retrieveCached(req.body, function(attrs) {
+      res.send({ attrs: attrs });
     });
   }
 });
@@ -103,7 +100,7 @@ app.get('/faces', function(req, res){
   res.render('faces', {
     locals: {
       page: 'faces',
-      title: 'Faces Of Your LinkedIn Network',
+      title: 'Faces Of Your Network',
     },
     layout: 'faceslayout'
   });
