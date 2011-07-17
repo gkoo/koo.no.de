@@ -108,27 +108,28 @@ h1 {
 }
 
 .picLink {
+  border: 5px solid #fff;
   display: block;
   margin: 0 auto;
-}
-
-.picLink img {
-  border: 5px solid #fff;
-  -moz-border-radius: 45px;
-  -webkit-border-radius: 45px;
-  border-radius: 45px;
+  width: 80px;
 
   -moz-box-shadow: 3px 3px 3px #333;
   -webkit-box-shadow: 3px 3px 3px #333;
   box-shadow: 3px 3px 3px #333;
 
-  -webkit-border-radius: 45px;
   -moz-border-radius: 45px;
+  -webkit-border-radius: 45px;
   border-radius: 45px;
 }
 
-.picLink:hover img {
+.picLink:hover {
   border-color: #9addff;
+}
+
+.picLink img {
+  -moz-border-radius: 40px;
+  -webkit-border-radius: 40px;
+  border-radius: 40px;
 }
 
 .profileLink {
@@ -173,42 +174,6 @@ h1 {
   -webkit-border-radius: 0 8px 8px 0;
   -moz-border-radius: 0 8px 8px 0;
   border-radius: 0 8px 8px 0;
-}
-
-.attrInfo li.happy {
-  background-image: url(/img/emoticons/Smile.png);
-}
-
-.attrInfo li.sad {
-  background-image: url(/img/emoticons/Sad.png);
-}
-
-.attrInfo .neutral {
-  background-image: url(/img/emoticons/Neutral.png);
-}
-
-.attrInfo .angry {
-  background-image: url(/img/emoticons/Angry.png);
-}
-
-.attrInfo .surprised {
-  background-image: url(/img/emoticons/Surprised.png);
-}
-
-.attrInfo .surprised {
-  background-image: url(/img/emoticons/Surprised.png);
-}
-
-.attrInfo .no {
-  background-image: url(/img/emoticons/redx.png);
-}
-
-.attrInfo .yes {
-  background-image: url(/img/emoticons/greencheck.png);
-}
-
-.attrInfo .noattrs {
-  background-image: url(/img/emoticons/qmark.png);
 }
 
 .cxns.self-filter li,
