@@ -266,8 +266,8 @@ $(function() {
     IN.API.Connections("me")
           .fields(fields)
           .result(handleConnectionsResult);
-    $('.categories').show();
-    $('.filter').show();
+    $('.cxnWrapper').show();
+    $('.intro').hide();
   };
 
   onLinkedInLoad = function() {

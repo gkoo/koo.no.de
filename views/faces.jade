@@ -1,6 +1,14 @@
 .gradient
 h1= title
-script(type="IN/Login")
+.intro
+  p
+    | This is an experiment to explore the variety of expressions and moods
+    | of your LinkedIn connections. Facial feature detection is powered by
+    a(href='http://www.face.com')
+      = 'Face.com'
+    | .
+  p To get started, log in using your LinkedIn account.
+script(type="IN/Login", data-size="large")
 .cxnWrapper
   p.filter
     span Filter By:&nbsp;
