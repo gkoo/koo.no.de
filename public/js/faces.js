@@ -118,6 +118,9 @@ $(function() {
     }
   }),
 
+  JobTitlesListView = Backbone.View.extend({
+  }),
+
   AppView = Backbone.View.extend({
     el: document.getElementById('main'),
 
@@ -175,6 +178,9 @@ $(function() {
       this.$('.cxns').removeClass().addClass('cxns').addClass(filterVal);
     },
 
+    doSwitchMode: function() {
+    },
+
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
     // objects.
     processProfiles: function(cachedAttrs) {
@@ -221,8 +227,12 @@ $(function() {
       }
     },
 
+    getJobTitleStats: function() {
+    },
+
     events: {
-      'change .filterDropdown': "doFilter"
+      'change .filterDropdown': "doFilter",
+      'click .switchMode': "doSwitchMode"
     }
   }),
 
@@ -266,7 +276,7 @@ $(function() {
     IN.API.Connections("me")
           .fields(fields)
           .result(handleConnectionsResult);
-    $('.cxnWrapper').show();
+    $('.wrapper').show();
     $('.intro').hide();
   };
 

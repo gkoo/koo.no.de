@@ -69,14 +69,18 @@ h1 {
   left: 0;
 }
 
-.cxnWrapper {
+.wrapper {
   display: none;
+  overflow: visible;
+  position: relative;
+}
+
+.cxnWrapper {
   margin: 0 auto;
   width: 798px;
 }
 
-.filter,
-.categories, {
+.byJobTitles {
   display: none;
 }
 
@@ -89,6 +93,16 @@ h1 {
   float: left;
   text-align: center;
   width: 216px;
+}
+
+#switchMode {
+  background-color: #fff;
+  border: 1px solid #000;
+  margin-left: 40px;
+
+  -moz-border-radius: 8px;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
 }
 
 .cxns {

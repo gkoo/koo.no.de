@@ -9,25 +9,28 @@ h1= title
     | .
   p To get started, log in using your LinkedIn account.
 script(type="IN/Login", data-size="large")
-.cxnWrapper
-  p.filter
-    span Filter By:&nbsp;
-    select.filterDropdown
-      option(value="all-filter", selected="true") All
-      option(value="self-filter", selected="true") Me
-      option(value="happy-filter") Happy
-      option(value="neutral-filter") Neutral
-      option(value="sad-filter") Sad
-      option(value="angry-filter") Angry
-      option(value="surprised-filter") Surprised
-      option(value="glasses-filter") Glasses
-      option(value="noglasses-filter") No Glasses
-      option(value="smile-filter") Smiling
-      option(value="nosmile-filter") No Smiling
-      option(value="noattrs-filter") Undetectable Face
-  ul.categories
-    li.mooooood Mood
-    li.glasses Glasses
-    li.smiling Smiling
-  ul.cxns
+.wrapper
+  .cxnWrapper
+    .controls
+      span Filter By:&nbsp;
+      select.filterDropdown
+        option(value="all-filter", selected="true") All
+        option(value="self-filter", selected="true") Me
+        option(value="happy-filter") Happy
+        option(value="neutral-filter") Neutral
+        option(value="sad-filter") Sad
+        option(value="angry-filter") Angry
+        option(value="surprised-filter") Surprised
+        option(value="glasses-filter") Glasses
+        option(value="noglasses-filter") No Glasses
+        option(value="smile-filter") Smiling
+        option(value="nosmile-filter") No Smiling
+        option(value="noattrs-filter") Undetectable Face
+      button.switchMode View by job title
+    ul.categories
+      li.mooooood Mood
+      li.glasses Glasses
+      li.smiling Smiling
+    ul.cxns
+  .byJobTitles by job titles
 
