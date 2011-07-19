@@ -3,21 +3,123 @@ var redis   = require('redis').createClient(),
 
 FaceClient = function(key, secret) {
 
-  var _this = this;
+  var _this = this,
+
+  redisMsetCallback = function(err, res) {
+    if (err) {
+      console.log('[REDIS] Mset error: ' + err);
+    }
+    else {
+      console.log('[REDIS] Mset response: ' + res);
+    }
+  },
+
+  redisHincrCallback = function(err, res) {
+    if (err) {
+      console.log('[REDIS] Hincr error: ' + err);
+    }
+    else {
+      console.log('[REDIS] Hincr response: ' + res);
+    }
+  },
+
+  findProfileByUrl = function(url) {
+    var i, len, picUrl;
+    if (!_this.profiles) {
+      console.log('[ERROR] no profiles!!');
+    }
+    for (i in _this.profiles) {
+      picUrl = _this.profiles[i].pictureUrl;
+      if (picUrl && picUrl === url) {
+        return _this.profiles[i];
+      }
+    }
+    console.log('[ERROR] couldn\'t find profile by url');
+  },
+
+  getAttributesFromPhotoObj = function(photo) {
+    var attributes, attributesArr = [];
+    if (!photo.tags || !photo.tags.length || !photo.tags[0].attributes) {
+      console.log('[LOG] No photo attributes found');
+      return ['noattrs'];
+    }
+    attributes = photo.tags[0].attributes;
+    if (attributes.glasses) {
+      if (attributes.glasses.value === 'true') {
+        attributesArr.push('glasses');
+      }
+      else if (attributes.glasses.value === 'false') {
+        attributesArr.push('noglasses');
+      }
+    }
+    if (attributes.smiling) {
+      if (attributes.smiling.value === 'true') {
+        attributesArr.push('smiling');
+      }
+      else if (attributes.smiling.value === 'false') {
+        attributesArr.push('nosmiling');
+      }
+    }
+    if (attributes.mood) {
+      attributesArr.push(attributes.mood.value);
+    }
+    return attributesArr;
+  };
+
+  // At this point, we have all profile data in this.response.
+  // However, we want to do some data aggregation as well.
+  this.aggregateData = function(photoAttributes, last) {
+    var i, j, k, len, attrLen, profile, title, photo, positions,
+        attributes = [],
+        photos = photoAttributes.photos;
+
+    last = typeof last !=='undefined' ? last : false;
+    if (last) {
+      console.log('[LOG] Invoking callback');
+      _this.retrieveCallback(_this.response);
+    }
+
+    // store a count of job titles for each attribute
+    if (photos) {
+      for (i=0, len=photos.length; i<len; ++i) {
+        photo = photos[i];
+        profile = findProfileByUrl(photo.url);
+        attributes = getAttributesFromPhotoObj(photo);
+        if (!profile) {
+          console.log('[ERROR] No profile found!');
+        }
+        // "threeCurrentPositions":{"values":{"0":{"title":"Guy"}},"_total":"1"},
+        if (profile && profile.threeCurrentPositions && profile.threeCurrentPositions.values) {
+          positions = profile.threeCurrentPositions.values;
+          for (j=0; j<3; ++j) {
+            if (positions[j]) {
+              title = positions[j].title;
+              if (title) {
+                for (k=0, attrLen=attributes.length; k<attrLen; ++k) {
+                  redis.hincrby([attributes[k], 'title'].join(':'), title, 1, redisHincrCallback);
+                }
+              }
+            }
+            else {
+              break;
+            }
+          }
+        }
+      }
+    }
+  };
 
   this.handleFaceResult = function(response) {
     // TODO: cache in redis.
     // TODO: send to browser
     var photoAttrsArr = [], // array of attributes to store in redis
         attrs;
-    console.log(response.photos.length + ' num of photos');
-    console.log(response.photos);
     for (i=0,photos=response.photos,len=photos.length; i<len; ++i) {
       photo = photos[i];
       if (!photo.tags || !photo.tags.length || !photo.tags[0].attributes || !photo.tags[0].attributes.glasses) {
         // no attributes
         attrs = { face: false,
-                  url: photo.url ? photo.url : '' }
+                  url: photo.url ? photo.url : '' };
         _this.response.push(JSON.stringify(attrs));
       }
       else {
@@ -30,11 +132,13 @@ FaceClient = function(key, secret) {
       photoAttrsArr.push(JSON.stringify(attrs));
     }
     if (photoAttrsArr.length) {
-      redis.mset(photoAttrsArr);
+      redis.mset(photoAttrsArr, redisMsetCallback);
     }
     if (_this.response.length === _this.urls.length) {
-      console.log('invoking callback');
-      _this.retrieveCallback(_this.response);
+      _this.aggregateData(response, true);
+    }
+    else {
+      _this.aggregateData(response);
     }
     // need to use socket.io
   };
@@ -78,7 +182,6 @@ FaceClient = function(key, secret) {
     start = 0;
     while(start < len) {
       end = start + MAX_DETECT < len ? start+MAX_DETECT : len;
-      console.log('start: ' + start + ' end: ' + end);
       face.detect(nullAttrUrls.slice(start, end), _this.handleFaceResult, { attributes: 'glasses,mood,smiling' });
       start = end;
     }
@@ -99,10 +202,23 @@ FaceClient = function(key, secret) {
       profilesArr.push('profile:' + this.profiles[i].pictureUrl);
       profilesArr.push(JSON.stringify(this.profiles[i]));
     }
-    redis.mset(profilesArr);
+    if (profilesArr.length) {
+      redis.mset(profilesArr, redisMsetCallback);
+      redis.mset(profilesArr, redisMsetCallback);
+    }
+
+    // expire profile keys
+    for (i=0, len = profilesArr.length; i<len; ++i) {
+      if (i%2 === 0) {
+        redis.expire(profilesArr[i], 3600);
+      }
+    }
 
     redis.mget(this.urls, this.handleCachedAttributes);
     //face.detect(urls.slice(0,30), this.handleCachedAttributes, { attributes: 'glasses,mood,face,smiling' });
+  };
+
+  this.retrieveJobTitleStats = function(callback) {
   };
 
   (function() {
