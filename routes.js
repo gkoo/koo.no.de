@@ -71,19 +71,18 @@ app.configure('production', function(){
 
 // Routes
 
+app.get('/facetoptitles', function(req, res){
+  faceModule.getTopTitles(function(topTitles) {
+    res.send({ topTitles: topTitles });
+  });
+});
+
 app.post('/facecache-get', function(req, res){
   if (req.xhr) {
     faceModule.retrieveCached(req.body, function(attrs) {
       res.send({ attrs: attrs });
     });
   }
-});
-
-app.post('/facecache-set', function(req, res){
-  if (req.xhr && req.body) {
-    faceModule.cacheAttributes(req.body);
-  }
-  res.send('200 OK');
 });
 
 app.get('/grid', function(req, res){

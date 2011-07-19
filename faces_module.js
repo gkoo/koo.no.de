@@ -14,12 +14,12 @@ FaceClient = function(key, secret) {
     }
   },
 
-  redisHincrCallback = function(err, res) {
+  redisIncrCallback = function(err, res) {
     if (err) {
-      console.log('[REDIS] Hincr error: ' + err);
+      console.log('[REDIS] Incr error: ' + err);
     }
     else {
-      console.log('[REDIS] Hincr response: ' + res);
+      console.log('[REDIS] Incr response: ' + res);
     }
   },
 
@@ -35,6 +35,10 @@ FaceClient = function(key, secret) {
       }
     }
     console.log('[ERROR] couldn\'t find profile by url');
+  },
+
+  getTopTitlesForAttr = function(attr, callback) {
+    redis.sort(attr + ':title:set', 'by', attr + ':title:*:count', 'limit', 0, 5, 'get', attr + ':title:*:count', 'get', '#', 'desc', callback);
   },
 
   getAttributesFromPhotoObj = function(photo) {
@@ -66,6 +70,17 @@ FaceClient = function(key, secret) {
     return attributesArr;
   };
 
+  this.attrs = ['smiling',
+                'nosmiling',
+                'glasses',
+                'noglasses',
+                'happy',
+                'sad',
+                'neutral',
+                'angry',
+                'surprised',
+                'noattrs'],
+
   // At this point, we have all profile data in this.response.
   // However, we want to do some data aggregation as well.
   this.aggregateData = function(photoAttributes, last) {
@@ -96,7 +111,8 @@ FaceClient = function(key, secret) {
               title = positions[j].title;
               if (title) {
                 for (k=0, attrLen=attributes.length; k<attrLen; ++k) {
-                  redis.hincrby([attributes[k], 'title'].join(':'), title, 1, redisHincrCallback);
+                  redis.incrby([attributes[k], 'title', title, 'count'].join(':'), 1, redisIncrCallback);
+                  redis.sadd([attributes[k], 'title', 'set'].join(':'), title);
                 }
               }
             }
@@ -184,6 +200,31 @@ FaceClient = function(key, secret) {
       end = start + MAX_DETECT < len ? start+MAX_DETECT : len;
       face.detect(nullAttrUrls.slice(start, end), _this.handleFaceResult, { attributes: 'glasses,mood,smiling' });
       start = end;
+    }
+  };
+
+  this.getTopTitles = function(callback) {
+    var topTitles = [],
+        _this = this,
+        j = 0,
+        i, len;
+
+    for (i=0, len=this.attrs.length; i<len; ++i) {
+      console.log('getting for ' + this.attrs[i]);
+      getTopTitlesForAttr(this.attrs[i], function(err, res) {
+        if (err) {
+          console.log(err);
+          return;
+        }
+        topTitles.push({
+          name: _this.attrs[j++],
+          value: res
+        });
+        if (topTitles.length === _this.attrs.length) {
+          console.log(topTitles);
+          callback(topTitles);
+        }
+      });
     }
   };
 

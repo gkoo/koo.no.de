@@ -118,23 +118,77 @@ $(function() {
     }
   }),
 
-  JobTitlesListView = Backbone.View.extend({
+  TopTitleModel = Backbone.Model.extend(),
+
+  TopTitleListView = Backbone.View.extend({
+    initialize: function() {
+      _.bindAll(this, 'handleTopTitleData');
+    },
+    handleTopTitleData: function(data) {
+      var topTitles = data.topTitles, // array of objects
+          dataElem = this.$('.data'),
+          i, j, len, ul, li, attr, values, titleLen;
+
+      for (i=0, len = topTitles.length; i<len; ++i) {
+        ul = $('<ul>');
+        attr = topTitles[i];
+        ul.append($('<li>').text(attr.name));
+        values = attr.value;
+        for (j=0, titleLen = values.length; j<titleLen; j+=2) {
+          li = $('<li>').text([values[j+1], values[j]].join(': '));
+          ul.append(li);
+        }
+        dataElem.append(ul);
+      }
+      this.model.set({ initialized: true });
+    }
+  }),
+
+  AppModel = Backbone.Model.extend({
+    mode: 'connections'
   }),
 
   AppView = Backbone.View.extend({
     el: document.getElementById('main'),
 
     initialize: function() {
-      _.bindAll(this, 'handleFaceResult', 'processProfiles', 'fetchAttributes');
+      _.bindAll(this, 'handleFaceResult', 'processProfiles', 'fetchAttributes', 'switchView');
+      this.topTitleModel = new TopTitleModel();
+      this.topTitleListView = new TopTitleListView({
+        el: this.$('.topTitles'),
+        model: this.topTitleModel
+      });
+      this.model = new AppModel();
+
       this.cxnListElem = this.$('.cxnWrapper');
-      this.el = $(this.el);
       this.$('.filterDropdown').attr('value', 'all-filter');
+      this.model.bind('change', this.switchView);
     },
 
     render: function() {
       this.cxnList.each(function(cxn) {
         cxn.render();
       });
+    },
+
+    switchView: function() {
+      var wrapper = this.$('.wrapper'),
+          mode = this.model.get('mode'),
+          cxnWrapper = wrapper.children('.cxnWrapper'),
+          topTitles = wrapper.children('.topTitles');
+
+      if (!this.topTitleModel.get('initialized')) {
+        $.get('/facetoptitles', this.topTitleListView.handleTopTitleData);
+      }
+
+      if (mode === 'connections') {
+        topTitles.hide();
+        cxnWrapper.show();
+      }
+      else {
+        cxnWrapper.hide();
+        topTitles.show();
+      }
     },
 
     addCxns: function(cxns) {
@@ -179,6 +233,7 @@ $(function() {
     },
 
     doSwitchMode: function() {
+      this.model.set({ mode: 'topTitles' });
     },
 
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
@@ -219,7 +274,6 @@ $(function() {
         data.profiles = profiles;
         $.post('/facecache-get', data, function(data) {
           _this.processProfiles(data.attrs);
-          console.log(data);
         });
       }
       else {
