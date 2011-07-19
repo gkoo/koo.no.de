@@ -2,6 +2,7 @@
 // TODO: detect when one of the filters has no results
 
 var onLinkedInLoad;
+google.load("visualization", "1", {packages:["corechart"]});
 $(function() {
   var appView,
       NO              = 'no',
@@ -127,32 +128,62 @@ $(function() {
     handleTopTitleData: function(data) {
       var topTitles = data.topTitles, // array of objects
           dataElem = this.$('.data'),
-          i, j, len, ul, li, attr, values, titleLen;
+          //chartData = new google.visualization.DataTable(),
+          i, j, len, titleLen, chartData, chart, chartDiv;
+          //i, j, len, ul, li, attr, values, titleLen;
 
+      /*
+      chartData.addColumn('string', 'Title');
+      chartData.addColumn('number', 'Count');
+      chartData.addRows(titles.length/2); // array of both titles and counts, so divide by 2
+      for (i=0, len=titles.length; i<len; i+=2) {
+        chartData.setValue(i/2, 0, titles[i+1]);
+        chartData.setValue(i/2, 1, parseInt(titles[i], 10));
+      }
+      chart = new google.visualization.BarChart(document.getElementById('chart_div'));
+      chart.draw(chartData, {width: 400, height: 240, title: attr.name,
+                        vAxis: {title: 'Title', titleTextStyle: {color: 'red'}}
+                       });
+      */
       for (i=0, len = topTitles.length; i<len; ++i) {
-        ul = $('<ul>');
-        attr = topTitles[i];
-        ul.append($('<li>').text(attr.name));
-        values = attr.value;
-        for (j=0, titleLen = values.length; j<titleLen; j+=2) {
-          li = $('<li>').text([values[j+1], values[j]].join(': '));
-          ul.append(li);
+        // for each attribute (e.g. 'smiling', 'glasses', 'angry')
+        attr      = topTitles[i];
+        titles    = attr.value;
+        chartData = new google.visualization.DataTable();
+
+        chartData.addColumn('string', 'Title');
+        chartData.addColumn('number', 'Count');
+        chartData.addRows(titles.length/2); // array of both titles and counts, so divide by 2
+        console.log('titles are: ' + titles);
+        for (j=0, titleLen=titles.length; j<titleLen; j+=2) {
+          // for each job title in the attribute bucket.
+          console.log('chartData.setValue(' + j/2 + ', 0, "' + titles[j+1] + '");');
+          console.log('chartData.setValue(' + j/2 + ', 1, "' + parseInt(titles[j], 10) + '");');
+          chartData.setValue(j/2, 0, titles[j+1]);
+          chartData.setValue(j/2, 1, parseInt(titles[j], 10));
         }
-        dataElem.append(ul);
+        //chartDiv = $('<div>').attr('id', attr.name + '-chart');
+        //dataElem.append(chartDiv);
+        chart = new google.visualization.BarChart(document.getElementById(attr.name + '-chart'));
+        chart.draw(chartData, {width: 400, height: 240, title: attr.name,
+                          vAxis: {title: 'Title', titleTextStyle: {color: 'red'}}
+                         });
       }
       this.model.set({ initialized: true });
     }
   }),
 
   AppModel = Backbone.Model.extend({
-    mode: 'connections'
+    initialize: function() {
+      this.set({ mode: 'connections' });
+    }
   }),
 
   AppView = Backbone.View.extend({
     el: document.getElementById('main'),
 
     initialize: function() {
-      _.bindAll(this, 'handleFaceResult', 'processProfiles', 'fetchAttributes', 'switchView');
+      _.bindAll(this, 'processProfiles', 'fetchAttributes', 'switchView', 'handleGoogleChartAPILoaded');
       this.topTitleModel = new TopTitleModel();
       this.topTitleListView = new TopTitleListView({
         el: this.$('.topTitles'),
@@ -163,12 +194,19 @@ $(function() {
       this.cxnListElem = this.$('.cxnWrapper');
       this.$('.filterDropdown').attr('value', 'all-filter');
       this.model.bind('change', this.switchView);
+
+      // alert('loading corechart');
     },
 
     render: function() {
       this.cxnList.each(function(cxn) {
         cxn.render();
       });
+    },
+
+    handleGoogleChartAPILoaded: function() {
+      alert('done loading corechart');
+      this.topTitleListView.chartAPILoaded = true;
     },
 
     switchView: function() {
@@ -196,44 +234,16 @@ $(function() {
       this.cxnListView = new ConnectionListView({ el: this.$('.cxnWrapper'), collection: this.cxnList });
     },
 
-    handleFaceResult: function(urls, response) {
-      var i, len, photos, photo, cxn, attrs, allCachedAttrs = [], data = {};
-      //console.log(response);
-      if (response.status !== 'success') {
-        console.log('Status: ' + response.status);
-        return;
-      }
-      for (i=0,photos=response.photos,len=photos.length; i<len; ++i) {
-        photo = photos[i];
-        cxn = this.cxnList.detect(function(cxn) {
-          return cxn.get('pictureUrl') === photo.url;
-        });
-        if (!cxn) { console.log('connection not found. something\'s wrong.'); return; }
-        if (!photo.tags || !photo.tags.length || !photo.tags[0].attributes || !photo.tags[0].attributes.glasses) {
-          cxn.set({ 'photoAttributes': { face: false } });
-        }
-        else {
-          attrs = photo.tags[0].attributes;
-          cxn.set({ 'photoAttributes': attrs });
-          // push url and attributes to store into redis using mset
-          allCachedAttrs.push(photo.url);
-          allCachedAttrs.push(JSON.stringify(attrs));
-        }
-        if (cxn.get('pictureUrl') !== photo.url) { alert('urls don\'t match; something is wrong'); }
-      }
-      if (allCachedAttrs.length) {
-        data.attrs = allCachedAttrs;
-        $.post('/facecache-set', data);
-      }
-    },
-
     doFilter: function() {
       var filterVal = this.$('.filterDropdown').attr('value');
       this.$('.cxns').removeClass().addClass('cxns').addClass(filterVal);
     },
 
     doSwitchMode: function() {
-      this.model.set({ mode: 'topTitles' });
+      var mode = this.model.get('mode'),
+          newMode;
+      newMode = mode === 'connections' ? 'topTitles' : 'connections';
+      this.model.set({ mode: newMode });
     },
 
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
@@ -289,10 +299,6 @@ $(function() {
       'click .switchMode': "doSwitchMode"
     }
   }),
-
-  callFaceDetect = function(urls) {
-    faceClient.faces_detect(urls, appView.handleFaceResult);
-  },
 
   handleConnectionsResult = function(result) {
     if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }

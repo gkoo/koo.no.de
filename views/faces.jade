@@ -34,8 +34,9 @@ script(type="IN/Login", data-size="large")
     ul.cxns
   .topTitles
     h2 by job titles
-    //
-      .controls
+    .controls
+      button.switchMode View connections
+      //
         p Select top job titles by the categories below:
         .filters
           button Happy
@@ -49,3 +50,13 @@ script(type="IN/Login", data-size="large")
           button Not Smiling
           button Undetectable Face
     .data
+      #smiling-chart
+      #nosmiling-chart
+      #glasses-chart
+      #noglasses-chart
+      #happy-chart
+      #neutral-chart
+      #sad-chart
+      #angry-chart
+      #surprised-chart
+      #noattrs-chart
