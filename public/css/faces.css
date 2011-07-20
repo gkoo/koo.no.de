@@ -33,6 +33,7 @@ h1 {
 }
 
 .intro {
+  display: none;
   line-height: 24px;
   margin: 0 auto 40px;
   text-align: left;
@@ -73,7 +74,7 @@ h1 {
   left: 0;
 }
 
-.wrapper {
+#wrapper {
   display: none;
   overflow: visible;
   position: relative;
@@ -88,6 +89,11 @@ h1 {
   display: none;
 }
 
+.controls {
+  margin: 0 auto;
+  width: 798px;
+}
+
 .categories {
   float: right;
   padding: 0;
@@ -99,14 +105,14 @@ h1 {
   width: 216px;
 }
 
-#switchMode {
-  background-color: #fff;
-  border: 1px solid #000;
-  margin-left: 40px;
+.filter {
+  float: left;
+  margin-left: 30px;
+}
 
-  -moz-border-radius: 8px;
-  -webkit-border-radius: 8px;
-  border-radius: 8px;
+.toConnections,
+.toJobTitle {
+  float: right;
 }
 
 .cxns {

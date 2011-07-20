@@ -1,5 +1,5 @@
 .gradient
-h1= title
+h1.title Faces of LinkedIn
 .intro
   p
     | This is an experiment to explore the variety of expressions and moods
@@ -12,30 +12,30 @@ script(type="IN/Login", data-size="large")
 .wrapper
   .cxnWrapper
     .controls
-      span Filter By:&nbsp;
-      select.filterDropdown
-        option(value="all-filter", selected="true") All
-        option(value="self-filter", selected="true") Me
-        option(value="happy-filter") Happy
-        option(value="neutral-filter") Neutral
-        option(value="sad-filter") Sad
-        option(value="angry-filter") Angry
-        option(value="surprised-filter") Surprised
-        option(value="glasses-filter") Glasses
-        option(value="noglasses-filter") No Glasses
-        option(value="smile-filter") Smiling
-        option(value="nosmile-filter") No Smiling
-        option(value="noattrs-filter") Undetectable Face
-      button.switchMode View by job title
+      .filter
+        span Filter By:&nbsp;
+        select.filterDropdown
+          option(value="all-filter", selected="true") All
+          option(value="self-filter", selected="true") Me
+          option(value="happy-filter") Happy
+          option(value="neutral-filter") Neutral
+          option(value="sad-filter") Sad
+          option(value="angry-filter") Angry
+          option(value="surprised-filter") Surprised
+          option(value="glasses-filter") Glasses
+          option(value="noglasses-filter") No Glasses
+          option(value="smile-filter") Smiling
+          option(value="nosmile-filter") No Smiling
+          option(value="noattrs-filter") Undetectable Face
+      a.toJobTitle(href='#jobTitle') View by job title
     ul.categories
       li.mooooood Mood
       li.glasses Glasses
       li.smiling Smiling
     ul.cxns
   .topTitles
-    h2 Facial Features by Job Title
     .controls
-      button.switchMode View connections
+      a.toConnections(href='#connections') View connections
       //
         p Select top job titles by the categories below:
         .filters
@@ -49,6 +49,7 @@ script(type="IN/Login", data-size="large")
           button Smiling
           button Not Smiling
           button Undetectable Face
+      span View graph for: 
       select.chartFilterDropdown
         option(value="happy-filter") Happy
         option(value="neutral-filter") Neutral

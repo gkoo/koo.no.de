@@ -1,10 +1,11 @@
-// TODO: cache results on server
 // TODO: detect when one of the filters has no results
+// TODO: refine logged out experience
 
 var onLinkedInLoad;
 google.load("visualization", "1", {packages:["corechart"]});
 $(function() {
   var appView,
+      introElem       = $('.intro'),
       NO              = 'no',
       YES             = 'yes',
       cxnList         = $('.cxns'),
@@ -199,6 +200,7 @@ $(function() {
 
   AppRouter = Backbone.Router.extend({
     initialize: function(o) {
+      this.route('', 'index', o.viewConnections);
       this.route('connections', 'connections', o.viewConnections);
       this.route('jobTitle', 'jobTitle', o.viewJobTitle);
     },
@@ -227,6 +229,8 @@ $(function() {
       this.cxnListElem = this.$('.cxnWrapper');
       this.$('.filterDropdown').attr('value', 'all-filter');
       this.model.bind('change', this.switchView);
+      this.bodyElem = $('body');
+      this.titleElem = this.$('.title');
 
       Backbone.history.start();
     },
@@ -240,8 +244,9 @@ $(function() {
     viewConnections: function() {
       this.$('.cxnWrapper').show();
       this.$('.topTitles').hide();
-      $('body').removeClass('jobTitles');
-      $('body').addClass('connections');
+      this.bodyElem.removeClass('jobTitles');
+      this.bodyElem.addClass('connections');
+      this.titleElem.text('Faces of LinkedIn')
     },
 
     viewJobTitle: function() {
@@ -253,8 +258,9 @@ $(function() {
       this.$('.topTitles').show();
       this.model.set({ mode: 'topTitles' });
 
-      $('body').addClass('jobTitles');
-      $('body').removeClass('connections');
+      this.bodyElem.addClass('jobTitles');
+      this.bodyElem.removeClass('connections');
+      this.titleElem.text('Facial Features by Job Title')
       this.topTitleListView.doChartFilter();
     },
 
@@ -367,17 +373,18 @@ $(function() {
 
   onLinkedInAuth = function() {
     var fields = ['firstName','lastName','id','pictureUrl','three-current-positions:(title)','site-standard-profile-request:(url)'];
+    introElem.hide();
     IN.API.Profile("me")
           .fields(fields)
           .result(handleOwnProfile);
     IN.API.Connections("me")
           .fields(fields)
           .result(handleConnectionsResult);
-    $('.wrapper').show();
-    $('.intro').hide();
+    $('#wrapper').show();
   };
 
   onLinkedInLoad = function() {
+    introElem.show();
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
 
