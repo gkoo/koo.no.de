@@ -123,53 +123,71 @@ $(function() {
 
   TopTitleListView = Backbone.View.extend({
     initialize: function() {
-      _.bindAll(this, 'handleTopTitleData');
+      _.bindAll(this, 'handleTopTitleData', 'doChartFilter');
+      this.filterElem = this.$('.chartFilterDropdown');
+      this.chartWrapperElem = this.$('.chartWrapper');
     },
     handleTopTitleData: function(data) {
       var topTitles = data.topTitles, // array of objects
           dataElem = this.$('.data'),
-          //chartData = new google.visualization.DataTable(),
-          i, j, len, titleLen, chartData, chart, chartDiv;
-          //i, j, len, ul, li, attr, values, titleLen;
+          dataElemWidth = $('body').width(),
+          i, j, len, titleLen, chartData, chart, chartDiv, name;
 
-      /*
-      chartData.addColumn('string', 'Title');
-      chartData.addColumn('number', 'Count');
-      chartData.addRows(titles.length/2); // array of both titles and counts, so divide by 2
-      for (i=0, len=titles.length; i<len; i+=2) {
-        chartData.setValue(i/2, 0, titles[i+1]);
-        chartData.setValue(i/2, 1, parseInt(titles[i], 10));
-      }
-      chart = new google.visualization.BarChart(document.getElementById('chart_div'));
-      chart.draw(chartData, {width: 400, height: 240, title: attr.name,
-                        vAxis: {title: 'Title', titleTextStyle: {color: 'red'}}
-                       });
-      */
       for (i=0, len = topTitles.length; i<len; ++i) {
         // for each attribute (e.g. 'smiling', 'glasses', 'angry')
         attr      = topTitles[i];
         titles    = attr.value;
-        chartData = new google.visualization.DataTable();
 
+        chartData = new google.visualization.DataTable();
         chartData.addColumn('string', 'Title');
-        chartData.addColumn('number', 'Count');
+        chartData.addColumn('number');
         chartData.addRows(titles.length/2); // array of both titles and counts, so divide by 2
-        console.log('titles are: ' + titles);
+
         for (j=0, titleLen=titles.length; j<titleLen; j+=2) {
-          // for each job title in the attribute bucket.
-          console.log('chartData.setValue(' + j/2 + ', 0, "' + titles[j+1] + '");');
-          console.log('chartData.setValue(' + j/2 + ', 1, "' + parseInt(titles[j], 10) + '");');
+          // for each job title in the attribute bucket, add data.
           chartData.setValue(j/2, 0, titles[j+1]);
           chartData.setValue(j/2, 1, parseInt(titles[j], 10));
         }
-        //chartDiv = $('<div>').attr('id', attr.name + '-chart');
-        //dataElem.append(chartDiv);
-        chart = new google.visualization.BarChart(document.getElementById(attr.name + '-chart'));
-        chart.draw(chartData, {width: 400, height: 240, title: attr.name,
-                          vAxis: {title: 'Title', titleTextStyle: {color: 'red'}}
+
+        chart = new google.visualization.BarChart(this.$('.' + attr.name + '-chart').get(0));
+        chart.draw(chartData, { backgroundColor: 'none',
+                                chartArea: {
+                                  left: '33%',
+                                  top: 100,
+                                  width: '50%',
+                                  height: '50%'
+                                },
+                                enableInteractivity: false,
+                                hAxis: {
+                                  gridlineColor: '#666',
+                                  textStyle: {
+                                    color: '#fff'
+                                  }
+                                },
+                                legend: 'none',
+                                title: attr.name,
+                                titleTextStyle: {
+                                  color: '#fff'
+                                },
+                                vAxis: {
+                                  textStyle: {
+                                    color: '#fff'
+                                  }
+                                },
+                                width: dataElemWidth,
+                                height: 768
                          });
       }
       this.model.set({ initialized: true });
+    },
+    doChartFilter: function() {
+      var val = this.filterElem.attr('value');
+      this.chartWrapperElem.removeClass()
+                           .addClass('chartWrapper')
+                           .addClass(val);
+    },
+    events: {
+      'change .chartFilterDropdown': "doChartFilter"
     }
   }),
 
@@ -179,23 +197,38 @@ $(function() {
     }
   }),
 
+  AppRouter = Backbone.Router.extend({
+    initialize: function(o) {
+      this.route('connections', 'connections', o.viewConnections);
+      this.route('jobTitle', 'jobTitle', o.viewJobTitle);
+    },
+  }),
+
   AppView = Backbone.View.extend({
     el: document.getElementById('main'),
 
     initialize: function() {
-      _.bindAll(this, 'processProfiles', 'fetchAttributes', 'switchView', 'handleGoogleChartAPILoaded');
+      _.bindAll(this,
+                'processProfiles',
+                'fetchAttributes',
+                'switchView',
+                'viewConnections',
+                'viewJobTitle');
+
       this.topTitleModel = new TopTitleModel();
       this.topTitleListView = new TopTitleListView({
         el: this.$('.topTitles'),
         model: this.topTitleModel
       });
+      this.router = new AppRouter({ viewConnections: this.viewConnections,
+                                    viewJobTitle: this.viewJobTitle });
       this.model = new AppModel();
 
       this.cxnListElem = this.$('.cxnWrapper');
       this.$('.filterDropdown').attr('value', 'all-filter');
       this.model.bind('change', this.switchView);
 
-      // alert('loading corechart');
+      Backbone.history.start();
     },
 
     render: function() {
@@ -204,28 +237,35 @@ $(function() {
       });
     },
 
-    handleGoogleChartAPILoaded: function() {
-      alert('done loading corechart');
-      this.topTitleListView.chartAPILoaded = true;
+    viewConnections: function() {
+      this.$('.cxnWrapper').show();
+      this.$('.topTitles').hide();
+      $('body').removeClass('jobTitles');
+      $('body').addClass('connections');
     },
 
-    switchView: function() {
-      var wrapper = this.$('.wrapper'),
-          mode = this.model.get('mode'),
-          cxnWrapper = wrapper.children('.cxnWrapper'),
-          topTitles = wrapper.children('.topTitles');
-
+    viewJobTitle: function() {
       if (!this.topTitleModel.get('initialized')) {
         $.get('/facetoptitles', this.topTitleListView.handleTopTitleData);
       }
 
+      this.$('.cxnWrapper').hide();
+      this.$('.topTitles').show();
+      this.model.set({ mode: 'topTitles' });
+
+      $('body').addClass('jobTitles');
+      $('body').removeClass('connections');
+      this.topTitleListView.doChartFilter();
+    },
+
+    switchView: function() {
+      var mode = this.model.get('mode');
+
       if (mode === 'connections') {
-        topTitles.hide();
-        cxnWrapper.show();
+        this.router.navigate('connections', true);
       }
       else {
-        cxnWrapper.hide();
-        topTitles.show();
+        this.router.navigate('jobTitle', true);
       }
     },
 
@@ -289,9 +329,6 @@ $(function() {
       else {
         console.log('no urls. what?');
       }
-    },
-
-    getJobTitleStats: function() {
     },
 
     events: {

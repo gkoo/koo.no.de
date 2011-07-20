@@ -5,6 +5,10 @@ body {
   padding: 0;
 }
 
+body.jobTitles {
+  overflow: hidden;
+}
+
 a {
   color: #9addff;
 }
@@ -245,5 +249,23 @@ h1 {
 .cxns.smile-filter .attrInfo li,
 .cxns.nosmile-filter .attrInfo li,
 .cxns.noattrs-filter .attrInfo li  {
+  display: block;
+}
+
+.chartWrapper div {
+  display: none;
+}
+
+.chartWrapper.smile-filter div.smiling-chart,
+.chartWrapper.nosmile-filter div.nosmiling-chart,
+.chartWrapper.glasses-filter div.glasses-chart,
+.chartWrapper.noglasses-filter div.noglasses-chart,
+.chartWrapper.happy-filter div.happy-chart,
+.chartWrapper.neutral-filter div.neutral-chart,
+.chartWrapper.sad-filter div.sad-chart,
+.chartWrapper.angry-filter div.angry-chart,
+.chartWrapper.surprised-filter div.surprised-chart,
+.chartWrapper.noattrs-filter div.noattrs-chart
+{
   display: block;
 }

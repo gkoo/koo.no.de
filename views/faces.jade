@@ -33,7 +33,7 @@ script(type="IN/Login", data-size="large")
       li.smiling Smiling
     ul.cxns
   .topTitles
-    h2 by job titles
+    h2 Facial Features by Job Title
     .controls
       button.switchMode View connections
       //
@@ -49,14 +49,25 @@ script(type="IN/Login", data-size="large")
           button Smiling
           button Not Smiling
           button Undetectable Face
-    .data
-      #smiling-chart
-      #nosmiling-chart
-      #glasses-chart
-      #noglasses-chart
-      #happy-chart
-      #neutral-chart
-      #sad-chart
-      #angry-chart
-      #surprised-chart
-      #noattrs-chart
+      select.chartFilterDropdown
+        option(value="happy-filter") Happy
+        option(value="neutral-filter") Neutral
+        option(value="sad-filter") Sad
+        option(value="angry-filter") Angry
+        option(value="surprised-filter") Surprised
+        option(value="glasses-filter") Glasses
+        option(value="noglasses-filter") No Glasses
+        option(value="smile-filter") Smiling
+        option(value="nosmile-filter") No Smiling
+        option(value="noattrs-filter") Undetectable Face
+    .chartWrapper
+      .smiling-chart.chart
+      .nosmiling-chart.chart
+      .glasses-chart.chart
+      .noglasses-chart.chart
+      .happy-chart.chart
+      .neutral-chart.chart
+      .sad-chart.chart
+      .angry-chart.chart
+      .surprised-chart.chart
+      .noattrs-chart.chart
