@@ -81,6 +81,7 @@ h1 {
 }
 
 .cxnWrapper {
+  display: none;
   margin: 0 auto;
   width: 798px;
 }

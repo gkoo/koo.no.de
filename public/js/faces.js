@@ -200,7 +200,6 @@ $(function() {
 
   AppRouter = Backbone.Router.extend({
     initialize: function(o) {
-      this.route('', 'index', o.viewConnections);
       this.route('connections', 'connections', o.viewConnections);
       this.route('jobTitle', 'jobTitle', o.viewJobTitle);
     },
@@ -335,6 +334,8 @@ $(function() {
       else {
         console.log('no urls. what?');
       }
+
+      this.router.navigate('connections', true);
     },
 
     events: {
