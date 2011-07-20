@@ -90,6 +90,12 @@ h1 {
   display: none;
 }
 
+.topTitles .explain {
+  margin: 40px auto 20px;
+  text-align: left;
+  width: 798px;
+}
+
 .controls {
   margin: 0 auto;
   text-align: left;

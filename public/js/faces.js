@@ -9,6 +9,7 @@ $(function() {
       NO              = 'no',
       YES             = 'yes',
       cxnList         = $('.cxns'),
+      authed          = 0,
       ownProfile,
       connections,
 
@@ -194,15 +195,16 @@ $(function() {
 
   AppModel = Backbone.Model.extend({
     initialize: function() {
-      this.set({ mode: 'connections' });
+      this.set({ mode: 'intro' });
     }
   }),
 
   AppRouter = Backbone.Router.extend({
     initialize: function(o) {
+      this.route('', 'intro', o.viewIntro);
       this.route('connections', 'connections', o.viewConnections);
       this.route('jobTitle', 'jobTitle', o.viewJobTitle);
-    },
+    }
   }),
 
   AppView = Backbone.View.extend({
@@ -212,7 +214,7 @@ $(function() {
       _.bindAll(this,
                 'processProfiles',
                 'fetchAttributes',
-                'switchView',
+                'viewIntro',
                 'viewConnections',
                 'viewJobTitle');
 
@@ -221,13 +223,14 @@ $(function() {
         el: this.$('.topTitles'),
         model: this.topTitleModel
       });
-      this.router = new AppRouter({ viewConnections: this.viewConnections,
-                                    viewJobTitle: this.viewJobTitle });
+      this.router = new AppRouter({ viewIntro:       this.viewIntro,
+                                    viewConnections: this.viewConnections,
+                                    viewJobTitle:    this.viewJobTitle });
       this.model = new AppModel();
 
       this.cxnListElem = this.$('.cxnWrapper');
+      this.topTitlesElem = this.$('.topTitles');
       this.$('.filterDropdown').attr('value', 'all-filter');
-      this.model.bind('change', this.switchView);
       this.bodyElem = $('body');
       this.titleElem = this.$('.title');
 
@@ -240,38 +243,44 @@ $(function() {
       });
     },
 
+    viewIntro: function() {
+      this.cxnListElem.hide();
+      this.topTitlesElem.hide();
+      this.$('.intro').show();
+    },
+
     viewConnections: function() {
-      this.$('.cxnWrapper').show();
+      if (!authed) {
+        this.router.navigate('intro', true);
+        return;
+      }
+      this.cxnListElem.show();
       this.$('.topTitles').hide();
       this.bodyElem.removeClass('jobTitles');
       this.bodyElem.addClass('connections');
-      this.titleElem.text('Faces of LinkedIn')
+      this.titleElem.text('Faces of LinkedIn');
+      this.model.set({ mode: 'connections' });
     },
 
     viewJobTitle: function() {
+      if (!authed) {
+        this.router.navigate('intro', true);
+        return;
+      }
       if (!this.topTitleModel.get('initialized')) {
         $.get('/facetoptitles', this.topTitleListView.handleTopTitleData);
       }
 
-      this.$('.cxnWrapper').hide();
+      this.cxnListElem.hide();
       this.$('.topTitles').show();
       this.model.set({ mode: 'topTitles' });
 
       this.bodyElem.addClass('jobTitles');
       this.bodyElem.removeClass('connections');
-      this.titleElem.text('Facial Features by Job Title')
+      this.titleElem.text('Facial Features by Job Title');
       this.topTitleListView.doChartFilter();
-    },
 
-    switchView: function() {
-      var mode = this.model.get('mode');
-
-      if (mode === 'connections') {
-        this.router.navigate('connections', true);
-      }
-      else {
-        this.router.navigate('jobTitle', true);
-      }
+      this.model.set({ mode: 'jobTitles' });
     },
 
     addCxns: function(cxns) {
@@ -287,8 +296,8 @@ $(function() {
     doSwitchMode: function() {
       var mode = this.model.get('mode'),
           newMode;
-      newMode = mode === 'connections' ? 'topTitles' : 'connections';
-      this.model.set({ mode: newMode });
+      newMode = mode === 'connections' ? 'jobTitles' : 'connections';
+      this.router.navigate(newMode);
     },
 
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
@@ -335,7 +344,9 @@ $(function() {
         console.log('no urls. what?');
       }
 
-      this.router.navigate('connections', true);
+      if (this.model.get('mode') === 'intro') {
+        this.router.navigate('connections', true);
+      }
     },
 
     events: {
@@ -374,6 +385,7 @@ $(function() {
 
   onLinkedInAuth = function() {
     var fields = ['firstName','lastName','id','pictureUrl','three-current-positions:(title)','site-standard-profile-request:(url)'];
+    authed = 1;
     introElem.hide();
     IN.API.Profile("me")
           .fields(fields)
