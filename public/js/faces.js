@@ -119,7 +119,7 @@ $(function() {
         tmpUl.append(cxnPicView.render());
       });
       this.$('.cxns').remove();
-      this.el.append(tmpUl);
+      this.el.children('.cxnMain').prepend(tmpUl);
     }
   }),
 
@@ -246,6 +246,7 @@ $(function() {
 
     initialize: function() {
       _.bindAll(this,
+                'populateStat',
                 'processProfiles',
                 'fetchAttributes',
                 'viewIntro',
@@ -369,12 +370,19 @@ $(function() {
       }
     },
 
+    populateStat: function(className, num) {
+      this.cxnListElem.find('.' + className + ' .count').text(num.toString());
+    },
+
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
     // objects.
     processProfiles: function(cachedAttrs) {
       var i = 0,
           picUrlList = [],
           MAX_DETECT = 30, // Face API limits to 30 urls
+          numHappy   = 0,
+          numSad     = 0,
+          numGlasses = 0,
           url, newPic, len, attributes;
 
       for (len = cachedAttrs.length; i<len; ++i) {
@@ -384,8 +392,37 @@ $(function() {
             return cxn.get('pictureUrl') === attributes.url;
           });
           cxn.set({ 'photoAttributes': attributes });
+
+          // Calculate num happy.
+          if (attributes.mood
+              && attributes.mood.value
+              && attributes.mood.value === 'happy'
+              && attributes.url !== ownProfile.pictureUrl) {
+            ++numHappy;
+          }
+          // Calculate num glasses.
+          else if (attributes.mood
+                    && attributes.mood.value
+                    && attributes.mood.value === 'sad'
+                    && attributes.url !== ownProfile.pictureUrl) {
+            ++numSad;
+          }
+          // Calculate num glasses.
+          if (attributes.glasses
+                    && attributes.glasses.value
+                    && attributes.glasses.value === 'true'
+                    && attributes.url !== ownProfile.pictureUrl) {
+            ++numGlasses;
+          }
         }
       }
+
+      console.log('happy: ' + numHappy);
+      console.log('sad: ' + numSad);
+      console.log('glasses: ' + numGlasses);
+      this.populateStat('happyStat', numHappy);
+      this.populateStat('sadStat', numSad);
+      this.populateStat('glassesStat', numGlasses);
     },
 
     fetchAttributes: function(profiles) {

@@ -12,6 +12,7 @@ h1.title Faces of LinkedIn
 .wrapper
   .cxnWrapper
     .controls
+      a.toJobTitle(href='#jobTitle') View by job title
       .filter
         span Filter By:&nbsp;
         select.filterDropdown
@@ -27,12 +28,21 @@ h1.title Faces of LinkedIn
           option(value="smile-filter") Smiling
           option(value="nosmile-filter") No Smiling
           option(value="noattrs-filter") Undetectable Face
-      a.toJobTitle(href='#jobTitle') View by job title
     ul.categories
       li.mooooood Mood
       li.glasses Glasses
       li.smiling Smiling
-    ul.cxns
+    .cxnMain
+      ul.cxns
+      .side.happyStat.shadow
+        span.count
+        |  of your connections are happy
+      .side.sadStat.shadow
+        span.count
+        |  of your connections are sad
+      .side.glassesStat.shadow
+        span.count
+        |  of your connections wear glasses
   .topTitles
     .controls
       a.toConnections(href='#connections') View connections
