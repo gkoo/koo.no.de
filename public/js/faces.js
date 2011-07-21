@@ -4,12 +4,10 @@
 var onLinkedInLoad;
 google.load("visualization", "1", {packages:["corechart"]});
 $(function() {
-  var appView,
-      introElem       = $('.intro'),
-      NO              = 'no',
+  var NO              = 'no',
       YES             = 'yes',
-      cxnList         = $('.cxns'),
       authed          = 0,
+      introElem       = $('.intro'),
       ownProfile,
       connections,
 
@@ -49,7 +47,8 @@ $(function() {
       if (this.model.get('isSelf')) {
         el.addClass('self');
       }
-      el.empty().append(nameElem);
+      el.empty()
+        .append(nameElem);
       if (photoAttrs) {
         this.attrInfo = $('<ul>').addClass('attrInfo');
         if (photoAttrs.face === false) {
@@ -86,10 +85,13 @@ $(function() {
     },
 
     renderAttrClass: function(type, secondaryClass) {
-      this.attrInfo.append($('<li>').append($('<img>').addClass([type, secondaryClass].join(' '))
+      if (typeof secondaryClass === 'undefined') {
+        secondaryClass = '';
+      }
+      this.attrInfo.append($('<li>').addClass([secondaryClass, 'shadow'].join(' '))
+                                    .append($('<img>').addClass([type, secondaryClass].join(' '))
                                                       .attr({ alt: type,
-                                                              src: ['/img/emoticons/', type, '.png'].join('') }))
-                                    .addClass(secondaryClass));
+                                                              src: ['/img/emoticons/', type, '.png'].join('') })));
     },
   }),
 
@@ -133,12 +135,13 @@ $(function() {
       var topTitles = data.topTitles, // array of objects
           dataElem = this.$('.data'),
           dataElemWidth = $('body').width(),
-          i, j, len, titleLen, chartData, chart, chartDiv, name;
+          i, j, len, titleLen, chartData, chart, chartDiv, chartName;
 
       for (i=0, len = topTitles.length; i<len; ++i) {
         // for each attribute (e.g. 'smiling', 'glasses', 'angry')
         attr      = topTitles[i];
         titles    = attr.value;
+        chartName = attr.name,
 
         chartData = new google.visualization.DataTable();
         chartData.addColumn('string', 'Title');
@@ -151,12 +154,43 @@ $(function() {
           chartData.setValue(j/2, 1, parseInt(titles[j], 10));
         }
 
+        if (chartName === 'smiling') {
+          chartName = 'The Smilingest Job Titles';
+        }
+        else if (chartName === 'nosmiling') {
+          chartName = 'The No-Smilingest Job Titles';
+        }
+        else if (chartName === 'glasses') {
+          chartName = 'The Most Glasses-Wearing Job Titles';
+        }
+        else if (chartName === 'noglasses') {
+          chartName = 'The Least Glasses-Wearing Job Titles';
+        }
+        else if (chartName === 'happy') {
+          chartName = 'The Happiest Job Titles';
+        }
+        else if (chartName === 'neutral') {
+          chartName = 'The Neutralest Job Titles';
+        }
+        else if (chartName === 'sad') {
+          chartName = 'The Saddest Job Titles';
+        }
+        else if (chartName === 'angry') {
+          chartName = 'The Angriest Job Titles';
+        }
+        else if (chartName === 'surprised') {
+          chartName = 'The Most Surprised Job Titles';
+        }
+        else if (chartName === 'noattrs') {
+          chartName = 'The Most Undetectable Job Titles';
+        }
         chart = new google.visualization.BarChart(this.$('.' + attr.name + '-chart').get(0));
+        // chart style
         chart.draw(chartData, { backgroundColor: 'none',
                                 chartArea: {
                                   left: '33%',
                                   top: 100,
-                                  width: '50%',
+                                  width: '40%',
                                   height: '50%'
                                 },
                                 enableInteractivity: false,
@@ -167,7 +201,7 @@ $(function() {
                                   }
                                 },
                                 legend: 'none',
-                                title: attr.name,
+                                title: chartName,
                                 titleTextStyle: {
                                   color: '#fff'
                                 },
@@ -178,7 +212,7 @@ $(function() {
                                 },
                                 width: dataElemWidth,
                                 height: 768
-                         });
+                              });
       }
       this.model.set({ initialized: true });
     },
@@ -216,7 +250,9 @@ $(function() {
                 'fetchAttributes',
                 'viewIntro',
                 'viewConnections',
-                'viewJobTitle');
+                'viewJobTitle',
+                'handleConnectionsResult',
+                'handleOwnProfile');
 
       this.topTitleModel = new TopTitleModel();
       this.topTitleListView = new TopTitleListView({
@@ -228,11 +264,12 @@ $(function() {
                                     viewJobTitle:    this.viewJobTitle });
       this.model = new AppModel();
 
-      this.cxnListElem = this.$('.cxnWrapper');
-      this.topTitlesElem = this.$('.topTitles');
+      this.bodyElem       = $('body');
+      this.cxnListElem    = this.$('.cxnWrapper');
+      this.topTitlesElem  = this.$('.topTitles');
+      this.titleElem      = this.$('.title');
+
       this.$('.filterDropdown').attr('value', 'all-filter');
-      this.bodyElem = $('body');
-      this.titleElem = this.$('.title');
 
       Backbone.history.start();
     },
@@ -244,6 +281,7 @@ $(function() {
     },
 
     viewIntro: function() {
+      console.log('viewIntro');
       this.cxnListElem.hide();
       this.topTitlesElem.hide();
       this.$('.intro').show();
@@ -251,11 +289,13 @@ $(function() {
 
     viewConnections: function() {
       if (!authed) {
+        console.log('not authed');
         this.router.navigate('intro', true);
+        this.intendedRoute = 'connections';
         return;
       }
-      this.cxnListElem.show();
-      this.$('.topTitles').hide();
+      this.cxnListElem.fadeIn('slow');
+      this.topTitlesElem.fadeOut('slow');
       this.bodyElem.removeClass('jobTitles');
       this.bodyElem.addClass('connections');
       this.titleElem.text('Faces of LinkedIn');
@@ -265,14 +305,15 @@ $(function() {
     viewJobTitle: function() {
       if (!authed) {
         this.router.navigate('intro', true);
+        this.intendedRoute = 'jobTitle';
         return;
       }
       if (!this.topTitleModel.get('initialized')) {
         $.get('/facetoptitles', this.topTitleListView.handleTopTitleData);
       }
 
-      this.cxnListElem.hide();
-      this.$('.topTitles').show();
+      this.cxnListElem.fadeOut('slow');
+      this.topTitlesElem.fadeIn('slow');
       this.model.set({ mode: 'topTitles' });
 
       this.bodyElem.addClass('jobTitles');
@@ -298,6 +339,34 @@ $(function() {
           newMode;
       newMode = mode === 'connections' ? 'jobTitles' : 'connections';
       this.router.navigate(newMode);
+    },
+
+    handleConnectionsResult: function(result) {
+      if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }
+      connections = result.values;
+      if (ownProfile) {
+        connections.unshift(ownProfile);
+        this.fetchAttributes(connections);
+      }
+      else {
+        connections = result.values;
+      }
+    },
+
+    handleOwnProfile: function(result) {
+      var ownProf;
+      if (!result || !result.values || result.values.length === 0 ) { console.log('no own profile?'); return; }
+      ownProf = result.values[0];
+      if (!ownProf.pictureUrl) {
+        console.log('no own picture!');
+        return;
+      }
+      ownProf.isSelf = true; // set flag so we can detect self later
+      ownProfile = result.values[0];
+      if (connections) {
+        connections.unshift(ownProfile);
+        this.fetchAttributes(connections);
+      }
     },
 
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
@@ -334,6 +403,7 @@ $(function() {
       }
 
       this.addCxns(profiles);
+      this.$('#wrapper').show();
       if (profiles.length) {
         data.profiles = profiles;
         $.post('/facecache-get', data, function(data) {
@@ -345,8 +415,24 @@ $(function() {
       }
 
       if (this.model.get('mode') === 'intro') {
-        this.router.navigate('connections', true);
+        if (this.intendedRoute) {
+          this.router.navigate(this.intendedRoute, true);
+        }
+        else {
+          this.router.navigate('connections', true);
+        }
       }
+    },
+
+    initApp: function() {
+      var fields = ['firstName','lastName','id','pictureUrl','three-current-positions:(title)','site-standard-profile-request:(url)'];
+      introElem.fadeOut();
+      IN.API.Profile("me")
+            .fields(fields)
+            .result(this.handleOwnProfile);
+      IN.API.Connections("me")
+            .fields(fields)
+            .result(this.handleConnectionsResult);
     },
 
     events: {
@@ -355,51 +441,15 @@ $(function() {
     }
   }),
 
-  handleConnectionsResult = function(result) {
-    if (!result || !result.values || result.values.length === 0 ) { console.log('no connections?'); return; }
-    connections = result.values;
-    if (ownProfile) {
-      connections.unshift(ownProfile);
-      appView.fetchAttributes(connections);
-    }
-    else {
-      connections = result.values;
-    }
-  },
-
-  handleOwnProfile = function(result) {
-    var ownProf;
-    if (!result || !result.values || result.values.length === 0 ) { console.log('no own profile?'); return; }
-    ownProf = result.values[0];
-    if (!ownProf.pictureUrl) {
-      console.log('no own picture!');
-      return;
-    }
-    ownProf.isSelf = true; // set flag so we can detect self later
-    ownProfile = result.values[0];
-    if (connections) {
-      connections.unshift(ownProfile);
-      appView.fetchAttributes(connections);
-    }
-  },
+  appView = new AppView(),
 
   onLinkedInAuth = function() {
-    var fields = ['firstName','lastName','id','pictureUrl','three-current-positions:(title)','site-standard-profile-request:(url)'];
+    appView.initApp();
     authed = 1;
-    introElem.hide();
-    IN.API.Profile("me")
-          .fields(fields)
-          .result(handleOwnProfile);
-    IN.API.Connections("me")
-          .fields(fields)
-          .result(handleConnectionsResult);
-    $('#wrapper').show();
   };
 
   onLinkedInLoad = function() {
-    introElem.show();
+    introElem.fadeIn('fast');
     IN.Event.on(IN, "auth", onLinkedInAuth);
   };
-
-  appView = new AppView();
 });

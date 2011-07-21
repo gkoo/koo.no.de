@@ -8,7 +8,7 @@ h1.title Faces of LinkedIn
       = 'Face.com'
     | .
   p To get started, log in using your LinkedIn account.
-script(type="IN/Login", data-size="large")
+  script(type="IN/Login", data-size="large")
 .wrapper
   .cxnWrapper
     .controls
@@ -61,10 +61,9 @@ script(type="IN/Login", data-size="large")
         option(value="smile-filter") Smiling
         option(value="nosmile-filter") No Smiling
         option(value="noattrs-filter") Undetectable Face
-    p.explain
+    p.explain.shadow
       | These charts show the aggregated photo data computed for all connections so far.
-      | To see the top job titles for any given photo attribute, choose from the drop-down
-      | below.
+      | To see the top job titles for any given photo attribute, choose from the drop-down.
     .chartWrapper
       .smiling-chart.chart
       .nosmiling-chart.chart
