@@ -10,9 +10,13 @@ h1.title Faces of LinkedIn
   p To get started, log in using your LinkedIn account.
   script(type="IN/Login", data-size="large")
 .wrapper
-  .cxnWrapper
-    .controls
+  ul.tabs
+    li.tab
+      a.toConnections(href='#connections') View connections
+    li.tab
       a.toJobTitle(href='#jobTitle') View by job title
+  .cxnWrapper.shadow
+    .controls
       .filter
         span Filter By:&nbsp;
         select.filterDropdown
@@ -32,56 +36,44 @@ h1.title Faces of LinkedIn
       li.mooooood Mood
       li.glasses Glasses
       li.smiling Smiling
-    .cxnMain
+    .cxnMain.shadow
+      .sides
+        .side.happyStat
+          span.count
+          |  of your connections are happy
+        .side.sadStat
+          span.count
+          |  of your connections are sad
+        .side.glassesStat
+          span.count
+          |  of your connections wear glasses
       ul.cxns
-      .side.happyStat.shadow
-        span.count
-        |  of your connections are happy
-      .side.sadStat.shadow
-        span.count
-        |  of your connections are sad
-      .side.glassesStat.shadow
-        span.count
-        |  of your connections wear glasses
   .topTitles
-    .controls
-      a.toConnections(href='#connections') View connections
-      //
-        p Select top job titles by the categories below:
-        .filters
-          button Happy
-          button Neutral
-          button Sad
-          button Angry
-          button Surprised
-          button Glasses
-          button No Glasses
-          button Smiling
-          button Not Smiling
-          button Undetectable Face
-      span View graph for: 
-      select.chartFilterDropdown
-        option(value="happy-filter") Happy
-        option(value="neutral-filter") Neutral
-        option(value="sad-filter") Sad
-        option(value="angry-filter") Angry
-        option(value="surprised-filter") Surprised
-        option(value="glasses-filter") Glasses
-        option(value="noglasses-filter") No Glasses
-        option(value="smile-filter") Smiling
-        option(value="nosmile-filter") No Smiling
-        option(value="noattrs-filter") Undetectable Face
-    p.explain.shadow
-      | These charts show the aggregated photo data computed for all connections so far.
-      | To see the top job titles for any given photo attribute, choose from the drop-down.
-    .chartWrapper
-      .smiling-chart.chart
-      .nosmiling-chart.chart
-      .glasses-chart.chart
-      .noglasses-chart.chart
-      .happy-chart.chart
-      .neutral-chart.chart
-      .sad-chart.chart
-      .angry-chart.chart
-      .surprised-chart.chart
-      .noattrs-chart.chart
+    .jobTitleWrapper.shadow
+      p.explain
+        | These charts show the aggregated photo data computed for all connections so far.
+        | To see the top job titles for any given photo attribute, choose from the drop-down.
+      .controls
+        span View graph for: 
+        select.chartFilterDropdown
+          option(value="happy-filter") Happy
+          option(value="neutral-filter") Neutral
+          option(value="sad-filter") Sad
+          option(value="angry-filter") Angry
+          option(value="surprised-filter") Surprised
+          option(value="glasses-filter") Glasses
+          option(value="noglasses-filter") No Glasses
+          option(value="smile-filter") Smiling
+          option(value="nosmile-filter") No Smiling
+          option(value="noattrs-filter") Undetectable Face
+      .chartWrapper
+        .smiling-chart.chart
+        .nosmiling-chart.chart
+        .glasses-chart.chart
+        .noglasses-chart.chart
+        .happy-chart.chart
+        .neutral-chart.chart
+        .sad-chart.chart
+        .angry-chart.chart
+        .surprised-chart.chart
+        .noattrs-chart.chart

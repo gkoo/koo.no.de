@@ -88,7 +88,7 @@ $(function() {
       if (typeof secondaryClass === 'undefined') {
         secondaryClass = '';
       }
-      this.attrInfo.append($('<li>').addClass([secondaryClass, 'shadow'].join(' '))
+      this.attrInfo.append($('<li>').addClass(secondaryClass)
                                     .append($('<img>').addClass([type, secondaryClass].join(' '))
                                                       .attr({ alt: type,
                                                               src: ['/img/emoticons/', type, '.png'].join('') })));
@@ -119,7 +119,7 @@ $(function() {
         tmpUl.append(cxnPicView.render());
       });
       this.$('.cxns').remove();
-      this.el.children('.cxnMain').prepend(tmpUl);
+      this.el.children('.cxnMain').append(tmpUl);
     }
   }),
 
@@ -189,29 +189,30 @@ $(function() {
         chart.draw(chartData, { backgroundColor: 'none',
                                 chartArea: {
                                   left: '33%',
-                                  top: 100,
-                                  width: '40%',
-                                  height: '50%'
+                                  top: 50,
+                                  width: '50%',
+                                  height: '75%'
                                 },
+                                colors: ['#62c77d'],
                                 enableInteractivity: false,
                                 hAxis: {
                                   gridlineColor: '#666',
                                   textStyle: {
-                                    color: '#fff'
+                                    color: '#333'
                                   }
                                 },
                                 legend: 'none',
                                 title: chartName,
                                 titleTextStyle: {
-                                  color: '#fff'
+                                  color: '#333'
                                 },
                                 vAxis: {
                                   textStyle: {
-                                    color: '#fff'
+                                    color: '#333'
                                   }
                                 },
-                                width: dataElemWidth,
-                                height: 768
+                                width: 918,
+                                height: 600
                               });
       }
       this.model.set({ initialized: true });
@@ -224,6 +225,27 @@ $(function() {
     },
     events: {
       'change .chartFilterDropdown': "doChartFilter"
+    }
+  }),
+
+  TabModel = Backbone.Model.extend(),
+
+  TabView = Backbone.View.extend({
+    initialize: function() {
+      _.bindAll(this, 'render');
+      this.model.bind('change', this.render);
+    },
+    render: function() {
+      var currTab = this.model.get('current');
+      this.el.children('li').each(function(idx, el) {
+        el = $(el);
+        if (el.find('a').hasClass(currTab)) {
+          el.addClass('current');
+        }
+        else {
+          el.removeClass('current');
+        }
+      });
     }
   }),
 
@@ -260,12 +282,17 @@ $(function() {
         el: this.$('.topTitles'),
         model: this.topTitleModel
       });
+      this.tabModel = new TabModel();
+      this.tabView = new TabView({
+        el: this.$('.tabs'),
+        model: this.tabModel
+      });
       this.router = new AppRouter({ viewIntro:       this.viewIntro,
                                     viewConnections: this.viewConnections,
                                     viewJobTitle:    this.viewJobTitle });
       this.model = new AppModel();
 
-      this.bodyElem       = $('body');
+      this.tabsElem       = this.$('.tabs');
       this.cxnListElem    = this.$('.cxnWrapper');
       this.topTitlesElem  = this.$('.topTitles');
       this.titleElem      = this.$('.title');
@@ -290,16 +317,16 @@ $(function() {
 
     viewConnections: function() {
       if (!authed) {
-        console.log('not authed');
         this.router.navigate('intro', true);
         this.intendedRoute = 'connections';
         return;
       }
-      this.cxnListElem.fadeIn('slow');
-      this.topTitlesElem.fadeOut('slow');
-      this.bodyElem.removeClass('jobTitles');
-      this.bodyElem.addClass('connections');
+      this.cxnListElem.show();
+      this.topTitlesElem.hide();
+      this.tabsElem.show();
       this.titleElem.text('Faces of LinkedIn');
+
+      this.tabModel.set({ current: 'toConnections' });
       this.model.set({ mode: 'connections' });
     },
 
@@ -313,15 +340,15 @@ $(function() {
         $.get('/facetoptitles', this.topTitleListView.handleTopTitleData);
       }
 
-      this.cxnListElem.fadeOut('slow');
-      this.topTitlesElem.fadeIn('slow');
+      this.cxnListElem.hide();
+      this.topTitlesElem.show();
+      this.tabsElem.show();
       this.model.set({ mode: 'topTitles' });
 
-      this.bodyElem.addClass('jobTitles');
-      this.bodyElem.removeClass('connections');
       this.titleElem.text('Facial Features by Job Title');
       this.topTitleListView.doChartFilter();
 
+      this.tabModel.set({ current: 'toJobTitle' });
       this.model.set({ mode: 'jobTitles' });
     },
 
@@ -371,7 +398,9 @@ $(function() {
     },
 
     populateStat: function(className, num) {
-      this.cxnListElem.find('.' + className + ' .count').text(num.toString());
+      this.cxnListElem.find('.' + className + ' .count')
+                      .text(num.toString());
+      this.cxnListElem.find('.' + className).fadeIn();
     },
 
     // @cachedAttrs: is an array of JSON.stringify'ed photo attribute
@@ -417,9 +446,6 @@ $(function() {
         }
       }
 
-      console.log('happy: ' + numHappy);
-      console.log('sad: ' + numSad);
-      console.log('glasses: ' + numGlasses);
       this.populateStat('happyStat', numHappy);
       this.populateStat('sadStat', numSad);
       this.populateStat('glassesStat', numGlasses);
@@ -440,7 +466,6 @@ $(function() {
       }
 
       this.addCxns(profiles);
-      this.$('#wrapper').show();
       if (profiles.length) {
         data.profiles = profiles;
         $.post('/facecache-get', data, function(data) {
@@ -463,7 +488,11 @@ $(function() {
 
     initApp: function() {
       var fields = ['firstName','lastName','id','pictureUrl','three-current-positions:(title)','site-standard-profile-request:(url)'];
-      introElem.fadeOut();
+      introElem.fadeOut({
+        complete: function() {
+          $('.wrapper').fadeIn();
+        }
+      });
       IN.API.Profile("me")
             .fields(fields)
             .result(this.handleOwnProfile);
