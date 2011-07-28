@@ -382,17 +382,20 @@ $(function() {
     },
 
     handleOwnProfile: function(result) {
-      var ownProf;
+      var ownProf, noPic = false;
       if (!result || !result.values || result.values.length === 0 ) { console.log('no own profile?'); return; }
       ownProf = result.values[0];
       if (!ownProf.pictureUrl) {
         console.log('no own picture!');
-        return;
+        noPic = true;
+        //return;
       }
       ownProf.isSelf = true; // set flag so we can detect self later
       ownProfile = result.values[0];
       if (connections) {
-        connections.unshift(ownProfile);
+        if (!noPic) {
+          connections.unshift(ownProfile);
+        }
         this.fetchAttributes(connections);
       }
     },
