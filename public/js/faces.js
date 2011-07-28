@@ -193,7 +193,7 @@ $(function() {
                                   width: '50%',
                                   height: '75%'
                                 },
-                                colors: ['#62c77d'],
+                                colors: ['#008CBE'],
                                 enableInteractivity: false,
                                 hAxis: {
                                   gridlineColor: '#666',

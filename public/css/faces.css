@@ -97,6 +97,7 @@ h1 {
 }
 
 .tabs {
+  display: none;
   margin: 0 auto;
   padding-bottom: 10px;
   text-align: left;
@@ -192,9 +193,9 @@ h1 {
 }
 
 .topTitles .explain {
-  background-color: #3366cc;
-  border: 1px solid #999;
-  color: #fff;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  color: #000;
   margin: 0 auto 20px;
   padding: 10px;
   text-align: left;
@@ -293,6 +294,10 @@ h1 {
   text-align: center;
   text-decoration: none;
   text-shadow: 1px 1px 1px #ccc;
+}
+
+.tab.current a {
+  color: #000;
 }
 
 .profileLink {

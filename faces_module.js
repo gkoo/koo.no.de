@@ -210,7 +210,6 @@ FaceClient = function(key, secret) {
         i, len;
 
     for (i=0, len=this.attrs.length; i<len; ++i) {
-      console.log('getting for ' + this.attrs[i]);
       getTopTitlesForAttr(this.attrs[i], function(err, res) {
         if (err) {
           console.log(err);
@@ -221,7 +220,6 @@ FaceClient = function(key, secret) {
           value: res
         });
         if (topTitles.length === _this.attrs.length) {
-          console.log(topTitles);
           callback(topTitles);
         }
       });
