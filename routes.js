@@ -113,15 +113,13 @@ app.get('/blog', function(req, res) {
 
     for (i=0,len=rows.length; i<len; ++i) {
       row = rows[i].value;
-      console.log(row);
       blogpost = {};
 
       blogpost.title      = row.title;
-      blogpost.timestamp  = (new Date(row.timestamp)).toString();
+      blogpost.timestamp  = (new Date(row.timestamp)).toDateString();
       blogpost.post       = row.post;
       cleanedPosts.push(blogpost);
     }
-    console.log(cleanedPosts);
 
     res.render('blog', {
       locals: {
