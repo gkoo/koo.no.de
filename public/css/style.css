@@ -27,6 +27,7 @@ a {
   background-color: #eee;
   color: #000;
   margin: 50px auto;
+  min-height: 400px;
   padding: 20px;
   text-align: left;
   width: 700px;

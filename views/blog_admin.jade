@@ -1,0 +1,21 @@
+#nav
+  a(href='/', title='Back to Home') Home
+#content
+  .auth
+    .enter-pw
+      p Please enter a password to access the admin interface
+      form.blogAuthForm
+        input(type="password", name="pw", id="pw")
+        input(type="submit", value="Submit")
+  .edit
+    .status
+    form.createPostForm
+      h2 Title
+      input(type="text", name="postTitle", id="postTitle")
+      h2 Deconstruct your thoughts here.
+      textarea#post
+      p.actions
+        input(type="submit", value="Post")
+script(type="text/javascript", src="/js/underscore.js")
+script(type="text/javascript", src="/js/backbone.js")
+script(type="text/javascript", src="/js/blogadmin.js")

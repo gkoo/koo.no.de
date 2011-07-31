@@ -1,0 +1,26 @@
+.enter-pw {
+  margin-top: 100px;
+  text-align: center;
+}
+.edit {
+  display: none;
+}
+.createPostForm {
+  margin-top: 20px;
+}
+#postTitle {
+  font: 13px monospace, Arial;
+}
+#post {
+  height: 200px;
+  margin-bottom: 10px;
+}
+#postTitle,
+#post {
+  border: 1px solid #666;
+  padding: 5px;
+  width: 98%;
+}
+.actions {
+  text-align: right;
+}

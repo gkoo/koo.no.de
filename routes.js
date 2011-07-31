@@ -1,10 +1,8 @@
 var express = require('express'),
-    //sys = require('sys'),
-    //fs = require('fs'),
     faceModule = require('./faces_module.js'),
+    blog = require('./blog.js'),
     app = express.createServer(),
     dimSize = 30;
-    //logStream = fs.createWriteStream('./request.log', { flags: 'a' }),
 
 // Configuration
 
@@ -71,6 +69,84 @@ app.configure('production', function(){
 
 // Routes
 
+// Routes: Blog
+// ------------
+app.post('/blog-post', function(req, res) {
+  if (req.xhr) {
+    if (req.body && req.body.pw) {
+      if (req.body.entry && blog.authenticate(req.body.pw)) {
+        blog.post(req.body.title, req.body.entry, function(response) {
+          res.send(response);
+          console.log('[BLOG] Response: ' + response);
+        });
+      }
+    }
+  }
+});
+
+app.post('/blog-auth', function(req, res) {
+  if (req.xhr) {
+    if (req.body && req.body.pw) {
+      res.send({
+        success: blog.authenticate(req.body.pw)
+      });
+    }
+  }
+});
+
+app.get('/blog-admin', function(req, res) {
+  res.render('blog_admin', {
+    locals: {
+      page: 'blog',
+      title: 'Blog Admin'
+    }
+  });
+});
+
+app.get('/blog', function(req, res) {
+  // Fetch recent posts from Couch. When they
+  // return, render them.
+  var posts = blog.getRecentPosts(function(posts) {
+    var cleanedPosts = [],
+        rows = posts.rows,
+        row, blogpost, i, len;
+
+    for (i=0,len=rows.length; i<len; ++i) {
+      row = rows[i].value;
+      console.log(row);
+      blogpost = {};
+
+      blogpost.title      = row.title;
+      blogpost.timestamp  = (new Date(row.timestamp)).toString();
+      blogpost.post       = row.post;
+      cleanedPosts.push(blogpost);
+    }
+    console.log(cleanedPosts);
+
+    res.render('blog', {
+      locals: {
+        page: 'blog',
+        title: 'My Blog',
+        posts: cleanedPosts
+      }
+    });
+  });
+});
+
+// Routes: Grid
+// ------------
+app.get('/grid', function(req, res){
+  res.render('grid', {
+    locals: {
+      page: 'grid',
+      dimSize: dimSize,
+      title: 'Welcome to the Grid'
+    }
+  });
+});
+
+// Routes: Faces
+// -------------
 app.get('/facetoptitles', function(req, res){
   faceModule.getTopTitles(function(topTitles) {
     res.send({ topTitles: topTitles });
@@ -85,26 +161,17 @@ app.post('/facecache-get', function(req, res){
   }
 });
 
-app.get('/grid', function(req, res){
-  res.render('grid', {
-    locals: {
-      page: 'grid',
-      dimSize: dimSize,
-      title: 'Welcome to the Grid'
-    }
-  });
-});
-
 app.get('/faces', function(req, res){
   res.render('faces', {
     locals: {
-      page: 'faces',
-      title: 'Faces Of Your Network',
+      page: 'faces'
     },
     layout: 'faceslayout'
   });
 });
 
+// Routes: Index
+// -------------
 app.get('/', function(req, res){
   res.render('index', {
     locals: {
