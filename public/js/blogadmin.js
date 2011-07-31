@@ -87,7 +87,13 @@ $(function() {
       $.post('/blog-post',
              data,
              function(data, textStatus) {
-               alert('success');
+               if (data && data.ok) {
+                 window.location = "/blog";
+               }
+               else {
+                 alert('error! check the console!');
+                 console.log(data);
+               }
              });
     },
 

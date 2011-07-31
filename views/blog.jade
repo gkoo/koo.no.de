@@ -1,5 +1,8 @@
 .content
   a(href='/', title='Back to Home') Home
-p Posts go here:
-- each blogpost in posts
-  p #{blogpost.title} #{blogpost.timestamp} #{blogpost.post}
+ul.posts
+  - each blogpost in posts
+    li
+      h3 #{blogpost.title}
+      p #{blogpost.timestamp}
+      !{blogpost.post}

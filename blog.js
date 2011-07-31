@@ -42,8 +42,17 @@ Blog = function() {
   };
 
   this.post = function(title, post, callback) {
+    var paras, i, len;
+
+    post = post.replace(/\n\n+/g, '\n\n');
+
+    paras = post.split('\n\n');
+    for (i=0, len=paras.length; i<len; ++i) {
+      paras[i] = '<p>' + paras[i].replace('\n', '<br/>') + '</p>';
+    }
+    paraStr = paras.join('');
     couchRequest({ data: { 'title':     title,
-                           'post':      post,
+                           'post':      paraStr,
                            'timestamp': (new Date()).getTime(),
                            'type':      'blogpost'
                          },
