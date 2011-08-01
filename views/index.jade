@@ -2,40 +2,64 @@
 - var expresslink = "<a href='http://expressjs.com/'>Express</a>"
 - var socketiolink = "<a href='http://socket.io'>Socket.IO</a>"
 
-h2 About The Site
-p
-  | This site was made using
-  a(href='http://nodejs.org')
-    = 'NodeJS'
-  |  modules:
-  a(href='http://expressjs.com/')
-    = 'Express'
-  |  and
-  a(href='http://socket.io/')
-    = 'Socket.IO'
-  | .
+.section.about
+  h2 About
+  .content
+    p
+      | My name is Gordon Koo. I'm a software developer in the San Francisco Bay Area, currently working at
+      a(href='http://www.linkedin.com')
+        = 'LinkedIn'
+      | , a site aimed at connecting professionals. Here is my
+      a(href='http://www.linkedin.com/in/gordonkoo')
+        = 'LinkedIn profile'
+      | .
+    p
+      | This site was made using
+      a(href='http://nodejs.org')
+        = 'NodeJS'
+      |  (
+      a(href='http://expressjs.com/')
+        = 'Express'
+      | , 
+      a(href='http://socket.io/')
+        = 'Socket.IO'
+      |  ),
+      a(href='http://redis.io/')
+        = 'Redis'
+      |  and
+      a(href='http://couchdb.apache.org/')
+        = 'CouchDB'
+      | .
 
 
-h2 About The Guy
-p
-  | My name is Gordon Koo. I'm a software developer in the San Francisco Bay Area, currently working at
-  a(href='http://www.linkedin.com')
-    = 'LinkedIn'
-  | , a site aimed at connecting professionals. Here is my
-  a(href='http://www.linkedin.com/in/gordonkoo')
-    = 'LinkedIn profile'
-  | .
+.section.blog
+  h2 Blog
+  .content
+    p I made a 
+      a(href='/blog') blog
+      | .
 
-
-h2 About The Projects
-p
-  | Here are some experiments with NodeJS.
-ul.link-list
-  li
-    h3
-      a(href='grid') Grid
-    p You draw on it and say, "Huzzah!" Exponentially more fun with friends!
-  li
-    h3
-      a(href='http://timeline.linkedinlabs.com') LinkedIn Connection Timeline
-    p Visualize your LinkedIn connections ... through time and space!
+.section.projects
+  h2 Projects
+  .content
+    ul
+      li
+        h3
+          a(href='grid') Grid
+        p You draw on it and say, "Huzzah!" Exponentially more fun with friends!
+      li
+        h3
+          a(href='http://timeline.linkedinlabs.com') LinkedIn Connection Timeline
+        p Visualize your LinkedIn connections ... through time and space!
+      li
+        h3
+          a(href='/faces') Faces of LinkedIn
+        p
+          | A mash-up experiment using
+          a(href='http://www.face.com/')
+            = 'Face.com'
+          |  and
+          a(href='http://developer.linkedin.com')
+            = 'LinkedIn'
+          
+          | 's APIs. Browse your connections by facial expression.

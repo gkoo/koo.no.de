@@ -17,28 +17,55 @@ h1 {
   font-size: 48px;
   text-align: center;
 }
-h2 {
-  margin-top: 30px;
-}
 a {
-  color: #059bff;
+  color: #0080ff;
 }
 #main {
   background-color: #eee;
   color: #000;
   margin: 50px auto;
   min-height: 400px;
-  padding: 20px;
+  padding: 40px;
   text-align: left;
-  width: 700px;
+  width: 660px;
 
   -moz-border-radius: 12px;
   -webkit-border-radius: 12px;
   border-radius: 12px;
 }
-.link-list {
-  padding-left: 15px;
-  margin: 10px 0;
+.section {
+  margin: 50px 0;
+}
+.section h2 {
+  float: left;
+  margin: 0;
+  text-align: right;
+  width: 100px;
+}
+.content {
+  margin-left: 120px;
+}
+.content a {
+  text-decoration: none;
+}
+.content a:hover,
+.content h3 a {
+  text-decoration: underline;
+}
+.content p {
+  line-height: 20px;
+  margin: 0 0 20px;
+  padding-top: 5px;
+}
+.projects ul {
+  margin: 0;
+  padding-top: 5px;
+}
+.projects ul h3 {
+  margin: 0 0 10px;
+}
+.projects ul p {
+  margin-top: 10px;
 }
 .foot {
   font-size: 11px;

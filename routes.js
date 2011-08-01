@@ -77,7 +77,7 @@ app.post('/blog-post', function(req, res) {
       if (req.body.entry && blog.authenticate(req.body.pw)) {
         blog.post(req.body.title, req.body.entry, function(response) {
           res.send(response);
-          console.log('[BLOG] Response: ' + response);
+          console.log('[BLOG] Response: ' + JSON.stringify(response));
         });
       }
     }

@@ -1,3 +1,5 @@
+/* Defines helper functions for blog operations. */
+
 var http = require('http'),
 
 Blog = function() {
@@ -32,6 +34,34 @@ Blog = function() {
       req.write(JSON.stringify(data));
     }
     req.end();
+  },
+
+  processPostInput = function(str) {
+    var link_re = /\[([^\]]+)\]\(([^\)]+)\)/g,
+        match,
+        linkUrl,
+        linkText,
+        linkHtml,
+        length,
+        index;
+
+    str = str.replace(/\n\n+/g, '\n\n')
+             .replace('<', '&lt;')
+             .replace('>', '&gt;');
+
+    match = link_re.exec(str);
+
+    while (match) {
+      linkUrl = match[2];
+      linkText = match[1];
+      linkHtml = ['<a href="', linkUrl, '">', linkText, '</a>'].join('');
+      length = linkUrl.length + linkText.length + 4; // + 4 for []()
+      index = match.index;
+      str = [str.substring(0, index), linkHtml, str.substring(index+length)].join('');
+      console.log(str);
+      match = link_re.exec(str);
+    }
+    return str;
   };
 
   this.authenticate = function(pw) {
@@ -44,7 +74,7 @@ Blog = function() {
   this.post = function(title, post, callback) {
     var paras, i, len;
 
-    post = post.replace(/\n\n+/g, '\n\n');
+    post = processPostInput(post);
 
     paras = post.split('\n\n');
     for (i=0, len=paras.length; i<len; ++i) {
