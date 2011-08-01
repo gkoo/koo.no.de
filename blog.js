@@ -58,7 +58,6 @@ Blog = function() {
       length = linkUrl.length + linkText.length + 4; // + 4 for []()
       index = match.index;
       str = [str.substring(0, index), linkHtml, str.substring(index+length)].join('');
-      console.log(str);
       match = link_re.exec(str);
     }
     return str;
