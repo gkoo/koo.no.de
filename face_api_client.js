@@ -26,7 +26,6 @@ FaceAPI = function() {
           this.options.path += '&attributes=' + options.attributes;
         }
       }
-      //console.log('[FaceAPI] Issuing request to ' + this.options.host + this.options.path);
       req = http.get(this.options, function(res) {
         console.log('[FaceAPI] STATUS: ' + res.statusCode);
         res.setEncoding('utf8');

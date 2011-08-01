@@ -26,7 +26,9 @@ $(function() {
       });
       this.authElem = this.$('.auth');
       this.editElem = this.$('.edit');
-      this.authForm = this.authElem.find('.blogAuthForm');
+      this.authForm = this.authElem.find('#blogAuthForm');
+
+      this.setupFormattingHelp();
 
       if(!this.pw) {
         this.router.navigate('auth', true);
@@ -34,7 +36,7 @@ $(function() {
     },
 
     events: {
-      'submit .blogAuthForm': 'handlePwSubmit',
+      'submit #blogAuthForm': 'handlePwSubmit',
       'submit .createPostForm': 'handlePostSubmit'
     },
 
@@ -110,6 +112,15 @@ $(function() {
         }
       });
       evt.preventDefault();
+    },
+
+    setupFormattingHelp: function() {
+      var _this = this;
+      this.$('.formattingToggle').children('a').toggle(function() {
+        _this.$('.formattingHelp').css('top', '0');
+      }, function() {
+        _this.$('.formattingHelp').css('top', '-20px');
+      });
     }
   }),
 

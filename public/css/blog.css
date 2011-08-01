@@ -41,3 +41,17 @@
   line-height: 20px;
   margin-bottom: 20px;
 }
+.formatting {
+  overflow: hidden;
+}
+.formattingHelp {
+  position: relative;
+  top: -20px;
+
+  -moz-transition-property: top;
+  -moz-transition-duration: .5s;
+  -webkit-transition-property: top;
+  -webkit-transition-duration: .5s;
+  transition-property: top;
+  transition-duration: .5s;
+}
