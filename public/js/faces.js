@@ -417,6 +417,7 @@ $(function() {
           numGlasses = 0,
           url, newPic, len, attributes;
 
+      this.$('.loading').css('visibility', 'hidden');
       for (len = cachedAttrs.length; i<len; ++i) {
         if (cachedAttrs[i] !== null) {
           attributes = JSON.parse(cachedAttrs[i]);
