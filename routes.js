@@ -103,32 +103,15 @@ app.get('/blog-admin', function(req, res) {
   });
 });
 
+app.get('/blog/:title', function(req, res) {
+  // Fetch specific blog post by title slug
+  blog.getPosts({ slug: req.params['title'] }, res);
+});
+
 app.get('/blog', function(req, res) {
   // Fetch recent posts from Couch. When they
   // return, render them.
-  var posts = blog.getRecentPosts(function(posts) {
-    var cleanedPosts = [],
-        rows = posts.rows,
-        row, blogpost, i, len;
-
-    for (i=0,len=rows.length; i<len; ++i) {
-      row = rows[i].value;
-      blogpost = {};
-
-      blogpost.title      = row.title;
-      blogpost.timestamp  = (new Date(row.timestamp)).toDateString();
-      blogpost.post       = row.post;
-      cleanedPosts.push(blogpost);
-    }
-
-    res.render('blog', {
-      locals: {
-        page: 'blog',
-        title: 'My Blog',
-        posts: cleanedPosts
-      }
-    });
-  });
+  blog.getPosts({ page: 0 }, res);
 });
 
 // Routes: Grid

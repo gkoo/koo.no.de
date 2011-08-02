@@ -4,8 +4,4 @@ div
   | &nbsp;
   a(href='/blog', title='Blog Link') Blog
 ul.posts
-  - each blogpost in posts
-    li
-      h3 #{blogpost.title}
-      p #{blogpost.timestamp}
-      !{blogpost.post}
+  != partial('blogpost', posts)
