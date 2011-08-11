@@ -309,7 +309,6 @@ $(function() {
     },
 
     viewIntro: function() {
-      console.log('viewIntro');
       this.cxnListElem.hide();
       this.topTitlesElem.hide();
       this.$('.intro').show();
