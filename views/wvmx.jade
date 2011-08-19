@@ -4,7 +4,8 @@ html
     title Who's Viewing My Profile
     link(href="/css/wvmx.css", rel="stylesheet")
   body
-    img(src=pictureUrl)
+    a(href=profileUrl, target="_new", onclick="window.close();")
+      img(src=pictureUrl)
     h1 New profile view!
     p
       a(href=profileUrl, id="wvmpLink", target="_new", onclick="window.close();")= name
