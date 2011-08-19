@@ -69,6 +69,29 @@ app.configure('production', function(){
 
 // Routes
 
+// Routes: WVMX Notifications
+// --------------------------
+app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
+  var params      = req.params,
+      name        = decodeURIComponent(params.name),
+      profileUrl,
+      pictureUrl;
+
+  profileUrl = params.profileurl ? decodeURIComponent(params.profileurl) : 'http://www.linkedin.com/wvmx/profile',
+  pictureUrl = params.pictureurl ? decodeURIComponent(params.pictureurl) : 'http://static02.linkedin.com/scds/common/u/img/icon/icon_no_photo_40x40.png',
+
+  res.render('wvmx', {
+    locals: {
+      'name':       name,
+      'profileUrl': profileUrl,
+      'pictureUrl': pictureUrl,
+    },
+    layout: false
+  });;
+});
+
+
+
 // Routes: Blog
 // ------------
 app.post('/blog-post', function(req, res) {

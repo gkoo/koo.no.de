@@ -1,0 +1,11 @@
+!!!
+html
+  head
+    title Who's Viewing My Profile
+    link(href="/css/wvmx.css", rel="stylesheet")
+  body
+    img(src=pictureUrl)
+    h1 New profile view!
+    p
+      a(href=profileUrl, id="wvmpLink", target="_new", onclick="window.close();")= name
+      |  viewed your profile!
