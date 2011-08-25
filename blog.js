@@ -116,7 +116,7 @@ Blog = function() {
     couchRequest({ path: path }, function(posts) {
       var cleanedPosts = [],
           rows = posts.rows,
-          row, blogpost, i, len;
+          row, blogpost, i, len, date;
 
       if (posts && typeof posts.error !== 'undefined') {
         console.log('[COUCH]: ' + posts);
@@ -124,10 +124,13 @@ Blog = function() {
       }
       for (i=0,len=rows.length; i<len; ++i) {
         row       = rows[i].value;
+        date      = new Date(row.timestamp);
         blogpost  = {};
 
         blogpost.title      = row.title;
         blogpost.timestamp  = createDateString(row.timestamp);
+        blogpost.year       = date.getFullYear();
+        blogpost.month      = date.getMonth() + 1;
         blogpost.post       = row.post;
         blogpost.slug       = row.slug;
         cleanedPosts.push(blogpost);
@@ -140,6 +143,60 @@ Blog = function() {
           posts: cleanedPosts
         }
       });
+    });
+  };
+
+  // handle blog-specific routes
+  this.listen = function(app) {
+    app.post('/blog-post', function(req, res) {
+      if (req.xhr) {
+        if (req.body && req.body.pw) {
+          if (req.body.entry && this.authenticate(req.body.pw)) {
+            this.post(req.body.title, req.body.entry, function(response) {
+              res.send(response);
+              console.log('[BLOG] Response: ' + JSON.stringify(response));
+            });
+          }
+        }
+      }
+    });
+
+    app.post('/blog-auth', function(req, res) {
+      if (req.xhr) {
+        if (req.body && req.body.pw) {
+          res.send({
+            success: this.authenticate(req.body.pw)
+          });
+        }
+      }
+    });
+
+    app.get('/blog-admin', function(req, res) {
+      res.render('blog_admin', {
+        locals: {
+          page: 'blog',
+          title: 'Blog Admin'
+        }
+      });
+    });
+
+    app.get('/blog/:year/:month/:title', function(req, res) {
+      // Fetch specific blog post by title slug
+      this.getPosts({ slug: req.params['title'],
+                      year: req.params['year'],
+                      month: req.params['month'] }, res);
+    });
+
+    // Deprecated
+    app.get('/blog/:title', function(req, res) {
+      // Fetch specific blog post by title slug
+      this.getPosts({ slug: req.params['title'] }, res);
+    });
+
+    app.get('/blog', function(req, res) {
+      // Fetch recent posts from Couch. When they
+      // return, render them.
+      this.getPosts({ page: 0 }, res);
     });
   };
 };

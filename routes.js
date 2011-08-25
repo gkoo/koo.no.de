@@ -94,48 +94,7 @@ app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
 
 // Routes: Blog
 // ------------
-app.post('/blog-post', function(req, res) {
-  if (req.xhr) {
-    if (req.body && req.body.pw) {
-      if (req.body.entry && blog.authenticate(req.body.pw)) {
-        blog.post(req.body.title, req.body.entry, function(response) {
-          res.send(response);
-          console.log('[BLOG] Response: ' + JSON.stringify(response));
-        });
-      }
-    }
-  }
-});
-
-app.post('/blog-auth', function(req, res) {
-  if (req.xhr) {
-    if (req.body && req.body.pw) {
-      res.send({
-        success: blog.authenticate(req.body.pw)
-      });
-    }
-  }
-});
-
-app.get('/blog-admin', function(req, res) {
-  res.render('blog_admin', {
-    locals: {
-      page: 'blog',
-      title: 'Blog Admin'
-    }
-  });
-});
-
-app.get('/blog/:title', function(req, res) {
-  // Fetch specific blog post by title slug
-  blog.getPosts({ slug: req.params['title'] }, res);
-});
-
-app.get('/blog', function(req, res) {
-  // Fetch recent posts from Couch. When they
-  // return, render them.
-  blog.getPosts({ page: 0 }, res);
-});
+blog.listen(app);
 
 // Routes: Grid
 // ------------
