@@ -43,7 +43,7 @@ Blog = function() {
     req.end();
   },
 
-  processPostInput = function(str) {
+  formatLinks = function(str) {
     var link_re = /\[([^\]]+)\]\(([^\)]+)\)/g,
         match,
         linkUrl,
@@ -52,12 +52,8 @@ Blog = function() {
         length,
         index;
 
-    str = str.replace(/\n\n+/g, '\n\n')
-             .replace('<', '&lt;')
-             .replace('>', '&gt;');
-
+    // format links
     match = link_re.exec(str);
-
     while (match) {
       linkUrl = match[2];
       linkText = match[1];
@@ -67,6 +63,39 @@ Blog = function() {
       str = [str.substring(0, index), linkHtml, str.substring(index+length)].join('');
       match = link_re.exec(str);
     }
+    return str;
+  },
+
+  formatImages = function(str) {
+    var img_re = /\[img:([^\]]+)]/g,
+        match,
+        imgSrc,
+        imgHtml,
+        length,
+        index;
+
+    // format links
+    match = img_re.exec(str);
+    while (match) {
+      imgSrc = match[1];
+      imgHtml = ['<img src="', imgSrc, '"/>'].join('');
+      length = imgSrc.length + 6; // + 6 for [img:] -- length of the substring to replace
+      index = match.index;
+      str = [str.substring(0, index), imgHtml, str.substring(index+length)].join('');
+      match = img_re.exec(str);
+    }
+    return str;
+  },
+
+  processPostInput = function(str) {
+
+    str = str.replace(/\n\n+/g, '\n\n')
+             .replace('<', '&lt;')
+             .replace('>', '&gt;');
+
+    str = formatLinks(str);
+    str = formatImages(str);
+
     return str;
   },
 
@@ -148,11 +177,13 @@ Blog = function() {
 
   // handle blog-specific routes
   this.listen = function(app) {
+    var _this = this;
+
     app.post('/blog-post', function(req, res) {
       if (req.xhr) {
         if (req.body && req.body.pw) {
-          if (req.body.entry && this.authenticate(req.body.pw)) {
-            this.post(req.body.title, req.body.entry, function(response) {
+          if (req.body.entry && _this.authenticate(req.body.pw)) {
+            _this.post(req.body.title, req.body.entry, function(response) {
               res.send(response);
               console.log('[BLOG] Response: ' + JSON.stringify(response));
             });
@@ -165,7 +196,7 @@ Blog = function() {
       if (req.xhr) {
         if (req.body && req.body.pw) {
           res.send({
-            success: this.authenticate(req.body.pw)
+            success: _this.authenticate(req.body.pw)
           });
         }
       }
@@ -182,7 +213,7 @@ Blog = function() {
 
     app.get('/blog/:year/:month/:title', function(req, res) {
       // Fetch specific blog post by title slug
-      this.getPosts({ slug: req.params['title'],
+      _this.getPosts({ slug: req.params['title'],
                       year: req.params['year'],
                       month: req.params['month'] }, res);
     });
@@ -190,13 +221,13 @@ Blog = function() {
     // Deprecated
     app.get('/blog/:title', function(req, res) {
       // Fetch specific blog post by title slug
-      this.getPosts({ slug: req.params['title'] }, res);
+      _this.getPosts({ slug: req.params['title'] }, res);
     });
 
     app.get('/blog', function(req, res) {
       // Fetch recent posts from Couch. When they
       // return, render them.
-      this.getPosts({ page: 0 }, res);
+      _this.getPosts({ page: 0 }, res);
     });
   };
 };

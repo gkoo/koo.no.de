@@ -119,7 +119,7 @@ $(function() {
       this.$('.formattingToggle').children('a').toggle(function() {
         _this.$('.formattingHelp').css('top', '0');
       }, function() {
-        _this.$('.formattingHelp').css('top', '-20px');
+        _this.$('.formattingHelp').css('top', '-50px');
       });
     }
   }),
