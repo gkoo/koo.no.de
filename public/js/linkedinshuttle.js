@@ -1,6 +1,5 @@
 $(function() {
-  var googleMapsUrl = 'http://maps.googleapis.com/maps/api/staticmap?zoom=14&size=512x512&maptype=roadmap&sensor=false',
-      markerArg = '&markers=color:green%7Clabel:G%7C',
+  var googleMapsUrl = 'http://maps.googleapis.com/maps/api/staticmap?zoom=14&size=512x512&maptype=roadmap&sensor=false&markers=color:green%7Clabel:A%7C',
       mapImg = $('#map'),
       container = $('#container'),
 
@@ -8,7 +7,7 @@ $(function() {
     // create map
     var latitude = attr.Latitude,
         longitude = attr.Longitude,
-        url = googleMapsUrl + markerArg + latitude + ',' + longitude,
+        url = googleMapsUrl + latitude + ',' + longitude,
         newDataList = $('<ul>'),
         relevantFields = ['MaxSpeed',
                           'AvgSpeed',
@@ -17,14 +16,16 @@ $(function() {
                           'City',
                           'Zip'],
         i, len, fieldName, fieldValue, newDataItem;
-    mapImg.attr('src', url)
+    mapImg.attr('src', url) // load static google map
           .show();
 
     for (i=0,len=relevantFields.length; i<len; ++i) {
       fieldName = relevantFields[i];
-      fieldValue = attr[fieldName];
-      newDataItem = $('<li>').text(fieldName + ': ' + fieldValue);
-      newDataList.append(newDataItem);
+      if (fieldName) {
+        fieldValue = attr[fieldName];
+        newDataItem = $('<li>').text(fieldName + ': ' + fieldValue);
+        newDataList.append(newDataItem);
+      }
     }
     container.append(newDataList);
   };
