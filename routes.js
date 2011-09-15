@@ -69,6 +69,11 @@ app.configure('production', function(){
 
 // Routes
 
+// Routes: LinkedIn Shuttle Tracker
+app.get('/linkedinshuttle', function(req, res) {
+  res.render('lishuttle', { layout: false });
+});
+
 // Routes: WVMX Notifications
 // --------------------------
 app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
