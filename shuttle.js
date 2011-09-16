@@ -110,7 +110,7 @@ Shuttle = function() {
 
   // latlng1 and latlng2 are strings of format "-37.9234,122.9731"
   getGoogleDistance = function(latlng1, latlng2, callback) {
-    var mapsPath     = '/maps/api/distancematrix/json?callback=?&sensor=false&origins='+latlng1+'&destinations='+latlng2,
+    var mapsPath     = '/maps/api/distancematrix/json?&sensor=false&units=imperial&origins='+latlng1+'&destinations='+latlng2,
         options      = { host: 'maps.googleapis.com',
                         path: mapsPath,
                         port: 80,
