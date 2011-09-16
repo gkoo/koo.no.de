@@ -1,3 +1,7 @@
+// Proxy to call Google Maps API for our LinkedIn Shuttle Tracker hack.
+// Since Google Maps doesn't seem to support JSONP, I have to use koonode
+// to relay the call.
+
 var http = require('http'),
 
 Shuttle = function() {
@@ -6,11 +10,13 @@ Shuttle = function() {
       res.render('lishuttle', { layout: false });
     });
 
-    app.get('/shuttledistanceproxy/:path', function(req, res) {
-      var params      = req.params,
-          path        = decodeURIComponent(params.path),
-          options     = { host: 'maps.googleapis.com',
-                          path: path,
+    app.get('/distanceproxy/:originlatlng/:destlatlng', function(req, res) {
+      var params       = req.params,
+          originlatlng = decodeURIComponent(params.originlatlng),
+          destlatlng   = decodeURIComponent(params.destlatlng),
+          mapsPath     = '/maps/api/distancematrix/json?callback=?&sensor=false&origins='+originlatlng+'&destinations='+destlatlng,
+          options      = { host: 'maps.googleapis.com',
+                          path: mapsPath,
                           port: 80,
                           method: 'GET',
                           headers: { 'Content-Type': 'application/json' }
