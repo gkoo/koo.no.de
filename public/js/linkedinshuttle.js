@@ -1,13 +1,22 @@
 $(function() {
-  var googleMapsUrl = 'http://maps.googleapis.com/maps/api/staticmap?zoom=14&size=512x512&maptype=roadmap&sensor=false&markers=color:green%7Clabel:A%7C',
-      mapImg = $('#map'),
-      container = $('#container'),
+  var container = $('#container'),
+
+  drawMap = function(lat, lng) {
+    var latlng = new google.maps.LatLng(lat, lng),
+        myOptions = { zoom: 13,
+                      center: latlng,
+                      mapTypeId: google.maps.MapTypeId.ROADMAP
+                    },
+        map = new google.maps.Map(document.getElementById("map_canvas"), myOptions),
+        marker = new google.maps.Marker({ position: latlng,
+                                          map: map });
+  },
 
   handleTrackingData = function(attr) {
     // create map
     var latitude = attr.Latitude,
         longitude = attr.Longitude,
-        url = googleMapsUrl + latitude + ',' + longitude,
+
         newDataList = $('<ul>'),
         relevantFields = ['MaxSpeed',
                           'AvgSpeed',
@@ -16,8 +25,8 @@ $(function() {
                           'City',
                           'Zip'],
         i, len, fieldName, fieldValue, newDataItem;
-    mapImg.attr('src', url) // load static google map
-          .show();
+
+    drawMap(latitude, longitude);
 
     for (i=0,len=relevantFields.length; i<len; ++i) {
       fieldName = relevantFields[i];
@@ -34,7 +43,7 @@ $(function() {
     crossDomain: true,
     dataType: 'jsonp',
     success: function(data, textStatus) {
-      var obj, attr, latitude, longitude, i, len, field, url;
+      var obj, attr, latitude, longitude, i, len, field;
       if (!data || !data.features || !data.features.length) {
         return;
       }
