@@ -70,17 +70,17 @@ Shuttle = function() {
       }
     },
     {
-      name: "LinkedIn Campus",
-      location: {
-        latitude: 37.423301,
-        longitude: -122.071956
-      }
-    },
-    {
       name: "LinkedIn Sales Development",
       location: {
         latitude: 37.419782,
         longitude: -122.088554
+      }
+    },
+    {
+      name: "LinkedIn Campus",
+      location: {
+        latitude: 37.423301,
+        longitude: -122.071956
       }
     }
   ],
@@ -93,7 +93,7 @@ Shuttle = function() {
       currDistance = getDistance({ x: lat, y: lng }, { x: stop.location.latitude, y: stop.location.longitude });
       if (minDistance < 0 || currDistance < minDistance) {
         minDistance = currDistance;
-        minStop = stop;
+        minStop = i;
       }
     }
     return minStop;
@@ -154,13 +154,16 @@ Shuttle = function() {
           lng         = latlng.substring(commaIndex+1),
           closestStop = getClosestStop(parseFloat(lat),
                                        parseFloat(lng)),
-          wrapper = req.query['callback'] ? req.query['callback'] : 'callback';
+          wrapper = req.query.callback ? req.query.callback : 'callback';
 
+      res.send(wrapper + '(' + closestStop + ')');
+      /*
       getGoogleDistance(latlng, closestStop.location.latitude+','+closestStop.location.longitude, function(data) {
         var jsonData = JSON.parse(data);
         jsonData.name = closestStop.name;
         res.send(wrapper + '(' + JSON.stringify(jsonData) + ')');
       });
+      */
     });
   };
 };
