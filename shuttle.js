@@ -142,7 +142,7 @@ Shuttle = function() {
           wrapper = req.query['callback'] ? req.query['callback'] : 'callback';
 
       getGoogleDistance(originlatlng, destlatlng, function(data) {
-        res.send(wrapper + '(' + data + ')');
+        res.json(data);
       });
     });
 
@@ -156,7 +156,7 @@ Shuttle = function() {
                                        parseFloat(lng)),
           wrapper = req.query.callback ? req.query.callback : 'callback';
 
-      res.send(wrapper + '(' + closestStop + ')');
+      res.json(closestStop);
       /*
       getGoogleDistance(latlng, closestStop.location.latitude+','+closestStop.location.longitude, function(data) {
         var jsonData = JSON.parse(data);
