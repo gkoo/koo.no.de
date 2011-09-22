@@ -84,6 +84,16 @@ Shuttle = function() {
       }
     }
   ],
+  // time estimates for stops in SF. last value is for Cesar Chavez <-> Millbrae
+  stopEtas = [4, // Lombard & Fillmore <-> Union & Van Ness
+              4, // Union & Van Ness   <-> Sac & Van Ness
+              8, // Sac & Van Ness     <-> Divis & Grove
+              5, // Divis & Grove      <-> Castro & market
+              5, // Castro & market    <-> 24th & Noe
+              5, // 24th & Noe         <-> 24th & Mission
+              2, // 24th & Mission     <-> Cesar Chavez & Folsom
+              16, // Cesar Chavez & Folsom <-> Millbrae
+              30], // Millbrae <-> Linkedin
 
   // Takes lat and lng args and returns the closest stop to that lat/lng pair.
   getClosestStop = function(lat, lng) {
@@ -129,6 +139,29 @@ Shuttle = function() {
       });
     });
     httpreq.end();
+  },
+
+  sumEtaValues = function(from, to) {
+    var sum = 0, i;
+    console.log('original from: ' + from);
+    console.log('original to: ' + to);
+    if (typeof to === 'undefined') {
+      to = stopEtas.length;
+    }
+    if (to > stopEtas.length) {
+      to = stopEtas.length;
+    }
+    console.log('from: ' + from);
+    console.log('to: ' + to);
+    if (from > stopEtas.length-1) {
+      return 0;
+    }
+    for (i=from; i<to; ++i) {
+      console.log('adding value: ' + stopEtas[i]);
+      sum += stopEtas[i] + 2;
+      console.log('sum is: ' + sum);
+    }
+    return sum;
   };
 
   this.listen = function(app) {
@@ -136,15 +169,58 @@ Shuttle = function() {
       res.render('lishuttle', { layout: false });
     });
 
-    app.get('/distanceproxy/:originlatlng/:destlatlng', function(req, res) {
+    app.get('/distanceproxy/:originlatlng/:stopNum', function(req, res) {
       var params       = req.params,
           originlatlng = decodeURIComponent(params.originlatlng),
-          destlatlng   = decodeURIComponent(params.destlatlng),
-          wrapper = req.query['callback'] ? req.query['callback'] : 'callback';
+          stopNum      = params.stopNum,
+          destlatlng   = stops[stopNum].location.latitude + ',' + stops[stopNum].location.longitude,
+          originlatlngpair = originlatlng.split(','),
+          closestStop = getClosestStop(parseFloat(originlatlngpair[0]),
+                                       parseFloat(originlatlngpair[1])),
+          hour         = (new Date()).getHours(),
+          isAM         = hour < 12,
+          distanceData = {},
+          idx;
 
-      getGoogleDistance(originlatlng, destlatlng, function(data) {
-        res.json(data);
+      if (isAM) {
+        if (closestStop.location.latitude > originlatlngpair[0]
+            && closestStop.location.latitude - originlatlngpair[0] > .0005) {
+          idx = closestStop.idx;
+          if (idx < stops.length-2) {
+            closestStop = stops[idx+1];
+            closestStop.idx = idx+1;
+          }
+        }
+      }
+      else { // is PM
+        if (closestStop.location.latitude < originlatlngpair[0]
+            && originlatlngpair[0] - closestStop.location.latitude > .0005) {
+          idx = closestStop.idx;
+          if (idx > 0) {
+            closestStop = stops[idx-1];
+            closestStop.idx = idx-1;
+          }
+        }
+      }
+
+      getGoogleDistance(originlatlng, closestStop.location.latitude+','+closestStop.location.longitude, function(data) {
+        var jsonData = JSON.parse(data),
+            customEta;
+        jsonData.idx = closestStop.idx;
+        jsonData.name = closestStop.name;
+
+        if (isAM) {
+          customEta = sumEtaValues(jsonData.idx, stopNum);
+        }
+        else {
+          customEta = sumEtaValues(stopNum, jsonData.idx);
+        }
+
+        jsonData.customEta = parseInt(jsonData.rows[0].elements[0].duration.text) + customEta;
+
+        res.json(jsonData);
       });
+
     });
 
     app.get('/closestdistance/:latlng', function(req, res) {
@@ -154,14 +230,13 @@ Shuttle = function() {
           lat         = latlng.substring(0, commaIndex),
           lng         = latlng.substring(commaIndex+1),
           closestStop = getClosestStop(parseFloat(lat),
-                                       parseFloat(lng)),
-          wrapper = req.query.callback ? req.query.callback : 'callback';
+                                       parseFloat(lng));
 
       getGoogleDistance(latlng, closestStop.location.latitude+','+closestStop.location.longitude, function(data) {
         var jsonData = JSON.parse(data);
         jsonData.idx = closestStop.idx;
         jsonData.name = closestStop.name;
-        res.send(wrapper + '(' + JSON.stringify(jsonData) + ')');
+        res.json(jsonData);
       });
     });
   };
