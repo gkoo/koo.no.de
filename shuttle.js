@@ -170,16 +170,16 @@ Shuttle = function() {
       res.render('lishuttle', { layout: false });
     });
 
-    app.get('/distanceproxy/:originlatlng/:stopNum', function(req, res) {
+    app.get('/distanceproxy/:originlatlng/:stopNum/:isAM', function(req, res) {
       var params       = req.params,
           originlatlng = decodeURIComponent(params.originlatlng),
           stopNum      = params.stopNum,
+          isAM         = parseInt(params.isAM) === 1,
           destlatlng   = stops[stopNum].location.latitude + ',' + stops[stopNum].location.longitude,
           originlatlngpair = originlatlng.split(','),
           closestStop = getClosestStop(parseFloat(originlatlngpair[0]),
                                        parseFloat(originlatlngpair[1])),
           hour         = (new Date()).getHours(),
-          isAM         = hour < 12,
           distanceData = {},
           idx;
 
