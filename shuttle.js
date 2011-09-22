@@ -170,11 +170,11 @@ Shuttle = function() {
       res.render('lishuttle', { layout: false });
     });
 
-    app.get('/distanceproxy/:originlatlng/:stopNum/:isAM', function(req, res) {
+    app.get('/distanceproxy/:originlatlng/:stopNum/:isSouthbound', function(req, res) {
       var params       = req.params,
           originlatlng = decodeURIComponent(params.originlatlng),
           stopNum      = params.stopNum,
-          isAM         = parseInt(params.isAM) === 1,
+          isSouthbound = parseInt(params.isSouthbound, 10) === 1,
           destlatlng   = stops[stopNum].location.latitude + ',' + stops[stopNum].location.longitude,
           originlatlngpair = originlatlng.split(','),
           closestStop = getClosestStop(parseFloat(originlatlngpair[0]),
@@ -183,7 +183,7 @@ Shuttle = function() {
           distanceData = {},
           idx;
 
-      if (isAM) {
+      if (isSouthbound) {
         if (closestStop.location.latitude > originlatlngpair[0]
             && closestStop.location.latitude - originlatlngpair[0] > .0005) {
           idx = closestStop.idx;
@@ -211,18 +211,29 @@ Shuttle = function() {
         jsonData.name = closestStop.name;
         console.log('closest stop idx is: ' + closestStop.idx);
 
-        if (isAM) {
+        if (isSouthbound) {
           customEta = sumEtaValues(jsonData.idx, stopNum);
         }
         else {
           customEta = sumEtaValues(stopNum, jsonData.idx);
         }
 
-        jsonData.customEta = parseInt(jsonData.rows[0].elements[0].duration.text) + customEta;
+        jsonData.customEta = parseInt(jsonData.rows[0].elements[0].duration.text, 10) + customEta;
 
         res.json(jsonData);
       });
 
+    });
+
+    app.get('/rawdistanceproxy/:originlatlng/:destlatlng', function(req, res) {
+      var params        = req.params,
+          originlatlng  = decodeURIComponent(params.originlatlng),
+          destlatlng    = decodeURIComponent(params.destlatlng);
+      getGoogleDistance(originlatlng, destlatlng, function(data) {
+        var jsonData = JSON.parse(data);
+
+        res.json(jsonData);
+      });
     });
 
     app.get('/closestdistance/:latlng', function(req, res) {
