@@ -154,6 +154,7 @@ Shuttle = function() {
     console.log('from: ' + from);
     console.log('to: ' + to);
     if (from > stopEtas.length-1) {
+      console.log('returned early');
       return 0;
     }
     for (i=from; i<to; ++i) {
@@ -208,6 +209,7 @@ Shuttle = function() {
             customEta;
         jsonData.idx = closestStop.idx;
         jsonData.name = closestStop.name;
+        console.log('closest stop idx is: ' + closestStop.idx);
 
         if (isAM) {
           customEta = sumEtaValues(jsonData.idx, stopNum);
