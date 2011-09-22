@@ -93,7 +93,8 @@ Shuttle = function() {
       currDistance = getDistance({ x: lat, y: lng }, { x: stop.location.latitude, y: stop.location.longitude });
       if (minDistance < 0 || currDistance < minDistance) {
         minDistance = currDistance;
-        minStop = i;
+        minStop = stop
+        minStop.idx = i;
       }
     }
     return minStop;
@@ -156,14 +157,12 @@ Shuttle = function() {
                                        parseFloat(lng)),
           wrapper = req.query.callback ? req.query.callback : 'callback';
 
-      res.json(closestStop);
-      /*
       getGoogleDistance(latlng, closestStop.location.latitude+','+closestStop.location.longitude, function(data) {
         var jsonData = JSON.parse(data);
+        jsonData.idx = closestStop.idx;
         jsonData.name = closestStop.name;
         res.send(wrapper + '(' + JSON.stringify(jsonData) + ')');
       });
-      */
     });
   };
 };
