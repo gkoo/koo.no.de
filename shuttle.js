@@ -142,7 +142,12 @@ Shuttle = function() {
   },
 
   sumEtaValues = function(from, to) {
-    var sum = 0, i;
+    var sum = 0, i, tmp;
+    if (from > to) {
+      tmp = from;
+      from = to;
+      to = tmp;
+    }
     console.log('original from: ' + from);
     console.log('original to: ' + to);
     if (typeof to === 'undefined') {
