@@ -11,33 +11,30 @@ $(function() {
     el: document.getElementById('content'),
 
     initialize: function() {
+      _.extend(this, Backbone.Events);
+
       _.bindAll(this,
-                'doAuth',
                 'postSuccess',
+                'postHelper',
                 'handlePostSubmit',
                 'handlePwSubmit',
+                'saveDraft',
                 'viewAuth',
                 'viewEdit',
                 'switchView');
 
-      this.router = new BlogAdminRouter({
-        viewAuth: this.viewAuth,
-        viewEdit: this.viewEdit
-      });
       this.authElem = this.$('.auth');
       this.editElem = this.$('.edit');
       this.authForm = this.authElem.find('#blogAuthForm');
 
       this.setupFormattingHelp();
 
-      if(!this.pw) {
-        this.router.navigate('auth', true);
-      }
     },
 
     events: {
-      'submit #blogAuthForm': 'handlePwSubmit',
-      'submit .createPostForm': 'handlePostSubmit'
+      'submit #blogAuthForm':   'handlePwSubmit',
+      'submit .createPostForm': 'handlePostSubmit',
+      'click  .save':           'saveDraft'
     },
 
     viewAuth: function() { this.switchView('auth'); },
@@ -55,63 +52,35 @@ $(function() {
       }
     },
 
-    doAuth: function(pw, callback) {
-      $.post('/blog-auth', { 'pw': pw }, function(res) {
-        if (res && res.success) {
-          callback(res.success);
-        }
-      });
-    },
-
     postSuccess: function(msg) {
       if (!msg) { msg = 'Post success!'; }
       this.$('.status').text(msg);
     },
 
+    // common helper method for posting and saving drafts
+    postHelper: function(isDraft) {
+      var entryVal = this.editElem.find('#post').attr('value'),
+          entryTitle = this.editElem.find('#postTitle').attr('value');
+
+      this.trigger('postsubmit', { entryVal:   entryVal,
+                                   entryTitle: entryTitle,
+                                   isDraft:    isDraft });
+    },
+
     handlePostSubmit: function(evt) {
-      var pw,
-          entryVal = this.editElem.find('#post').attr('value'),
-          entryTitle = this.editElem.find('#postTitle').attr('value'),
-          data;
-
       evt.preventDefault();
-      if (!this.pw) {
-        this.router.navigate('auth', true);
-        return;
-      }
-
-      data = { pw: this.pw,
-               title: entryTitle,
-               entry: entryVal };
-
-      console.log(data);
-
-      $.post('/blog-post',
-             data,
-             function(data, textStatus) {
-               if (data && data.ok) {
-                 window.location = "/blog";
-               }
-               else {
-                 alert('error! check the console!');
-                 console.log(data);
-               }
-             });
+      this.postHelper(false);
     },
 
     handlePwSubmit: function(evt) {
-      var _this = this;
-      this.pw = this.authForm.children('#pw').attr('value');
-      if (!this.pw) { return; }
-      this.doAuth(this.pw, function(success) {
-        if (success) {
-          _this.router.navigate('edit', true);
-        }
-        else {
-          alert('wrong password');
-        }
-      });
+      var pw = this.authForm.children('#pw').attr('value');
+      this.trigger('pwsubmit', pw);
       evt.preventDefault();
+    },
+
+    saveDraft: function(evt) {
+      evt.preventDefault();
+      this.postHelper(true);
     },
 
     setupFormattingHelp: function() {
@@ -124,5 +93,81 @@ $(function() {
     }
   }),
 
-  view = new BlogAdminView();
+  BlogController = function() {
+    var controller = {
+      initialize: function() {
+        _.bindAll(this, 'handlePost', 'handlePw');
+        this.view = new BlogAdminView();
+        this.router = new BlogAdminRouter({
+          viewAuth: this.view.viewAuth,
+          viewEdit: this.view.viewEdit
+        });
+
+        if(!this.pw) {
+          this.router.navigate('auth', true);
+        }
+
+        this.setupEvents();
+        return this;
+      },
+
+      setupEvents: function() {
+        this.view.bind('postsubmit', this.handlePost);
+        this.view.bind('pwsubmit',   this.handlePw);
+      },
+
+      doAuth: function(pw, callback) {
+        $.post('/blog-auth', { 'pw': pw }, function(res) {
+          if (res && res.success) {
+            callback(res.success);
+          }
+        });
+      },
+
+      handlePw: function(pw) {
+        var _this = this;
+        if (!pw) { alert('no password submitted'); return; }
+        this.pw = pw;
+        this.doAuth(this.pw, function(success) {
+          if (success) {
+            _this.router.navigate('edit', true);
+          }
+          else {
+            alert('wrong password');
+          }
+        });
+      },
+
+      handlePost: function(o) {
+        var data;
+
+        if (!this.pw) {
+          this.router.navigate('auth', true);
+          return;
+        }
+
+        data = { pw: this.pw,
+                 title: o.entryTitle,
+                 entry: o.entryVal,
+                 isDraft: o.isDraft };
+
+        $.post('/blog-post',
+               data,
+               function(data, textStatus) {
+                 if (data && data.ok) {
+                   window.location = "/blog";
+                 }
+                 else {
+                   alert('error! check the console!');
+                   console.log(data);
+                 }
+               }
+        );
+      }
+    };
+
+    return controller.initialize();
+  },
+
+  controller = new BlogController();
 });

@@ -1,5 +1,7 @@
 /* Defines helper functions for blog operations. */
 
+// TODO: make a list of posts to select to edit.
+// TODO: add more formatting. bold, italic, underline, lists
 var http = require('http'),
 
 createDateString = function(timestamp) {
@@ -88,15 +90,20 @@ Blog = function() {
   },
 
   processPostInput = function(str) {
-
     str = str.replace(/\n\n+/g, '\n\n')
              .replace('<', '&lt;')
              .replace('>', '&gt;');
+             //.replace(/\[[biu]\]/g, '<b>');
 
     str = formatLinks(str);
     str = formatImages(str);
 
-    return str;
+    str = str.split('\n\n');
+    for (i=0, len=str.length; i<len; ++i) {
+      str[i] = '<p>' + str[i].replace('\n', '<br/>') + '</p>';
+    }
+
+    return str.join('');
   },
 
   // from http://milesj.me/snippets/javascript/slugify
@@ -114,19 +121,15 @@ Blog = function() {
     return 0;
   };
 
-  this.post = function(title, post, callback) {
+  this.post = function(title, post, callback, isDraft) {
     var paras, i, len;
 
     post = processPostInput(post);
 
-    paras = post.split('\n\n');
-    for (i=0, len=paras.length; i<len; ++i) {
-      paras[i] = '<p>' + paras[i].replace('\n', '<br/>') + '</p>';
-    }
-    paraStr = paras.join('');
     couchRequest({ data: { 'title':     title,
-                           'post':      paraStr,
+                           'post':      post,
                            'slug':      slugify(title),
+                           'status':    isDraft ? 'draft' : 'published',
                            'timestamp': (new Date()).getTime(),
                            'type':      'blogpost'
                          },
@@ -180,14 +183,12 @@ Blog = function() {
     var _this = this;
 
     app.post('/blog-post', function(req, res) {
-      if (req.xhr) {
-        if (req.body && req.body.pw) {
-          if (req.body.entry && _this.authenticate(req.body.pw)) {
-            _this.post(req.body.title, req.body.entry, function(response) {
-              res.send(response);
-              console.log('[BLOG] Response: ' + JSON.stringify(response));
-            });
-          }
+      if (req.xhr && req.body && req.body.pw) {
+        if (req.body.entry && _this.authenticate(req.body.pw)) {
+          _this.post(req.body.title, req.body.entry, function(response) {
+            res.send(response);
+            console.log('[BLOG] Response: ' + JSON.stringify(response));
+          }, req.body.isDraft && req.body.isDraft === 'true');
         }
       }
     });
