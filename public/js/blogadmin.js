@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 1;
 $(function() {
   var BlogAdminRouter = Backbone.Router.extend({
     initialize: function(o) {
@@ -14,6 +14,7 @@ $(function() {
       this.route('', 'index', this.showAuth);
       this.route('auth', 'auth', this.showAuth);
       this.route('edit', 'edit', this.showEdit);
+      this.route('edit/:id', 'edit', this.showEdit);
       this.route('posts', 'posts', this.showPosts);
     },
 
@@ -24,10 +25,18 @@ $(function() {
       this.trigger('route', 'auth');
     },
 
-    showEdit: function() {
+    showEdit: function(id) {
+      var _this = this;
       this.authView.hide();
       this.editView.show();
       this.postsView.hide();
+
+      if (id) {
+        $.getJSON('/blog/' + id, function(data) {
+          _this.trigger('postInfo', data);
+        });
+      }
+
       this.trigger('route', 'edit');
     },
 
@@ -69,6 +78,8 @@ $(function() {
     }
   }),
 
+  BlogEditModel = Backbone.Model.extend();
+
   BlogEditView = Backbone.View.extend({
     el: $('.edit'),
 
@@ -78,7 +89,7 @@ $(function() {
       _.bindAll(this,
                 'postSuccess',
                 'postHelper',
-                'handlePostSubmit',
+                'handlePublish',
                 'saveDraft',
                 'show',
                 'hide');
@@ -87,7 +98,7 @@ $(function() {
     },
 
     events: {
-      'submit .createPostForm': 'handlePostSubmit',
+      'submit .createPostForm': 'handlePublish',
       'click  .save':           'saveDraft'
     },
 
@@ -106,7 +117,13 @@ $(function() {
                                    isDraft:    isDraft });
     },
 
-    handlePostSubmit: function(evt) {
+    populateFields: function(data) {
+      $('#postTitle').val(data.title);
+      $('#post').val(data.post);
+      this.model.set({ 'currentPostId' : data._id });
+    },
+
+    handlePublish: function(evt) {
       evt.preventDefault();
       this.postHelper(false);
     },
@@ -137,15 +154,6 @@ $(function() {
   BlogPostsView = Backbone.View.extend({
     el: $('.post-list'),
 
-    initialize: function() {
-      this.setupClickHandlers();
-    },
-
-    setupClickHandlers: function() {
-      this.$('.edit-link').click({
-      })
-    },
-
     show: function() {
       this.el.show();
     },
@@ -159,11 +167,12 @@ $(function() {
     var controller = {
       initialize: function() {
         var _this = this;
-        _.bindAll(this, 'handlePost', 'handlePw', 'handleRoute');
+        _.bindAll(this, 'handlePublish', 'handlePw', 'handleRoute');
 
         this.authView = new BlogAuthView();
 
-        this.editView = new BlogEditView();
+        this.editModel = new BlogEditModel();
+        this.editView = new BlogEditView({ model: this.editModel });
 
         this.postsView = new BlogPostsView();
 
@@ -183,9 +192,10 @@ $(function() {
       },
 
       setupEvents: function() {
-        this.editView.bind('postsubmit', this.handlePost);
+        this.editView.bind('postsubmit', this.handlePublish);
         this.authView.bind('pwsubmit', this.handlePw);
         this.router.bind('route', this.handleRoute);
+        this.router.bind('postInfo', this.handleEditPost);
       },
 
       doAuth: function(pw, callback) {
@@ -219,7 +229,11 @@ $(function() {
         }
       },
 
-      handlePost: function(o) {
+      handleEditPost: function(data) {
+        this.editView.populateFields(data);
+      },
+
+      handlePublish: function(o) {
         var data;
 
         if (!this.pw) {

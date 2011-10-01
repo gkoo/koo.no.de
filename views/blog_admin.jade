@@ -35,7 +35,7 @@ ul#nav
       - each post in posts
         li
           span= post.title
-          a.edit-link(href="#") Edit
+          a.edit-link(href="#edit/"+post.id) Edit
           a.view-link(href="/blog/"+post.slug) View
 script(type="text/javascript", src="/js/underscore.js")
 script(type="text/javascript", src="/js/backbone.js")

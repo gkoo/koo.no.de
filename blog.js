@@ -1,6 +1,7 @@
 /* Defines helper functions for blog operations. */
 
-// TODO: make a list of posts to select to edit.
+// TODO: create a label for drafts
+// TODO: editing an existing post will actually update the doc and not create a new post
 // TODO: add more formatting. bold, italic, underline, lists
 var http = require('http'),
 
@@ -15,7 +16,6 @@ createDateString = function(timestamp) {
 Blog = function() {
   var couchRequest = function(opt, callback) {
     var options = { host: 'gkoo.iriscouch.com',
-                    path: opt.path ? opt.path : '/blog/',
                     port: 80,
                     method: 'GET',
                     headers: { 'Authorization': 'Basic a29vbm9kZTpDYXlnb25nQmxvZzg2Kg==',
@@ -23,7 +23,24 @@ Blog = function() {
                   },
         response = '',
         data = opt ? opt.data : null,
-        req;
+        req, prop;
+
+    // '/blog/' for posting, everything else for reading
+    if (opt.view) {
+      options.path = '/blog/_design/blogposts/_view/' + opt.view + '?';
+    }
+    else if (opt.id) {
+      options.path = '/blog/' + opt.id;
+    }
+    else {
+      options.path = '/blog/';
+    }
+
+    for (prop in opt) {
+      if (prop != 'view' && prop != 'data' && prop != 'id') {
+        options.path += prop + '=' + opt[prop] + '&';
+      }
+    }
 
     if (data) {
       // it's a POST
@@ -60,9 +77,33 @@ Blog = function() {
       linkUrl = match[2];
       linkText = match[1];
       linkHtml = ['<a href="', linkUrl, '">', linkText, '</a>'].join('');
-      length = linkUrl.length + linkText.length + 4; // + 4 for []()
+      length = match[0].length; // original substring length
       index = match.index;
       str = [str.substring(0, index), linkHtml, str.substring(index+length)].join('');
+      match = link_re.exec(str);
+    }
+    return str;
+  },
+
+  unformatLinks = function(str) {
+    //var link_re = /\[([^\]]+)\]\(([^\)]+)\)/g,
+    var link_re = /<a href="([^"]+)">([^<]+)<\/a>/g,
+        match,
+        linkUrl,
+        linkText,
+        formattedStr,
+        length,
+        index;
+
+    // format links
+    match = link_re.exec(str);
+    while (match) {
+      linkText = match[2];
+      linkUrl = match[1];
+      formattedStr = ['[', linkText, '](', linkUrl, ')'].join('');
+      length = match[0].length; // original substring length
+      index = match.index;
+      str = [str.substring(0, index), formattedStr, str.substring(index+length)].join('');
       match = link_re.exec(str);
     }
     return str;
@@ -81,9 +122,30 @@ Blog = function() {
     while (match) {
       imgSrc = match[1];
       imgHtml = ['<img src="', imgSrc, '"/>'].join('');
-      length = imgSrc.length + 6; // + 6 for [img:] -- length of the substring to replace
+      length = match[0].length; // original substring length
       index = match.index;
       str = [str.substring(0, index), imgHtml, str.substring(index+length)].join('');
+      match = img_re.exec(str);
+    }
+    return str;
+  },
+
+  unformatImages = function(str) {
+    var img_re = /<img src="([^"]+)"\/>/g,
+        match,
+        imgSrc,
+        formattedImgStr,
+        length,
+        index;
+
+    // format links
+    match = img_re.exec(str);
+    while (match) {
+      imgSrc = match[1];
+      formattedImgStr = ['[img:', imgSrc, ']'].join('');
+      length = match[0].length; // + 6 for [img:] -- length of the substring to replace
+      index = match.index;
+      str = [str.substring(0, index), formattedImgStr, str.substring(index+length)].join('');
       match = img_re.exec(str);
     }
     return str;
@@ -104,6 +166,16 @@ Blog = function() {
     }
 
     return str.join('');
+  },
+
+  unprocessPostInput = function(str) {
+    str = str.replace('&lt;', '<')
+              .replace('&gt;', '<')
+              .replace(/<p>/g, '')
+              .replace(/<\/p>/g, '\n\n');
+    str = unformatLinks(str);
+    str = unformatImages(str);
+    return str;
   },
 
   // from http://milesj.me/snippets/javascript/slugify
@@ -136,21 +208,30 @@ Blog = function() {
                  }, callback);
   };
 
+  this.getPostById = function(id, callback) {
+    couchRequest({ 'id': id }, callback);
+  };
+
   this.getPosts = function(options, response) {
     var path = '/blog/_design/blogposts/_view/',
+        opt = {},
         rowsPerPage = 5,
         limit       = typeof options.limit !== 'undefined' ? options.limit : 0;
 
     if (typeof options.slug !== 'undefined') {
-      path += 'blogslugs?key="' + options.slug + '"';
+      opt.view = 'blogslugs';
+      opt.key = options.slug;
       if (limit) {
-        path += '&limit=' + limit;
+        opt.limit = limit;
       }
     } else {
-      path += 'blogposts?descending=true&limit=5&page=0';
+      opt.view = 'blogposts';
+      opt.descending = true;
+      opt.limit = 5;
+      opt.page = 0;
     }
 
-    couchRequest({ path: path }, function(posts) {
+    couchRequest(opt, function(posts) {
       var cleanedPosts = [],
           rows = posts.rows,
           row, blogpost, i, len, date;
@@ -184,13 +265,11 @@ Blog = function() {
   };
 
   this.getPostList = function(options, callback) {
-    var path = '/blog/_design/blogposts/_view/blogposts?descending=true',
+    var view = '/blog/_design/blogposts/_view/blogposts?descending=true',
+        limit = options.limit ? options.limit : undefined,
         row, date, blogpost;
 
-    if (options.limit) {
-      path += '&limit=' + options.limit;
-    }
-    couchRequest({ path: path }, function(posts) {
+    couchRequest({ view: 'blogposts', descending: true, limit: limit }, function(posts) {
       var postSummaries = [],
           rows = posts.rows;
       if (posts && typeof posts.error !== 'undefined') {
@@ -203,7 +282,7 @@ Blog = function() {
         blogpost        = {};
         blogpost.title  = row.title;
         blogpost.date   = row.timestamp;
-        blogpost.id     = rows[i]._id;
+        blogpost.id     = rows[i].id;
         blogpost.slug   = row.slug;
         blogpost.status = row.status;
         postSummaries.push(blogpost);
@@ -254,6 +333,13 @@ Blog = function() {
       _this.getPosts({ slug: req.params['title'],
                       year: req.params['year'],
                       month: req.params['month'] }, res);
+    });
+
+    app.get('/blog/:id', function(req, res) {
+      _this.getPostById(req.params['id'], function(data) {
+        data.post = unprocessPostInput(data.post);
+        res.send(data);
+      });
     });
 
     // Deprecated
