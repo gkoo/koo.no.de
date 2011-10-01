@@ -1,7 +1,12 @@
-#nav
-  a(href='/', title='Back to Home') Home
-  | &nbsp;
-  a(href='/blog', title='Blog Link') Blog
+ul#nav
+  li
+    a(href='/', title='Back to Home') Home
+  li
+    a(href='/blog', title='Blog Link') Blog
+  li
+    a(href='#edit', title='Blog Link') Edit
+  li
+    a(href='#posts', title='Blog Link') Posts
 #content
   .auth
     .enter-pw
@@ -25,6 +30,13 @@
         ul.formattingHelp
           li Link: [my link](http://koo.no.de)
           li Link: [img:http://koo.no.de/funnypic.jpg]
+  .post-list
+    ol.list
+      - each post in posts
+        li
+          span= post.title
+          a.edit-link(href="#") Edit
+          a.view-link(href="/blog/"+post.slug) View
 script(type="text/javascript", src="/js/underscore.js")
 script(type="text/javascript", src="/js/backbone.js")
 script(type="text/javascript", src="/js/blogadmin.js")

@@ -1,14 +1,76 @@
+var debug = 0;
 $(function() {
   var BlogAdminRouter = Backbone.Router.extend({
     initialize: function(o) {
-      this.route('', 'index', o.viewAuth);
-      this.route('auth', 'auth', o.viewAuth);
-      this.route('edit', 'edit', o.viewEdit);
+      _.extend(this, Backbone.Events);
+      _.bindAll(this,
+                'showAuth',
+                'showEdit',
+                'showPosts');
+      this.authView = o.authView;
+      this.editView = o.editView;
+      this.postsView = o.postsView;
+
+      this.route('', 'index', this.showAuth);
+      this.route('auth', 'auth', this.showAuth);
+      this.route('edit', 'edit', this.showEdit);
+      this.route('posts', 'posts', this.showPosts);
+    },
+
+    showAuth: function() {
+      this.authView.show();
+      this.editView.hide();
+      this.postsView.hide();
+      this.trigger('route', 'auth');
+    },
+
+    showEdit: function() {
+      this.authView.hide();
+      this.editView.show();
+      this.postsView.hide();
+      this.trigger('route', 'edit');
+    },
+
+    showPosts: function() {
+      this.authView.hide();
+      this.editView.hide();
+      this.postsView.show();
+      this.trigger('route', 'posts');
+    },
+  }),
+
+  BlogAuthView = Backbone.View.extend({
+    el: $('.auth'),
+
+    initialize: function() {
+      _.extend(this, Backbone.Events);
+      _.bindAll(this,
+                'handlePwSubmit',
+                'show',
+                'hide');
+    },
+
+    events: {
+      'submit #blogAuthForm': 'handlePwSubmit'
+    },
+
+    handlePwSubmit: function(evt) {
+      var pw = this.$('#blogAuthForm').children('#pw').attr('value');
+      this.trigger('pwsubmit', pw);
+      evt.preventDefault();
+    },
+
+    show: function() {
+      this.el.show();
+    },
+
+    hide: function() {
+      this.el.hide();
     }
   }),
 
-  BlogAdminView = Backbone.View.extend({
-    el: document.getElementById('content'),
+  BlogEditView = Backbone.View.extend({
+    el: $('.edit'),
 
     initialize: function() {
       _.extend(this, Backbone.Events);
@@ -17,39 +79,16 @@ $(function() {
                 'postSuccess',
                 'postHelper',
                 'handlePostSubmit',
-                'handlePwSubmit',
                 'saveDraft',
-                'viewAuth',
-                'viewEdit',
-                'switchView');
-
-      this.authElem = this.$('.auth');
-      this.editElem = this.$('.edit');
-      this.authForm = this.authElem.find('#blogAuthForm');
+                'show',
+                'hide');
 
       this.setupFormattingHelp();
-
     },
 
     events: {
-      'submit #blogAuthForm':   'handlePwSubmit',
       'submit .createPostForm': 'handlePostSubmit',
       'click  .save':           'saveDraft'
-    },
-
-    viewAuth: function() { this.switchView('auth'); },
-
-    viewEdit: function() { this.switchView('edit'); },
-
-    switchView: function(viewName) {
-      if (viewName === 'auth') {
-        this.authElem.show();
-        this.editElem.hide();
-      }
-      else if (viewName === 'edit') {
-        this.authElem.hide();
-        this.editElem.show();
-      }
     },
 
     postSuccess: function(msg) {
@@ -59,8 +98,8 @@ $(function() {
 
     // common helper method for posting and saving drafts
     postHelper: function(isDraft) {
-      var entryVal = this.editElem.find('#post').attr('value'),
-          entryTitle = this.editElem.find('#postTitle').attr('value');
+      var entryVal = this.el.find('#post').attr('value'),
+          entryTitle = this.el.find('#postTitle').attr('value');
 
       this.trigger('postsubmit', { entryVal:   entryVal,
                                    entryTitle: entryTitle,
@@ -70,12 +109,6 @@ $(function() {
     handlePostSubmit: function(evt) {
       evt.preventDefault();
       this.postHelper(false);
-    },
-
-    handlePwSubmit: function(evt) {
-      var pw = this.authForm.children('#pw').attr('value');
-      this.trigger('pwsubmit', pw);
-      evt.preventDefault();
     },
 
     saveDraft: function(evt) {
@@ -90,17 +123,54 @@ $(function() {
       }, function() {
         _this.$('.formattingHelp').css('top', '-50px');
       });
+    },
+
+    show: function() {
+      this.el.show();
+    },
+
+    hide: function() {
+      this.el.hide();
+    }
+  }),
+
+  BlogPostsView = Backbone.View.extend({
+    el: $('.post-list'),
+
+    initialize: function() {
+      this.setupClickHandlers();
+    },
+
+    setupClickHandlers: function() {
+      this.$('.edit-link').click({
+      })
+    },
+
+    show: function() {
+      this.el.show();
+    },
+
+    hide: function() {
+      this.el.hide();
     }
   }),
 
   BlogController = function() {
     var controller = {
       initialize: function() {
-        _.bindAll(this, 'handlePost', 'handlePw');
-        this.view = new BlogAdminView();
+        var _this = this;
+        _.bindAll(this, 'handlePost', 'handlePw', 'handleRoute');
+
+        this.authView = new BlogAuthView();
+
+        this.editView = new BlogEditView();
+
+        this.postsView = new BlogPostsView();
+
         this.router = new BlogAdminRouter({
-          viewAuth: this.view.viewAuth,
-          viewEdit: this.view.viewEdit
+          'authView': this.authView,
+          'editView': this.editView,
+          'postsView': this.postsView
         });
 
         if(!this.pw) {
@@ -108,12 +178,14 @@ $(function() {
         }
 
         this.setupEvents();
+        Backbone.history.start();
         return this;
       },
 
       setupEvents: function() {
-        this.view.bind('postsubmit', this.handlePost);
-        this.view.bind('pwsubmit',   this.handlePw);
+        this.editView.bind('postsubmit', this.handlePost);
+        this.authView.bind('pwsubmit', this.handlePw);
+        this.router.bind('route', this.handleRoute);
       },
 
       doAuth: function(pw, callback) {
@@ -130,12 +202,21 @@ $(function() {
         this.pw = pw;
         this.doAuth(this.pw, function(success) {
           if (success) {
+            _this.authed = true;
             _this.router.navigate('edit', true);
           }
           else {
             alert('wrong password');
           }
         });
+      },
+
+      handleRoute: function(viewName) {
+        if (viewName !== 'auth') {
+          if (!this.authed && !debug) {
+            this.router.navigate('auth', true);
+          }
+        }
       },
 
       handlePost: function(o) {

@@ -137,12 +137,17 @@ Blog = function() {
   };
 
   this.getPosts = function(options, response) {
-    var path = '/blog/_design/blogposts/_view/';
+    var path = '/blog/_design/blogposts/_view/',
+        rowsPerPage = 5,
+        limit       = typeof options.limit !== 'undefined' ? options.limit : 0;
 
-    if (typeof options.page !== 'undefined') {
-      path += 'blogposts?descending=true&limit=5&page=' + options.page;
-    } else if (typeof options.slug !== 'undefined') {
-      path += 'blogslugs?limit=1&key="' + options.slug + '"';
+    if (typeof options.slug !== 'undefined') {
+      path += 'blogslugs?key="' + options.slug + '"';
+      if (limit) {
+        path += '&limit=' + limit;
+      }
+    } else {
+      path += 'blogposts?descending=true&limit=5&page=0';
     }
 
     couchRequest({ path: path }, function(posts) {
@@ -178,6 +183,35 @@ Blog = function() {
     });
   };
 
+  this.getPostList = function(options, callback) {
+    var path = '/blog/_design/blogposts/_view/blogposts?descending=true',
+        row, date, blogpost;
+
+    if (options.limit) {
+      path += '&limit=' + options.limit;
+    }
+    couchRequest({ path: path }, function(posts) {
+      var postSummaries = [],
+          rows = posts.rows;
+      if (posts && typeof posts.error !== 'undefined') {
+        console.log('[COUCH]: ' + posts);
+        return;
+      }
+      for (i=0,len=rows.length; i<len; ++i) {
+        row = rows[i].value;
+
+        blogpost        = {};
+        blogpost.title  = row.title;
+        blogpost.date   = row.timestamp;
+        blogpost.id     = rows[i]._id;
+        blogpost.slug   = row.slug;
+        blogpost.status = row.status;
+        postSummaries.push(blogpost);
+      }
+      callback(postSummaries);
+    });
+  };
+
   // handle blog-specific routes
   this.listen = function(app) {
     var _this = this;
@@ -204,11 +238,14 @@ Blog = function() {
     });
 
     app.get('/blog-admin', function(req, res) {
-      res.render('blog_admin', {
-        locals: {
-          page: 'blog',
-          title: 'Blog Admin'
-        }
+      _this.getPostList({ limit: 10 }, function(posts) {
+        res.render('blog_admin', {
+          locals: {
+            page: 'blog',
+            posts: posts,
+            title: 'Blog Admin'
+          }
+        });
       });
     });
 
@@ -228,7 +265,7 @@ Blog = function() {
     app.get('/blog', function(req, res) {
       // Fetch recent posts from Couch. When they
       // return, render them.
-      _this.getPosts({ page: 0 }, res);
+      _this.getPosts({ page: 0, limit: 5 }, res);
     });
   };
 };
