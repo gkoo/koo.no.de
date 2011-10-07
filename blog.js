@@ -1,8 +1,8 @@
 /* Defines helper functions for blog operations. */
 
-// TODO: create a label for drafts
-// TODO: editing an existing post will actually update the doc and not create a new post
 // TODO: add more formatting. bold, italic, underline, lists
+// TODO: update UI after deleting post
+
 var http = require('http'),
 
 createDateString = function(timestamp) {
@@ -17,13 +17,15 @@ Blog = function() {
   var couchRequest = function(opt, callback) {
     var options = { host: 'gkoo.iriscouch.com',
                     port: 80,
-                    method: 'GET',
+                    method: opt.method ? opt.method : 'GET',
                     headers: { 'Authorization': 'Basic a29vbm9kZTpDYXlnb25nQmxvZzg2Kg==',
                                'Content-Type': 'application/json' },
                   },
         response = '',
         data = opt ? opt.data : null,
         req, prop;
+
+    options.path = '/blog/';
 
     // '/blog/' for posting, everything else for reading
     if (opt.view) {
@@ -32,20 +34,27 @@ Blog = function() {
     else if (opt.id) {
       options.path = '/blog/' + opt.id;
     }
-    else {
-      options.path = '/blog/';
+
+    if (opt.method && opt.method === 'DELETE') {
+      if (!opt.id || !opt.rev) {
+        console.log('[BLOG] Missing id or rev.');
+      }
+      else {
+        options.path = '/blog/' + opt.id + '?rev=' + opt.rev;
+      }
     }
 
-    for (prop in opt) {
-      if (prop != 'view' && prop != 'data' && prop != 'id') {
-        options.path += prop + '=' + opt[prop] + '&';
+    if (opt.urlOpt) {
+      for (prop in opt.urlOpt) {
+        options.path += prop + '=' + opt.urlOpt[prop] + '&';
       }
     }
 
     if (data) {
-      // it's a POST
-      options.method = 'POST';
+      // it's a POST/PUT
+      options.method = opt.method ? opt.method : 'POST';
     }
+
     req = http.request(options, function(res) {
       res.on('data', function(chunk) {
         response += chunk;
@@ -172,7 +181,8 @@ Blog = function() {
     str = str.replace('&lt;', '<')
               .replace('&gt;', '<')
               .replace(/<p>/g, '')
-              .replace(/<\/p>/g, '\n\n');
+              .replace(/<\/p>/g, '\n\n')
+              .replace(/<br\/>/g, '\n');
     str = unformatLinks(str);
     str = unformatImages(str);
     return str;
@@ -193,66 +203,74 @@ Blog = function() {
     return 0;
   };
 
-  this.post = function(title, post, callback, isDraft) {
-    var paras, i, len;
+  this.publish = function(id, rev, title, post, isDraft, callback) {
+    var paras, i, len, method = id ? 'PUT' : 'POST';
 
     post = processPostInput(post);
 
-    couchRequest({ data: { 'title':     title,
-                           'post':      post,
-                           'slug':      slugify(title),
-                           'status':    isDraft ? 'draft' : 'published',
-                           'timestamp': (new Date()).getTime(),
-                           'type':      'blogpost'
-                         },
+    couchRequest({ 'data': { 'title':     title,
+                             'post':      post,
+                             'slug':      slugify(title),
+                             'status':    isDraft ? 'draft' : 'published',
+                             'timestamp': (new Date()).getTime(),
+                             'type':      'blogpost',
+                             '_rev':      rev
+                           },
+                   'id':   id,
+                   'method': method
                  }, callback);
   };
+
+  this.cleanPosts = function(posts) {
+    var cleanedPosts = [],
+        rows = posts.rows,
+        row, blogpost, i, len, date;
+
+    if (posts && typeof posts.error !== 'undefined') {
+      console.log('[COUCH]: ' + posts);
+      return;
+    }
+    for (i=0,len=rows.length; i<len; ++i) {
+      row       = rows[i].value;
+      date      = new Date(row.timestamp);
+      blogpost  = {};
+
+      blogpost.title      = row.title;
+      blogpost.timestamp  = createDateString(row.timestamp);
+      blogpost.year       = date.getFullYear();
+      blogpost.month      = date.getMonth() + 1;
+      blogpost.post       = row.post;
+      blogpost.slug       = row.slug;
+      cleanedPosts.push(blogpost);
+    }
+    return cleanedPosts;
+  },
 
   this.getPostById = function(id, callback) {
     couchRequest({ 'id': id }, callback);
   };
 
-  this.getPosts = function(options, response) {
-    var path = '/blog/_design/blogposts/_view/',
-        opt = {},
-        rowsPerPage = 5,
-        limit       = typeof options.limit !== 'undefined' ? options.limit : 0;
+  this.getPostByTitle = function(title, callback) {
+    couchRequest({
+                   'view': 'blogslugs',
+                   'urlOpt': { 'key': '"' + title + '"' }
+                 },
+                 callback);
+  };
 
-    if (typeof options.slug !== 'undefined') {
-      opt.view = 'blogslugs';
-      opt.key = options.slug;
-      if (limit) {
-        opt.limit = limit;
-      }
-    } else {
-      opt.view = 'blogposts';
-      opt.descending = true;
-      opt.limit = 5;
-      opt.page = 0;
-    }
+  this.getPosts = function(options, response) {
+    var opt = { urlOpt: {} },
+        rowsPerPage = 5,
+        limit       = typeof options.limit !== 'undefined' ? options.limit : 0,
+        _this = this;
+
+    opt.view = 'blogposts';
+    opt.urlOpt.descending = true;
+    opt.urlOpt.limit = 5;
+    opt.urlOpt.page = 0;
 
     couchRequest(opt, function(posts) {
-      var cleanedPosts = [],
-          rows = posts.rows,
-          row, blogpost, i, len, date;
-
-      if (posts && typeof posts.error !== 'undefined') {
-        console.log('[COUCH]: ' + posts);
-        return;
-      }
-      for (i=0,len=rows.length; i<len; ++i) {
-        row       = rows[i].value;
-        date      = new Date(row.timestamp);
-        blogpost  = {};
-
-        blogpost.title      = row.title;
-        blogpost.timestamp  = createDateString(row.timestamp);
-        blogpost.year       = date.getFullYear();
-        blogpost.month      = date.getMonth() + 1;
-        blogpost.post       = row.post;
-        blogpost.slug       = row.slug;
-        cleanedPosts.push(blogpost);
-      }
+      cleanedPosts = _this.cleanPosts(posts);
 
       response.render('blog', {
         locals: {
@@ -265,13 +283,15 @@ Blog = function() {
   };
 
   this.getPostList = function(options, callback) {
-    var view = '/blog/_design/blogposts/_view/blogposts?descending=true',
-        limit = options.limit ? options.limit : undefined,
-        row, date, blogpost;
+    var opt = { view: 'blogposts_all',
+                urlOpt: { descending: true,
+                          limit: options.limit ? options.limit : undefined }
+              };
 
-    couchRequest({ view: 'blogposts', descending: true, limit: limit }, function(posts) {
+    couchRequest(opt, function(posts) {
       var postSummaries = [],
-          rows = posts.rows;
+          rows = posts.rows,
+          row, date, blogpost;
       if (posts && typeof posts.error !== 'undefined') {
         console.log('[COUCH]: ' + posts);
         return;
@@ -282,7 +302,8 @@ Blog = function() {
         blogpost        = {};
         blogpost.title  = row.title;
         blogpost.date   = row.timestamp;
-        blogpost.id     = rows[i].id;
+        blogpost.id     = row._id;
+        blogpost.rev    = row._rev;
         blogpost.slug   = row.slug;
         blogpost.status = row.status;
         postSummaries.push(blogpost);
@@ -295,15 +316,41 @@ Blog = function() {
   this.listen = function(app) {
     var _this = this;
 
-    app.post('/blog-post', function(req, res) {
+    app.post('/blog-publish', function(req, res) {
       if (req.xhr && req.body && req.body.pw) {
         if (req.body.entry && _this.authenticate(req.body.pw)) {
-          _this.post(req.body.title, req.body.entry, function(response) {
-            res.send(response);
-            console.log('[BLOG] Response: ' + JSON.stringify(response));
-          }, req.body.isDraft && req.body.isDraft === 'true');
+
+          _this.publish(req.body.id,
+                        req.body.rev,
+                        req.body.title,
+                        req.body.entry,
+                        req.body.isDraft && req.body.isDraft === 'true',
+                        function(response) {
+                          res.send(response);
+                          console.log('[BLOG] Response: ' + JSON.stringify(response));
+                        }
+          );
+
         }
       }
+    });
+
+    app.post('/blog-delete-post', function(req, res) {
+      if (req.xhr && req.body && req.body.pw) {
+        if (req.body.id && req.body.rev && _this.authenticate(req.body.pw)) {
+          couchRequest({ 'id': req.body.id,
+                         'rev': req.body.rev,
+                         'method': 'DELETE' },
+                       function(data) {
+                         res.send(data);
+                       });
+          return;
+
+          // delete.
+
+        }
+      }
+      res.send({ 'status': 'error' });
     });
 
     app.post('/blog-auth', function(req, res) {
@@ -335,7 +382,7 @@ Blog = function() {
                       month: req.params['month'] }, res);
     });
 
-    app.get('/blog/:id', function(req, res) {
+    app.get('/blog/id/:id', function(req, res) {
       _this.getPostById(req.params['id'], function(data) {
         data.post = unprocessPostInput(data.post);
         res.send(data);
@@ -343,9 +390,18 @@ Blog = function() {
     });
 
     // Deprecated
-    app.get('/blog/:title', function(req, res) {
+    app.get('/blog/title/:title', function(req, res) {
       // Fetch specific blog post by title slug
-      _this.getPosts({ slug: req.params['title'] }, res);
+      _this.getPostByTitle(req.params['title'], function(data) {
+        var cleanedPost = _this.cleanPosts(data);
+        res.render('blog', {
+          locals: {
+            page: 'blog',
+            title: 'My Blog',
+            posts: cleanedPost
+          }
+        });
+      });
     });
 
     app.get('/blog', function(req, res) {

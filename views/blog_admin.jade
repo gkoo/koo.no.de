@@ -33,10 +33,15 @@ ul#nav
   .post-list
     ol.list
       - each post in posts
-        li
+        li(id=post.id)
           span= post.title
+          - if (post.status == 'draft')
+            span.draft Draft
+          a.delete-link(href="#") Delete
           a.edit-link(href="#edit/"+post.id) Edit
-          a.view-link(href="/blog/"+post.slug) View
+          a.view-link(href="/blog/title/"+post.slug) View
+          input.post-id(type="hidden", name="post-id", value=post.id)
+          input.post-rev(type="hidden", name="post-rev", value=post.rev)
 script(type="text/javascript", src="/js/underscore.js")
 script(type="text/javascript", src="/js/backbone.js")
 script(type="text/javascript", src="/js/blogadmin.js")

@@ -32,7 +32,7 @@ $(function() {
       this.postsView.hide();
 
       if (id) {
-        $.getJSON('/blog/' + id, function(data) {
+        $.getJSON('/blog/id/' + id, function(data) {
           _this.trigger('postInfo', data);
         });
       }
@@ -120,7 +120,6 @@ $(function() {
     populateFields: function(data) {
       $('#postTitle').val(data.title);
       $('#post').val(data.post);
-      this.model.set({ 'currentPostId' : data._id });
     },
 
     handlePublish: function(evt) {
@@ -154,6 +153,26 @@ $(function() {
   BlogPostsView = Backbone.View.extend({
     el: $('.post-list'),
 
+    initialize: function() {
+      _.bindAll(this, 'deletePost');
+      _.extend(this, Backbone.Events);
+    },
+
+    events: {
+      'click .delete-link': 'deletePost'
+    },
+
+    deletePost: function(evt) {
+      var li = $(evt.target).parent(),
+          id, rev;
+
+      id  = li.find('.post-id').val();
+      rev = li.find('.post-rev').val();
+      this.trigger('delete', { 'id': id,
+                               'rev': rev });
+      evt.preventDefault();
+    },
+
     show: function() {
       this.el.show();
     },
@@ -167,7 +186,7 @@ $(function() {
     var controller = {
       initialize: function() {
         var _this = this;
-        _.bindAll(this, 'handlePublish', 'handlePw', 'handleRoute');
+        _.bindAll(this, 'handlePublish', 'handlePw', 'handleRoute', 'handleEditPost', 'handleDeletePost');
 
         this.authView = new BlogAuthView();
 
@@ -196,6 +215,7 @@ $(function() {
         this.authView.bind('pwsubmit', this.handlePw);
         this.router.bind('route', this.handleRoute);
         this.router.bind('postInfo', this.handleEditPost);
+        this.postsView.bind('delete', this.handleDeletePost);
       },
 
       doAuth: function(pw, callback) {
@@ -231,6 +251,25 @@ $(function() {
 
       handleEditPost: function(data) {
         this.editView.populateFields(data);
+        this.editModel.set({ 'currentPostId' : data._id });
+        this.editModel.set({ 'currentPostRev' : data._rev });
+      },
+
+      handleDeletePost: function(o) {
+        var sure;
+        if (!this.pw) {
+          this.router.navigate('auth', true);
+          return;
+        }
+        sure = confirm('Are you sure you want to delete this post?');
+        if (!sure) { return; }
+
+        o.pw = this.pw;
+
+        // o should contain id and rev.
+        $.post('/blog-delete-post', o, function(data, textStatus) {
+          console.log(data);
+        });
       },
 
       handlePublish: function(o) {
@@ -244,9 +283,14 @@ $(function() {
         data = { pw: this.pw,
                  title: o.entryTitle,
                  entry: o.entryVal,
-                 isDraft: o.isDraft };
+                 isDraft: o.isDraft,
+                 id: this.editModel.get('currentPostId'),
+                 rev: this.editModel.get('currentPostRev') };
 
-        $.post('/blog-post',
+        console.log('a');
+        console.log(this.editModel.get('currentPostId'));
+        console.log('b');
+        $.post('/blog-publish',
                data,
                function(data, textStatus) {
                  if (data && data.ok) {
