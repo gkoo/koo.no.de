@@ -194,7 +194,9 @@ Blog = function() {
     text = text.replace(/-/gi, "_");
     text = text.replace(/\s/gi, "-");
     return text;
-  };
+  },
+
+  MAX_POSTS_PER_PAGE = 5;
 
   this.authenticate = function(pw) {
     if (pw === 'BungngacheeSikgausee&') {
@@ -258,27 +260,84 @@ Blog = function() {
                  callback);
   };
 
-  this.getPosts = function(options, response) {
-    var opt = { urlOpt: {} },
-        rowsPerPage = 5,
-        limit       = typeof options.limit !== 'undefined' ? options.limit : 0,
+  this.getPostsReversed = function(options, callback) {
+    // this function used with "previous" link. get ascending posts keyed
+    // by current page's start key, then reverse
+    if (!options) {
+      console.log('[BLOG]: no options passed to getPostsReversed');
+      return;
+    }
+    options.descending = false;
+    options.limit = MAX_POSTS_PER_PAGE + 1; // since we're reversed, we handle the "skip" later
+    this.getPosts(options, callback);
+  };
+
+  // used for getting posts for the main blog page
+  this.getPosts = function(options, callback) {
+    var opt         = { urlOpt: options },
+        limit       = typeof options.limit !== 'undefined' ? options.limit : MAX_POSTS_PER_PAGE,
         _this = this;
 
     opt.view = 'blogposts';
-    opt.urlOpt.descending = true;
-    opt.urlOpt.limit = 5;
-    opt.urlOpt.page = 0;
+    if (typeof opt.urlOpt.descending === 'undefined') {
+      opt.urlOpt.descending = true;
+    }
+    if (limit) {
+      opt.urlOpt.limit = limit + 1;
+    }
+    if (options.startkey) {
+      opt.urlOpt.startkey = options.startkey;
+    }
 
     couchRequest(opt, function(posts) {
-      cleanedPosts = _this.cleanPosts(posts);
+      var rows,
+          nextLink = '',
+          prevLink = '',
+          hasNext = false,
+          hasPrev = false;
 
-      response.render('blog', {
-        locals: {
-          page: 'blog',
-          title: 'My Blog',
-          posts: cleanedPosts
+      if (opt.urlOpt.descending) {
+        // Going forwards (in terms of pages)
+        if ((posts.offset + posts.rows.length) < posts.total_rows) {
+          hasNext = true;
         }
-      });
+        if (posts.offset) {
+          hasPrev = true;
+        }
+      }
+      else {
+        // Going backwards (in terms of pages)
+        if (posts && posts.rows) {
+          // need to reverse order of rows
+          posts.rows.reverse();
+        }
+        if ((posts.offset + posts.rows.length) < posts.total_rows) {
+          hasPrev = true;
+        }
+        if (posts.offset) {
+          hasNext = true;
+        }
+      }
+
+      rows = posts.rows;
+      console.log('length: ' + rows.length);
+
+      if (hasNext) {
+        // has next
+        // TODO: fix this link!
+        nextLink = '/blog/start/' + rows[rows.length-1].key;
+      }
+      if (hasPrev) {
+        // has prev
+        prevLink = '/blog/prev/' + rows[0].key;
+      }
+      if (rows.length > limit) {
+        // only use last row as a pointer for Next Page link
+        posts.rows = rows.slice(0, rows.length-1);
+      }
+      callback({ posts:    _this.cleanPosts(posts),
+                 nextLink: nextLink,
+                 prevLink: prevLink });
     });
   };
 
@@ -375,12 +434,14 @@ Blog = function() {
       });
     });
 
+    /*
     app.get('/blog/:year/:month/:title', function(req, res) {
       // Fetch specific blog post by title slug
-      _this.getPosts({ slug: req.params['title'],
-                      year: req.params['year'],
-                      month: req.params['month'] }, res);
+      _this.getPosts({ slug:  req.params['title'],
+                       year:  req.params['year'],
+                       month: req.params['month'] }, res);
     });
+    */
 
     app.get('/blog/id/:id', function(req, res) {
       _this.getPostById(req.params['id'], function(data) {
@@ -398,7 +459,39 @@ Blog = function() {
           locals: {
             page: 'blog',
             title: 'My Blog',
-            posts: cleanedPost
+            posts: cleanedPost,
+            nextLink: '',
+            prevLink: ''
+          }
+        });
+      });
+    });
+
+    app.get('/blog/prev/:end', function(req, res) {
+      _this.getPostsReversed({ startkey: req.params['end'] }, function(data) {
+        res.render('blog', {
+          locals: {
+            page:     'blog',
+            title:    'My Blog',
+            posts:    data.posts,
+            nextLink: data.nextLink,
+            prevLink: data.prevLink
+          }
+        });
+      });
+    });
+
+    app.get('/blog/start/:start', function(req, res) {
+      _this.getPosts({
+        startkey: req.params['start']
+      }, function(data) {
+        res.render('blog', {
+          locals: {
+            page:     'blog',
+            title:    'My Blog',
+            posts:    data.posts,
+            nextLink: data.nextLink,
+            prevLink: data.prevLink
           }
         });
       });
@@ -407,7 +500,17 @@ Blog = function() {
     app.get('/blog', function(req, res) {
       // Fetch recent posts from Couch. When they
       // return, render them.
-      _this.getPosts({ page: 0, limit: 5 }, res);
+      _this.getPosts({}, function(data) {
+        res.render('blog', {
+          locals: {
+            page:     'blog',
+            title:    'My Blog',
+            posts:    data.posts,
+            nextLink: data.nextLink,
+            prevLink: data.prevLink
+          }
+        });
+      });
     });
   };
 };

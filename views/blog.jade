@@ -5,3 +5,7 @@ div
   a(href='/blog', title='Blog Link') Blog
 ul.posts
   != partial('blogpost', posts)
+- if (typeof prevLink !== 'undefined' && prevLink !== '')
+  a(href=prevLink) prev
+- if (typeof nextLink !== 'undefined' && nextLink !== '')
+  a(href=nextLink) next

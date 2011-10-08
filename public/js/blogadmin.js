@@ -1,4 +1,4 @@
-var debug = 1;
+var debug = 0;
 $(function() {
   var BlogAdminRouter = Backbone.Router.extend({
     initialize: function(o) {
