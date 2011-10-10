@@ -260,18 +260,6 @@ Blog = function() {
                  callback);
   };
 
-  this.getPostsReversed = function(options, callback) {
-    // this function used with "previous" link. get ascending posts keyed
-    // by current page's start key, then reverse
-    if (!options) {
-      console.log('[BLOG]: no options passed to getPostsReversed');
-      return;
-    }
-    options.descending = false;
-    options.limit = MAX_POSTS_PER_PAGE + 1; // since we're reversed, we handle the "skip" later
-    this.getPosts(options, callback);
-  };
-
   // used for getting posts for the main blog page
   this.getPosts = function(options, callback) {
     var opt         = { urlOpt: options },
@@ -294,11 +282,15 @@ Blog = function() {
           nextLink = '',
           prevLink = '',
           hasNext = false,
-          hasPrev = false;
+          hasPrev = false,
+          numPosts = 0;
 
       if (opt.urlOpt.descending) {
         // Going forwards (in terms of pages)
-        if ((posts.offset + posts.rows.length) < posts.total_rows) {
+
+        // don't count the skipped row
+        numPosts = posts.rows.length < opt.urlOpt.limit ? posts.rows.length : posts.rows.length - 1;
+        if ((posts.offset + numPosts) < posts.total_rows) {
           hasNext = true;
         }
         if (posts.offset) {
@@ -320,12 +312,11 @@ Blog = function() {
       }
 
       rows = posts.rows;
-      console.log('length: ' + rows.length);
 
       if (hasNext) {
         // has next
         // TODO: fix this link!
-        nextLink = '/blog/start/' + rows[rows.length-1].key;
+        nextLink = '/blog/next/' + rows[rows.length-1].key;
       }
       if (hasPrev) {
         // has prev
@@ -468,7 +459,10 @@ Blog = function() {
     });
 
     app.get('/blog/prev/:end', function(req, res) {
-      _this.getPostsReversed({ startkey: req.params['end'] }, function(data) {
+      _this.getPosts({
+        startkey: req.params['end'],
+        descending: false,
+      }, function(data) {
         res.render('blog', {
           locals: {
             page:     'blog',
@@ -481,7 +475,7 @@ Blog = function() {
       });
     });
 
-    app.get('/blog/start/:start', function(req, res) {
+    app.get('/blog/next/:start', function(req, res) {
       _this.getPosts({
         startkey: req.params['start']
       }, function(data) {

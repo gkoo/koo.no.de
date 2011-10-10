@@ -2,6 +2,9 @@
 .header {
   text-align: center;
 }
+.blog-nav {
+  padding-right: 15px;
+}
 
 /* ADMIN - AUTH */
 #nav li {
