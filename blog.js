@@ -2,6 +2,9 @@
 
 // TODO: add more formatting. bold, italic, underline, lists
 // TODO: update UI after deleting post
+// TODO: make it so editing the post doesn't edit the timestamp
+// TODO: fix unformatTextDecoration
+// TODO: view draft in admin interface
 
 var http = require('http'),
 
@@ -73,7 +76,7 @@ Blog = function() {
 
   formatTextDecoration = function(str) {
     // formats bold, italic, underline
-    var td_re = /\[([u|i|b])\]([^\[]+)\[\\([u|i|b])\]/g,
+    var td_re = /\[([u|i|b])\]([^\[]+)\[\/([u|i|b])\]/g,
         match,
         strText,
         strTag,
@@ -109,6 +112,7 @@ Blog = function() {
       length    = match[0].length; // original substring length
       index     = match.index;
       str       = [str.substring(0, index), strResult, str.substring(index+length)].join('');
+      match     = td_re.exec(str);
     }
     return str;
   },
@@ -227,6 +231,7 @@ Blog = function() {
               .replace(/<br\/>/g, '\n');
     str = unformatLinks(str);
     str = unformatImages(str);
+    str = unformatTextDecoration(str);
     return str;
   },
 
