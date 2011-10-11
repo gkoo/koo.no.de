@@ -53,7 +53,7 @@
 }
 .formattingHelp {
   position: relative;
-  top: -50px;
+  top: -100px;
 
   -moz-transition-property: top;
   -moz-transition-duration: .5s;

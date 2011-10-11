@@ -71,6 +71,48 @@ Blog = function() {
     req.end();
   },
 
+  formatTextDecoration = function(str) {
+    // formats bold, italic, underline
+    var td_re = /\[([u|i|b])\]([^\[]+)\[\\([u|i|b])\]/g,
+        match,
+        strText,
+        strTag,
+        strHtml,
+        length,
+        index;
+
+    // format text decoration
+    match = td_re.exec(str);
+    while (match) {
+      strTag = match[1];
+      strText = match[2];
+      strHtml = ['<', strTag, '>', strText, '</' + strTag + '>'].join('');
+      length = match[0].length; // original substring length
+      index = match.index;
+      str = [str.substring(0, index), strHtml, str.substring(index+length)].join('');
+      match = td_re.exec(str);
+    }
+    return str;
+  },
+
+  unformatTextDecoration = function(str) {
+    var td_re = /<([u|i|b])>([^\[]+)<\/([u|i|b])>/g,
+        match = td_re.exec(str),
+        strText,
+        strTag,
+        strResult;
+
+    while (match) {
+      strText   = match[2];
+      strTag    = match[1];
+      strResult = ['[', strTag, ']', strText, '[\\', strTag, ']'].join(''); 
+      length    = match[0].length; // original substring length
+      index     = match.index;
+      str       = [str.substring(0, index), strResult, str.substring(index+length)].join('');
+    }
+    return str;
+  },
+
   formatLinks = function(str) {
     var link_re = /\[([^\]]+)\]\(([^\)]+)\)/g,
         match,
@@ -97,7 +139,7 @@ Blog = function() {
   unformatLinks = function(str) {
     //var link_re = /\[([^\]]+)\]\(([^\)]+)\)/g,
     var link_re = /<a href="([^"]+)">([^<]+)<\/a>/g,
-        match,
+        match   = link_re.exec(str),
         linkUrl,
         linkText,
         formattedStr,
@@ -105,7 +147,6 @@ Blog = function() {
         index;
 
     // format links
-    match = link_re.exec(str);
     while (match) {
       linkText = match[2];
       linkUrl = match[1];
@@ -168,6 +209,7 @@ Blog = function() {
 
     str = formatLinks(str);
     str = formatImages(str);
+    str = formatTextDecoration(str);
 
     str = str.split('\n\n');
     for (i=0, len=str.length; i<len; ++i) {
