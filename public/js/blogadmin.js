@@ -253,6 +253,8 @@ $(function() {
         this.editView.populateFields(data);
         this.editModel.set({ 'currentPostId' : data._id });
         this.editModel.set({ 'currentPostRev' : data._rev });
+        this.editModel.set({ 'currentTimestamp' : data.timestamp });
+        this.editModel.set({ 'currentStatus' : data.status });
       },
 
       handleDeletePost: function(o) {
@@ -285,11 +287,14 @@ $(function() {
                  entry: o.entryVal,
                  isDraft: o.isDraft,
                  id: this.editModel.get('currentPostId'),
-                 rev: this.editModel.get('currentPostRev') };
+                 rev: this.editModel.get('currentPostRev'),
+                 timestamp: this.editModel.get('currentTimestamp') };
 
-        console.log('a');
-        console.log(this.editModel.get('currentPostId'));
-        console.log('b');
+        if (this.editModel.get('currentStatus') === 'draft' && !o.isDraft) {
+          // we're going from draft --> published. get rid of timestamp.
+          data.timestamp = undefined;
+        }
+
         $.post('/blog-publish',
                data,
                function(data, textStatus) {

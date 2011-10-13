@@ -2,8 +2,6 @@
 
 // TODO: add more formatting. bold, italic, underline, lists
 // TODO: update UI after deleting post
-// TODO: make it so editing the post doesn't edit the timestamp
-// TODO: fix unformatTextDecoration
 // TODO: view draft in admin interface
 
 var http = require('http'),
@@ -99,21 +97,21 @@ Blog = function() {
   },
 
   unformatTextDecoration = function(str) {
-    var td_re = /<([u|i|b])>([^\[]+)<\/([u|i|b])>/g,
-        match = td_re.exec(str),
-        strText,
-        strTag,
-        strResult;
+    var re = /<u>/g;
+    str = str.replace(re, '[u]');
+    re = /<\/u>/g;
+    str = str.replace(re, '[/u]');
 
-    while (match) {
-      strText   = match[2];
-      strTag    = match[1];
-      strResult = ['[', strTag, ']', strText, '[\\', strTag, ']'].join(''); 
-      length    = match[0].length; // original substring length
-      index     = match.index;
-      str       = [str.substring(0, index), strResult, str.substring(index+length)].join('');
-      match     = td_re.exec(str);
-    }
+    re = /<b>/g;
+    str = str.replace(re, '[b]');
+    re = /<\/b>/g;
+    str = str.replace(re, '[/b]');
+
+    re = /<i>/g;
+    str = str.replace(re, '[i]');
+    re = /<\/i>/g;
+    str = str.replace(re, '[/i]');
+
     return str;
   },
 
@@ -252,20 +250,30 @@ Blog = function() {
     return 0;
   };
 
-  this.publish = function(id, rev, title, post, isDraft, callback) {
-    var paras, i, len, method = id ? 'PUT' : 'POST';
+  this.publish = function(o, callback) {
+    var method = o.id ? 'PUT' : 'POST',
+        data   = { 'title':     o.title,
+                   'slug':      slugify(o.title),
+                   'status':    o.isDraft ? 'draft' : 'published',
+                   'type':      'blogpost',
+                   '_rev':      o.rev
+                 },
+        paras, i, len;
 
-    post = processPostInput(post);
+    if (o.time) {
+      console.log(o.time);
+      data.timestamp = parseInt(o.time, 10);
+    }
+    else {
+      console.log('new time');
+      // don't update the date if it's an existing document
+      console.log('updating timestamp');
+      data.timestamp = (new Date()).getTime();
+    }
+    data.post = processPostInput(o.entry);
 
-    couchRequest({ 'data': { 'title':     title,
-                             'post':      post,
-                             'slug':      slugify(title),
-                             'status':    isDraft ? 'draft' : 'published',
-                             'timestamp': (new Date()).getTime(),
-                             'type':      'blogpost',
-                             '_rev':      rev
-                           },
-                   'id':   id,
+    couchRequest({ 'data':   data,
+                   'id':     o.id,
                    'method': method
                  }, callback);
   };
@@ -416,12 +424,16 @@ Blog = function() {
     app.post('/blog-publish', function(req, res) {
       if (req.xhr && req.body && req.body.pw) {
         if (req.body.entry && _this.authenticate(req.body.pw)) {
+          var data = {
+            id:      req.body.id,
+            rev:     req.body.rev,
+            title:   req.body.title,
+            entry:   req.body.entry,
+            time:    req.body.timestamp,
+            isDraft: req.body.isDraft && req.body.isDraft === 'true',
+          };
 
-          _this.publish(req.body.id,
-                        req.body.rev,
-                        req.body.title,
-                        req.body.entry,
-                        req.body.isDraft && req.body.isDraft === 'true',
+          _this.publish(data,
                         function(response) {
                           res.send(response);
                           console.log('[BLOG] Response: ' + JSON.stringify(response));
