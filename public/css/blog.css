@@ -5,6 +5,9 @@
 .blog-nav {
   padding-right: 15px;
 }
+.blockquote {
+  padding: 0 15px;
+}
 
 /* ADMIN - AUTH */
 #nav li {

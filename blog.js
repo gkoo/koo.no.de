@@ -1,18 +1,9 @@
 /* Defines helper functions for blog operations. */
 
-// TODO: add more formatting. bold, italic, underline, lists
 // TODO: update UI after deleting post
 // TODO: view draft in admin interface
 
 var http = require('http'),
-
-createDateString = function(timestamp) {
-  var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-      MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-      date      = new Date(timestamp);
-
-  return [WEEKDAYS[date.getDay()], MONTHS[date.getMonth()], date.getDate() + ',', date.getFullYear()].join(' ');
-},
 
 Blog = function() {
   var couchRequest = function(opt, callback) {
@@ -72,9 +63,18 @@ Blog = function() {
     req.end();
   },
 
+  createDateString = function(timestamp) {
+    var WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+        MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+        date      = new Date(timestamp);
+
+    return [WEEKDAYS[date.getDay()], MONTHS[date.getMonth()], date.getDate() + ',', date.getFullYear()].join(' ');
+  },
+
   formatTextDecoration = function(str) {
     // formats bold, italic, underline
     var td_re = /\[([u|i|b])\]([^\[]+)\[\/([u|i|b])\]/g,
+        bq_re,
         match,
         strText,
         strTag,
@@ -93,6 +93,13 @@ Blog = function() {
       str = [str.substring(0, index), strHtml, str.substring(index+length)].join('');
       match = td_re.exec(str);
     }
+
+    // blockquote
+    bq_re = /\[blockquote\]/g;
+    str = str.replace(bq_re, '<div class="blockquote">');
+    bq_re = /\[\/blockquote\]/g;
+    str = str.replace(bq_re, '</div>');
+
     return str;
   },
 
@@ -111,6 +118,11 @@ Blog = function() {
     str = str.replace(re, '[i]');
     re = /<\/i>/g;
     str = str.replace(re, '[/i]');
+
+    re = /<div class="blockquote">/g;
+    str = str.replace(re, '[blockquote]');
+    re = /<\/div>/g;
+    str = str.replace(re, '[/blockquote]');
 
     return str;
   },
