@@ -2,6 +2,7 @@
 
 // TODO: update UI after deleting post
 // TODO: view draft in admin interface
+// TODO: check pw via hash
 
 var http = require('http'),
 

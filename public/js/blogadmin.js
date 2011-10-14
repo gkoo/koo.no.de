@@ -1,4 +1,4 @@
-var debug = 0;
+var debug = 1;
 $(function() {
   var BlogAdminRouter = Backbone.Router.extend({
     initialize: function(o) {
@@ -154,7 +154,7 @@ $(function() {
     el: $('.post-list'),
 
     initialize: function() {
-      _.bindAll(this, 'deletePost');
+      _.bindAll(this, 'deletePost', 'deletePostSuccess');
       _.extend(this, Backbone.Events);
     },
 
@@ -171,6 +171,10 @@ $(function() {
       this.trigger('delete', { 'id': id,
                                'rev': rev });
       evt.preventDefault();
+    },
+
+    deletePostSuccess: function(id) {
+      this.el.find('#' + id).remove();
     },
 
     show: function() {
@@ -220,7 +224,7 @@ $(function() {
 
       doAuth: function(pw, callback) {
         $.post('/blog-auth', { 'pw': pw }, function(res) {
-          if (res && res.success) {
+          if (res && typeof res.success !== 'undefined') {
             callback(res.success);
           }
         });
@@ -258,7 +262,7 @@ $(function() {
       },
 
       handleDeletePost: function(o) {
-        var sure;
+        var sure, _this = this;
         if (!this.pw) {
           this.router.navigate('auth', true);
           return;
@@ -270,7 +274,18 @@ $(function() {
 
         // o should contain id and rev.
         $.post('/blog-delete-post', o, function(data, textStatus) {
-          console.log(data);
+          if (data && typeof data.ok !== 'undefined') {
+            if (data.ok && data.id) {
+              // Delete successful
+              _this.postsView.deletePostSuccess(data.id);
+            }
+            else {
+              // Delete unsuccessful
+              console.log('Delete data:');
+              console.log(data);
+              alert('Something went wrong with the delete! Check the console.');
+            }
+          }
         });
       },
 
