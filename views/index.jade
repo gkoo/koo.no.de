@@ -1,7 +1,3 @@
-- var nodelink = "<a href='http://nodejs.org'>NodeJS</a>"
-- var expresslink = "<a href='http://expressjs.com/'>Express</a>"
-- var socketiolink = "<a href='http://socket.io'>Socket.IO</a>"
-
 .section.about
   h2 About
   .content
@@ -17,20 +13,21 @@
       | This site was made using
       a(href='http://nodejs.org')
         = 'NodeJS'
-      |  (
-      a(href='http://expressjs.com/')
-        = 'Express'
-      | , 
-      a(href='http://socket.io/')
-        = 'Socket.IO'
-      |  ),
-      a(href='http://redis.io/')
-        = 'Redis'
-      |  and
+      //-
+        |  (
+        a(href='http://expressjs.com/')
+          = 'Express'
+      |  and 
+      //-
+        a(href='http://socket.io/')
+          = 'Socket.IO'
+        |  ),
+        a(href='http://redis.io/')
+          = 'Redis'
+        |  and
       a(href='http://couchdb.apache.org/')
         = 'CouchDB'
       | .
-
 
 .section.blog
   h2 Blog
@@ -53,7 +50,7 @@
         p Visualize your LinkedIn connections ... through time and space!
       li
         h3
-          a(href='/faces') Faces of LinkedIn
+          a(href='http://koo.no.de/faces') Faces of LinkedIn
         p
           | A mash-up experiment using
           a(href='http://www.face.com/')
@@ -61,5 +58,5 @@
           |  and
           a(href='http://developer.linkedin.com')
             = 'LinkedIn'
-          
+
           | 's APIs. Browse your connections by facial expression.
