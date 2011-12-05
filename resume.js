@@ -40,18 +40,11 @@ var Resume = function() {
       ];
 
 
-      res.render('index', {
-        locals: {
-          page: 'index',
-          title: 'designed by an engineer'
-        }
-      });
-      /*
       res.render('resume', {
-        locals: { experiences: experiences, projects: projects },
+        locals: { experiences: experiences,
+                  projects: projects },
         layout: false
       });
-      */
     });
   };
 };
