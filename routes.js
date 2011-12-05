@@ -1,6 +1,7 @@
 var express = require('express'),
     faceModule = require('./faces_module.js'),
     blog = require('./blog.js'),
+    resume = require('./resume.js'),
     shuttle = require('./shuttle.js'),
     app = express.createServer(),
     dimSize = 30;
@@ -73,6 +74,7 @@ app.configure('production', function(){
 // ======
 
 // Routes: LinkedIn Shuttle Tracker
+// --------------------------------
 shuttle.listen(app);
 
 // Routes: WVMX Notifications
@@ -101,6 +103,10 @@ app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
 // Routes: Blog
 // ------------
 blog.listen(app);
+
+// Routes: Resume
+// --------------
+resume.listen(app);
 
 // Routes: Grid
 // ------------
