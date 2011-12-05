@@ -1,7 +1,7 @@
 !!!
 html
   head
-    title My Resume
+    title Resume of Gordon Koo
     link(rel='stylesheet', href='/css/resume.css')
   body
     #wrapper
@@ -38,19 +38,18 @@ html
               li Python*
               li Django*
             p.disclaimer * These skills are at intermediate level or could use some brushing up.
-        //-
-          #experiences.section
-            h2.section-heading Experience &raquo;
-            .section-content
-              ul
-                each experience in experiences
-                  != partial('resume_position', experience)
-          #projects.section
-            h2.section-heading Projects &raquo;
-            .section-content
-              ul.project
-                each project in projects
-                  != partial('resume_project', project)
+        #experiences.section
+          h2.section-heading Experience &raquo;
+          .section-content
+            ul
+              each experience in experiences
+                != partial('resume_position', experience)
+        #projects.section
+          h2.section-heading Projects &raquo;
+          .section-content
+            ul.project
+              each project in projects
+                != partial('resume_project', project)
         #educations.section
           h2.section-heading Education &raquo;
           .section-content
