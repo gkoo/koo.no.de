@@ -1,8 +1,6 @@
 var Resume = function() {
-  console.log(1);
   this.listen = function(app) {
     app.get('/resume', function(req, res){
-      console.log(2);
       var experiences = [
         { company: 'LinkedIn',
           dates: '9/2010 &mdash; present',
@@ -40,14 +38,20 @@ var Resume = function() {
           description: '<p>My first foray into real-time applications using NodeJS and Socket.IO. It\'s best described as a collaborative drawing experience and worst described as an unfinished thing that lets you draw on one browser and see it happen on a different browser.</p>'
         }
       ];
-      console.log(3);
 
 
+      res.render('index', {
+        locals: {
+          page: 'index',
+          title: 'designed by an engineer'
+        }
+      });
+      /*
       res.render('resume', {
         locals: { experiences: experiences, projects: projects },
         layout: false
       });
-      console.log(4);
+      */
     });
   };
 };
