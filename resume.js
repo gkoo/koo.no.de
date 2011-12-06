@@ -20,7 +20,7 @@ var Resume = function() {
         { name: 'Hero Connect',
           url: 'http://heroconnect.linkedinlabs.com',
           dates: '11/2011',
-          description: '<p>LinkedIn hosted a public-facing Veteran\'s Day Hackday in November 2011. My team\'s submission was Hero Connect, a web application which recommends companies who have recently hired veterans and makes it easy to connect with veterans at those companies.</p>'
+          description: '<p>LinkedIn hosted a public-facing Veteran\'s Day Hackday in November 2011. <a href="http://veterans2011.linkedin.com/#gallery/11" target="_blank">My team\'s submission</a> was Hero Connect, a web application which recommends companies who have recently hired veterans and makes it easy to connect with veterans at those companies.</p>'
         },
         { name: 'Faces of LinkedIn',
           url: 'http://koo.no.de/faces',
