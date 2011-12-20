@@ -328,8 +328,8 @@ Blog = function() {
                  callback);
   };
 
-  // used for getting posts for the main blog page
   this.getPosts = function(options, callback) {
+    // used for getting posts for the main blog page
     var opt         = { urlOpt: options },
         limit       = typeof options.limit !== 'undefined' ? options.limit : MAX_POSTS_PER_PAGE,
         _this = this;

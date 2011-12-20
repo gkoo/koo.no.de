@@ -1,0 +1,161 @@
+body {
+  font-family: Helvetica, Arial;
+  overflow: hidden;
+  text-align: center;
+}
+
+body, ul, h1, h2 {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+#drawerWrapper {
+  margin: 20px auto;
+  width: 464px;
+}
+
+#drawerWrapper.hidden {
+  display: none;
+}
+
+.row, #homeRow {
+  position: relative;
+  clear: left;
+  width: 464px;
+  height: 128px;
+}
+
+#drawer {
+  margin: 50px 0;
+}
+
+#drawer .item,
+#homeBtnWrapper {
+  display: block;
+  height: 128px;
+  position: absolute;
+  top: 0;
+  width: 128px;
+
+  -moz-transition:    left .5s ease-in-out,
+                      top .5s ease-in-out,
+                      opacity .5s ease-out;
+  -webkit-transition: left .5s ease-in-out,
+                      top .5s ease-in-out,
+                      opacity .5s ease-out;
+  transition:         left .5s ease-in-out,
+                      top .5s ease-in-out,
+                      opacity .5s ease-out;
+}
+
+#drawer.hide .item {
+  opacity: 0;
+}
+
+.item a,
+#homeBtn {
+  display: block;
+  margin: 0 0 5px;
+  outline: none;
+  width: 128px;
+  height: 128px;
+}
+
+.item.timeline img {
+  -moz-border-radius: 12px;
+  -webkit-border-radius: 12px;
+  -o-border-radius: 12px;
+  border-radius: 12px;
+}
+
+.item h2,
+#homeBtnWrapper h2 {
+  display: none;
+}
+
+.item:hover h2,
+#homeBtnWrapper:hover h2 {
+  display: block;
+}
+
+.item img,
+#homeBtn img {
+  width: 100%;
+  height: 100%;
+}
+
+/*.item.quora img {*/
+  /*width: 128px;*/
+  /*height: 112px;*/
+/*}*/
+
+/* ====== */
+/* X-AXIS */
+/* ====== */
+#drawer .row .item:nth-child(1) {
+  left: 0px;
+}
+
+#drawer.hide .row .item:nth-child(1) {
+  left: -168px;
+}
+
+#drawer .item:nth-child(2),
+#homeBtnWrapper {
+  left: 168px;
+}
+
+#drawer.hide .item:nth-child(2) {
+  left: 168px;
+}
+
+#drawer .item:nth-child(3) {
+  left: 336px;
+}
+
+#drawer.hide .item:nth-child(3) {
+  left: 504px;
+}
+
+/* ====== */
+/* Y-AXIS */
+/* ====== */
+#drawer .row {
+  margin: 0 0 64px;
+}
+
+#drawer.hide .row:nth-child(1) .item {
+  top: -150px;
+}
+
+#drawer.hide .row:nth-child(2) .item {
+  /*top: -75px;*/
+  top: -50px;
+}
+
+#drawer.hide .row:nth-child(3) .item {
+  top: 50px;
+}
+
+/* ======= */
+/* CONTENT */
+/* ======= */
+
+#content {
+  border: 1px solid #000;
+  margin: -620px auto 0;
+  width: 600px;
+  height: 600px;
+
+  -moz-transition:    margin .5s ease-in-out;
+  -webkit-transition: margin .5s ease-in-out;
+  transition:         margin .5s ease-in-out;
+}
+
+#content.show {
+  margin-top: 0;
+}

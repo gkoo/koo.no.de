@@ -1,0 +1,16 @@
+!!!
+html
+  head
+    title= title
+    //link(rel='stylesheet', href='/css/style2.css')
+    - if (typeof page !== 'undefined')
+      link(rel='stylesheet', href='/css/#{page}.css')
+    script(type="text/javascript", src="/js/jquery-1.6.1.min.js")
+    //script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+  body
+    #main
+
+      //- MAIN CONTENT
+      #wrapper!= body
+
+      div.clear

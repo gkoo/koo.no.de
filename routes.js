@@ -100,6 +100,18 @@ app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
 
 
 
+// Routes: Drawer
+// --------------
+app.get('/drawer', function(req, res){
+  res.render('drawer', {
+    locals: {
+      page: 'drawer',
+      title: 'Android Drawer Demo'
+    },
+    layout: 'layout2'
+  });
+});
+
 // Routes: Blog
 // ------------
 blog.listen(app);
