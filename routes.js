@@ -202,7 +202,6 @@ app.get('/faces', function(req, res){
 app.get('/', function(req, res){
   res.render('index', {
     locals: {
-      page: 'index',
       title: 'designed by an engineer'
     }
   });
