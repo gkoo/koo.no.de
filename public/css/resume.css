@@ -1,22 +1,19 @@
 #resume {
+  border: 1px solid #ccc;
   font-family: Helvetica, Arial;
   font-size: 13px;
-}
-#resume a,
-#resume a:visited {
-  color: #069;
-}
-#resume {
-  border: 1px solid #ccc;
-  margin: 0 auto;
+  margin: 0 auto 20px;
   padding: 50px;
   position: relative;
   text-align: left;
-  width: 800px;
 
   -moz-box-shadow: 5px 5px 5px #ccc;
   -webkit-box-shadow: 5px 5px 5px #ccc;
   box-shadow: 5px 5px 5px #ccc;
+}
+#resume a,
+#resume a:visited {
+  color: #069;
 }
 #resume .name {
   float: left;
@@ -42,7 +39,7 @@
 #resume .section-content {
   float: left;
   padding: 0 0 17px;
-  width: 600px;
+  width: 498px;
 }
 #resume #skills {
   clear: both;
@@ -53,7 +50,9 @@
 }
 #resume #skills ul,
 #resume #interests ul {
-  margin: 16px 100px 16px 0;
+  list-style-type: disc;
+  list-style-position: outside;
+  margin: 16px 90px 16px 0;
   padding: 0 0 0 20px;
   float: left;
 }
@@ -104,7 +103,7 @@
   width: 100%;
   height: 100%;
 }
-#resume .egg {
+#egg-container .egg {
   background-color: #fff;
   border: 5px solid #000;
   margin: 100px auto;

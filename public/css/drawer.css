@@ -1,6 +1,5 @@
 body {
   font-family: Helvetica, Arial;
-  /*overflow: hidden;*/
   position: relative;
   text-align: center;
 }
@@ -19,7 +18,14 @@ ul {
 }
 
 #mainTitle {
+  font-size: 48px;
   margin: 0 0 50px;
+}
+
+.sectionTitle {
+  font-size: 32px;
+  margin-bottom: 20px;
+  text-align: center;
 }
 
 #drawerWrapper {
@@ -172,11 +178,10 @@ ul {
   transition:         left .5s ease-in-out;
 }
 
-#homeBtn:hover {
-  top: 48px;
-  -moz-box-shadow: 7px 7px 7px #999;
-  -webkit-box-shadow: 7px 7px 7px #999;
-  box-shadow: 7px 7px 7px #999;
+#homeBtn.show:hover {
+  -moz-box-shadow: 5px 5px 5px #999;
+  -webkit-box-shadow: 5px 5px 5px #999;
+  box-shadow: 5px 5px 5px #999;
 }
 
 #homeBtn.noanim {
@@ -199,9 +204,10 @@ ul {
 
 #content {
   display: none;
-  margin: 0 168px;
+  margin: 0 auto;
+  padding: 0 168px;
   text-align: left;
-  /*width: 900px;*/
+  width: 800px;
 
   -moz-transition:    margin .5s ease-in-out;
   -webkit-transition: margin .5s ease-in-out;

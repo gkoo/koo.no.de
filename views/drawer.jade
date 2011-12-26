@@ -1,14 +1,11 @@
 noscript Oops. This site is pretty dependent on Javascript, and it looks like your browser doesn't support Javascript or doesn't have it enabled. Sorry!
+h1#mainTitle Gordon Koo
+a#homeBtn(href="#home")
+  img(src="/img/drawericons/home_icon.png")
 #content
-  #about
-    h1 About
-    p This is the "About Me" section.
-  #blog
-    h1 Blog
-    p This is where my blog goes.
-  #resume
-    h1 Resume
-    p Want to hire me? Too bad!
+  != partial('about')
+  != partial('blog')
+  != partial('resume')
 #drawerWrapper.hidden
   ul#drawer.hide
     ul.row
@@ -50,13 +47,9 @@ noscript Oops. This site is pretty dependent on Javascript, and it looks like yo
         a(href="/faces")
           img(src="/img/drawericons/twitter_icon.png")
         h2 Faces of LinkedIn
-    #homeRow
-      #homeBtnWrapper
-        a#homeBtn(href="#home")
-          img(src="/img/drawericons/home_icon.png")
-        h2 Home
 
 script(type="text/javascript", src="/js/jquery-1.6.1.min.js")
 script(type="text/javascript", src="/js/underscore-min.js")
 script(type="text/javascript", src="/js/backbone.js")
 script(type="text/javascript", src="/js/drawer.js")
+script(type="text/javascript", src="/js/resume_egg.js")

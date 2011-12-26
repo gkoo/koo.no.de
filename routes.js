@@ -1,5 +1,5 @@
 var express = require('express'),
-    faceModule = require('./faces_module.js'),
+    face = require('./faces_module.js'),
     blog = require('./blog.js'),
     resume = require('./resume.js'),
     shuttle = require('./shuttle.js'),
@@ -175,14 +175,14 @@ app.get('/grid', function(req, res){
 // Routes: Faces
 // -------------
 app.get('/facetoptitles', function(req, res){
-  faceModule.getTopTitles(function(topTitles) {
+  face.getTopTitles(function(topTitles) {
     res.send({ topTitles: topTitles });
   });
 });
 
 app.post('/facecache-get', function(req, res){
   if (req.xhr) {
-    faceModule.retrieveCached(req.body, function(attrs) {
+    face.retrieveCached(req.body, function(attrs) {
       res.send({ attrs: attrs });
     });
   }
