@@ -4,15 +4,15 @@ var Resume = function() {
       var experiences = [
         { company: 'LinkedIn',
           dates: '9/2010 &mdash; present',
-          title: 'Software Engineer/Web Developer',
+          positionTitle: 'Software Engineer/Web Developer',
           description: '<p>I am playing with cool things like Hadoop, Pig, and <a href="http://project-voldemort.com/" target="_blank">Voldemort</a> to build data-driven products. Currently, I am working on adding features to and improving Who’s Viewed My Profile. From September \'10 to June \'11, I was part of the web development team, working on improving the experience of job seekers and job posters on LinkedIn. I also made contributions to the Javascript team.</p>' },
         { company: 'ChoiceVendor',
           dates: '11/2009 &mdash; 9/2010',
-          title: 'Software Engineer',
+          positionTitle: 'Software Engineer',
           description: '<p>My work on the ChoiceVendor website involved responsibilities ranging from the business logic to the presentation level of the application. I worked on developing the application logic, which was written in Python using the Django framework. On the front end, I created the Jinja2 templates and the CSS and Javascript that accompanied them.</p><p>ChoiceVendor was acquired by LinkedIn in September 2010.</p>' },
         { company: 'Oracle',
           dates: '9/2008 &mdash; 11/2009',
-          title: 'Applications Engineer',
+          positionTitle: 'Applications Engineer',
           description: '<p>I worked on prototypes for Oracle\'s E-Business Suite, an enterprise software solution, gaining experience in Adobe Flex and Adobe Air.</p>' }
       ],
 

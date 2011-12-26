@@ -1,12 +1,23 @@
-#resume {
+body {
   font-family: Helvetica, Arial;
   font-size: 13px;
+  text-align: center;
 }
-#resume a,
-#resume a:visited {
+body, ul {
+  margin: 0;
+  padding: 0;
+}
+a,
+a:visited {
   color: #069;
 }
-#resume {
+#wrapper {
+  padding: 30px 0;
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+#main {
   border: 1px solid #ccc;
   margin: 0 auto;
   padding: 50px;
@@ -18,76 +29,72 @@
   -webkit-box-shadow: 5px 5px 5px #ccc;
   box-shadow: 5px 5px 5px #ccc;
 }
-#resume .name {
+.name {
   float: left;
 }
-#resume .contact {
+.contact {
   float: right;
   margin: 0 0 20px;
 }
-#resume .contact h3 {
+.contact h3 {
   margin: 5px 0;
 }
-#resume .section {
+.section {
   border-top: 1px solid #ccc;
 }
-#resume .section.first {
+.section.first {
   border: none;
 }
-#resume .section-heading {
+.section-heading {
   float: left;
-  margin: 16px 0;
   width: 200px;
 }
-#resume .section-content {
+.section-content {
   float: left;
   padding: 0 0 17px;
   width: 600px;
 }
-#resume #skills {
+#skills {
   clear: both;
 }
-#resume #skills .sub,
-#resume #interests .sub {
+#skills .sub,
+#interests .sub {
   margin-left: 20px;
 }
-#resume #skills ul,
-#resume #interests ul {
+#skills ul,
+#interests ul {
   margin: 16px 100px 16px 0;
   padding: 0 0 0 20px;
   float: left;
 }
-#resume #skills ul.last {
+#skills ul.last {
   margin-right: 0;
 }
-#resume #skills .disclaimer {
+#skills .disclaimer {
   font-size: 10px;
   font-style: italic;
   clear: left;
 }
-#resume #experiences ul,
-#resume #projects ul {
+#experiences ul,
+#projects ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-#resume .headline {
+.headline {
   margin: 17px 0;
 }
-#resume .dates {
+.dates {
   display: block;
   float: right;
 }
-#resume .position-description {
+.position-description {
   clear: both;
 }
 #interests ul {
-  list-style-type: disc;
-  list-style-position: outside;
   margin-bottom: 0;
 }
-#resume .clearfix,
-#resume .section {
+.clearfix, .section {
   clear: left;
 }
 #dontclickme {
@@ -104,7 +111,7 @@
   width: 100%;
   height: 100%;
 }
-#resume .egg {
+.egg {
   background-color: #fff;
   border: 5px solid #000;
   margin: 100px auto;
