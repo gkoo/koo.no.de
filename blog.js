@@ -563,18 +563,32 @@ Blog = function() {
       });
     });
 
+    //app.get('/blog', function(req, res) {
+      //// Fetch recent posts from Couch. When they
+      //// return, render them.
+      //_this.getPosts({}, function(data) {
+        //res.render('blog', {
+          //locals: {
+            //page:     'blog',
+            //title:    'My Blog',
+            //posts:    data.posts,
+            //nextLink: data.nextLink,
+            //prevLink: data.prevLink
+          //}
+        //});
+      //});
+    //});
+
     app.get('/blog', function(req, res) {
       // Fetch recent posts from Couch. When they
       // return, render them.
       _this.getPosts({}, function(data) {
-        res.render('blog', {
-          locals: {
-            page:     'blog',
-            title:    'My Blog',
-            posts:    data.posts,
-            nextLink: data.nextLink,
-            prevLink: data.prevLink
-          }
+        res.send({
+          page:     'blog',
+          title:    'My Blog',
+          posts:    data.posts,
+          nextLink: data.nextLink,
+          prevLink: data.prevLink
         });
       });
     });
