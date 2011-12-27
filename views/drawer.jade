@@ -1,7 +1,4 @@
 noscript Oops. This site is pretty dependent on Javascript, and it looks like your browser doesn't support Javascript or doesn't have it enabled. Sorry!
-h1#mainTitle Gordon Koo
-a#homeBtn(href="#home")
-  img(src="/img/drawericons/home_icon.png")
 #content
   != partial('about')
   != partial('blog')
@@ -19,12 +16,12 @@ a#homeBtn(href="#home")
         h2 Blog
       li.item
         a(href="#resume")
-          img(src="/img/drawericons/twitter_icon.png")
+          img(src="/img/drawericons/resume_icon.png")
         h2 Resume
     ul.row
       li.item
         a(href="http://www.linkedin.com/in/gordonkoo")
-          img(src="/img/drawericons/linkedin_icon2.png")
+          img(src="/img/drawericons/linkedin_icon3.png")
         h2 LinkedIn
       li.item
         a(href="http://www.twitter.com/superkerplunk")
@@ -39,14 +36,16 @@ a#homeBtn(href="#home")
         a(href="http://timeline.linkedinlabs.com")
           img(src="/img/drawericons/timeline_icon.jpg")
         h2 Connection Timeline
-      li.item
+      li.item.grid
         a(href="/grid")
-          img(src="/img/drawericons/twitter_icon.png")
+          img(src="/img/drawericons/grid_icon.png")
         h2 Grid
       li.item
         a(href="/faces")
-          img(src="/img/drawericons/twitter_icon.png")
+          img(src="/img/drawericons/linkedin_icon3.png")
         h2 Faces of LinkedIn
+a#homeBtn(href="#home")
+  img(src="/img/drawericons/home_icon.png")
 
 script(type="text/javascript", src="/js/jquery-1.6.1.min.js")
 script(type="text/javascript", src="/js/underscore-min.js")

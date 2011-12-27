@@ -1,4 +1,4 @@
-var ANIMATION_DELAY = 500,
+var ANIMATION_DELAY = 400,
 
 DrawerView = Backbone.View.extend({
   el: $('#drawerWrapper'),
@@ -28,6 +28,44 @@ DrawerView = Backbone.View.extend({
   }
 }),
 
+BlogView = Backbone.View.extend({
+  el: $('#blogSection'),
+
+  initialize: function() {
+    _.bindAll(this, 'render');
+    this.generateBlogTemplate();
+  },
+
+  generateBlogTemplate: function() {
+    var template, postTemplate;
+
+    postTemplate = '<li class="blogPost">' +
+                   '<h3 class="blogPostTitle"><a href="/blog/title/<%= post.slug %>">' +
+                   '<%= post.title %>' +
+                   '</a></h3>' +
+                   '<p class="datetime"><%= post.timestamp %></p>' +
+    //             '<a class="share" title="Share this post">Share</a>'; +
+                   '<div class="post-wrapper"><%= post.post %></div>' +
+                   '</li>';
+
+    template = '<ul><% _.each(posts, function(post) { %>' +
+               postTemplate +
+               '<% }); %></ul>';
+
+    this.blogTemplate = template;
+  },
+
+  render: function(data) {
+    this.blogPosts = data;
+    if (typeof data !== 'undefined') {
+      this.el.children('.blogContent').html(_.template(this.blogTemplate, data));
+    }
+    else {
+      console.log('[ERR] blog data is undefined');
+    }
+  }
+}),
+
 ContentView = Backbone.View.extend({
   el: $('#content'),
 
@@ -42,7 +80,7 @@ ContentView = Backbone.View.extend({
   },
 
   showSection: function(section, animate) {
-    var sectionEl = $('#' + section),
+    var sectionEl = $('#' + section + 'Section'),
         el = this.el;
 
     if (typeof animate === 'undefined') {
@@ -62,27 +100,29 @@ ContentView = Backbone.View.extend({
     }
 
     this.visible = true;
-  },
+  }
 }),
 
 HomeBtnView = Backbone.View.extend({
   el: $('#homeBtn'),
 
   initialize: function() {
-    var _this = this;
     _.extend(this, Backbone.Events);
-    _.bindAll(this, 'show', 'hide');
+    _.bindAll(this, 'goHome', 'show', 'hide');
+  },
 
-    this.el.click(function() {
-      _this.trigger('goHome');
-    });
+  events: {
+    'click': 'goHome'
+  },
+
+  goHome: function() {
+    this.trigger('goHome');
   },
 
   show: function(animate) {
     var el = this.el;
 
     if (animate) {
-      console.log(animate);
       el.addClass('show');
     }
     else {
@@ -144,6 +184,7 @@ SiteController = function() {
       this.contentView = new ContentView();
       this.drawerView = new DrawerView();
       this.homeBtnView = new HomeBtnView();
+      this.blogView = new BlogView();
       this.bindRoutes();
       return this;
     },
@@ -187,6 +228,13 @@ SiteController = function() {
     },
 
     showBlog: function() {
+      var blogView = this.blogView;
+      // Only load blog view on the first time.
+      if (!blogView.blogPosts) {
+        $.get('/blog', function(data) {
+          blogView.render(data);
+        });
+      }
       this.showContent('blog');
     },
 

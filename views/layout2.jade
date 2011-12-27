@@ -6,12 +6,15 @@ html
     - if (typeof page !== 'undefined')
       link(rel='stylesheet', href='/css/#{page}.css')
     link(rel='stylesheet', href='/css/resume.css')
+    link(rel='icon', type='image/png', href='/img/favicon.png')
     script(type="text/javascript", src="/js/jquery-1.6.1.min.js")
     //script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
   body
     #main
 
+      h1#mainTitle Gordon Koo
+
       //- MAIN CONTENT
-      #wrapper!= body
+      !{body}
 
       div.clear
