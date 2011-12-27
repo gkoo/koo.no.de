@@ -231,7 +231,7 @@ SiteController = function() {
       var blogView = this.blogView;
       // Only load blog view on the first time.
       if (!blogView.blogPosts) {
-        $.get('/blog', function(data) {
+        $.get('/blogAjax', function(data) {
           blogView.render(data);
         });
       }
