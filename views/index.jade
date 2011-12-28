@@ -1,9 +1,3 @@
-noscript
-  p Oops. This site is pretty dependent on Javascript, and it looks like your browser doesn't support Javascript or doesn't have it enabled. Sorry!
-  p: a(href="http://www.getfirefox.com") Download Firefox
-  p: a(href="http://www.google.com/chrome") Download Google Chrome
-  p: a(href="http://www.apple.com/safari") Download Safari
-  p: a(href="http://www.opera.com") Download Opera
 != partial('homeBtn', { show: false })
 #content
   != partial('about')
@@ -50,6 +44,12 @@ noscript
         a(href="/faces")
           img(src="/img/drawericons/linkedin_icon3.png")
         h2 Faces of LinkedIn
+noscript
+  p Oops. This site is pretty dependent on Javascript, and it looks like your browser doesn't support Javascript or doesn't have it enabled. Sorry!
+  p: a(href="http://www.getfirefox.com") Download Firefox
+  p: a(href="http://www.google.com/chrome") Download Google Chrome
+  p: a(href="http://www.apple.com/safari") Download Safari
+  p: a(href="http://www.opera.com") Download Opera
 
 script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 script(type="text/javascript", src="/js/underscore-min.js")

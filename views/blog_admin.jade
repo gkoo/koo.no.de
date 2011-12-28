@@ -7,7 +7,7 @@ ul#nav
     a(href='#edit', title='Blog Link') Edit
   li
     a(href='#posts', title='Blog Link') Posts
-#content
+#content.show
   .auth
     .enter-pw
       p Please enter a password to access the admin interface
@@ -45,6 +45,8 @@ ul#nav
           a.view-link(href="/blog/title/"+post.slug) View
           input.post-id(type="hidden", name="post-id", value=post.id)
           input.post-rev(type="hidden", name="post-rev", value=post.rev)
-script(type="text/javascript", src="/js/underscore.js")
-script(type="text/javascript", src="/js/backbone.js")
+
+script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+script(type="text/javascript", src="/js/underscore-min.js")
+script(type="text/javascript", src="/js/backbone-min-0.5.3.js")
 script(type="text/javascript", src="/js/blogadmin.js")

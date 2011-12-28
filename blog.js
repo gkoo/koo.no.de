@@ -489,7 +489,7 @@ Blog = function() {
       _this.getPostList({ limit: 10 }, function(posts) {
         res.render('blog_admin', {
           locals: {
-            page: 'blog',
+            page: 'blog_admin',
             posts: posts,
             title: 'Blog Admin'
           }
