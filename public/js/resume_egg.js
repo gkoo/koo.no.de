@@ -21,7 +21,7 @@ $(function() {
       $(this).hide();
     });
 
-    $('#wrapper').append(eggParent);
+    $('#main').append(eggParent);
   };
   eggTriggerEl.click(handleClick);
 });
