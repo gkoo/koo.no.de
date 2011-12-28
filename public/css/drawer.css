@@ -28,6 +28,7 @@ ul {
 
 #drawerWrapper {
   margin: 0 auto;
+  padding: 0 168px;
   text-align: center;
   width: 800px;
 }
