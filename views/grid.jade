@@ -1,3 +1,5 @@
+h2 welcome to the grid
+!= partial('homeBtn', { show: true })
 .loading
   p.loading-status Initializing grid particles...
   ul#grid
@@ -32,14 +34,16 @@
         input#editNameSubmit(type='button', value='Save name')
       input#clearBtn(type='button', value='Clear the Grid')
       //- input#testbtn(type='button', value='print grid on server')
-    h2 Artists
-    ul
-      li.null Where is everyone? There's nobody here!
+    //-
+      h2 Artists
+      ul
+        li.null Where is everyone? There's nobody here!
 h2 Upcoming features!
 ul
   li Saving!
   li Brush size! (maybe!)
   li That's it!
 
+script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 script(src='/socket.io/socket.io.js')
 script(src='/js/gridclient.js')

@@ -13,10 +13,14 @@ ul {
   list-style: none;
 }
 
+#main {
+  padding: 64px 64px;
+}
+
 #mainTitle {
   font-size: 48px;
-  margin: 50px auto 0;
-  padding: 0 168px 50px;
+  margin: 0 auto;
+  padding: 0 0 50px;
   width: 800px;
 }
 
@@ -28,7 +32,7 @@ ul {
 
 #drawerWrapper {
   margin: 0 auto;
-  padding: 0 168px;
+  padding: 0;
   text-align: center;
   width: 800px;
 }
@@ -184,32 +188,32 @@ ul {
 #homeBtn {
   background-color: #fff;
   border: 1px solid #666;
-  border-left: none;
+  border-top: none;
   display: block;
   margin: 0 auto 5px;
-  padding: 20px 0 0;
-  height: 168px;
-  width: 128px;
+  padding: 0;
+  height: 128px;
+  width: 168px;
 
-  position: fixed;
-  top: 50px;
-  left: -129px;
+  position: absolute;
+  top: -129px;
+  left: 50px;
   z-index: 10;
 
-  -moz-border-radius: 0 8px 8px 0;
-  -webkit-border-radius: 0 8px 8px 0;
-  -o-border-radius: 0 8px 8px 0;
-  border-radius: 0 8px 8px 0;
+  -moz-border-radius: 0 0 8px 8px;
+  -webkit-border-radius: 0 0 8px 8px;
+  -o-border-radius: 0 0 8px 8px;
+  border-radius: 0 0 8px 8px;
 
-  -moz-transition:    left .4s ease-in-out;
-  -webkit-transition: left .4s ease-in-out;
-  transition:         left .4s ease-in-out;
+  -moz-transition:    top .4s ease-in-out;
+  -webkit-transition: top .4s ease-in-out;
+  transition:         top .4s ease-in-out;
 }
 
 #homeBtn.show:hover {
-  -moz-box-shadow: 5px 5px 5px #999;
-  -webkit-box-shadow: 5px 5px 5px #999;
-  box-shadow: 5px 5px 5px #999;
+  -moz-box-shadow: 3px 1px 5px #999;
+  -webkit-box-shadow: 3px 1px 5px #999;
+  box-shadow: 3px 1px 5px #999;
 }
 
 #homeBtn.noanim {
@@ -219,11 +223,11 @@ ul {
 }
 
 #homeBtn.show {
-  left: 0;
+  top: 0;
 
-  -moz-box-shadow: 5px 5px 5px #ccc;
-  -webkit-box-shadow: 5px 5px 5px #ccc;
-  box-shadow: 5px 5px 5px #ccc;
+  -moz-box-shadow: 3px 1px 5px #ccc;
+  -webkit-box-shadow: 3px 1px 5px #ccc;
+  box-shadow: 3px 1px 5px #ccc;
 }
 
 /* ======= */
@@ -234,7 +238,7 @@ ul {
   display: none;
   margin: 0 auto 50px;
   min-height: 1px;
-  padding: 0 168px;
+  padding: 0;
   position: relative;
   text-align: left;
   width: 800px;
