@@ -1,12 +1,18 @@
 var socket            = null,
     grid              = null,
     mouseIsDown       = false,
-    currColorClass    = 'black',
     username          = '',
     PLAYER_ID_PREFIX  = 'player-',
     APP_NAME          = 'grid',
-    //PORT              = 8080,
-    PORT              = 80,
+    buffer            = [],
+    BLACK             = 0,
+    RED               = 1,
+    GREEN             = 2,
+    BLUE              = 3,
+    YELLOW            = 4,
+    WHITE             = 5,
+    COLORS            = ['black', 'red', 'green', 'blue', 'yellow', 'white'],
+    currColor    = BLACK,
 
 getCellByCoord = function(x, y) {
   // blah! nth-child is 1-indexed. why??
@@ -43,11 +49,11 @@ toggleCell = function(cellInfo) {
   var cell = getCellFromCellInfo(cellInfo);
   if (!cell) { return; }
 
-  if (typeof cellInfo.currColorClass !== 'undefined' && cellInfo.currColorClass) {
-    cell.css('display', 'none');
-    cell.removeClass();
-    cellInfo.currColorClass ? cell.addClass(cellInfo.currColorClass) : cell.addClass(currColorClass);
-    cell.css('display', 'inline-block');
+  if (typeof cellInfo.currColor !== 'undefined') {
+    cell.attr('class', COLORS[cellInfo.currColor]);
+  }
+  else {
+    cell.attr('class', COLORS[currColor]);
   }
 },
 
@@ -66,21 +72,19 @@ getCoordByCell = function(el) {
  * returns true.
  */
 isDrawable = function(el) {
-  return el.get(0).tagName.toLowerCase() === 'li' && !el.hasClass(currColorClass);
+  return el.get(0).tagName.toLowerCase() === 'li' && !el.hasClass(COLORS[currColor]);
 },
 
 doDraw = function(el) {
   if (mouseIsDown && isDrawable(el)) {
     var elemCoord = getCoordByCell(el),
-        color = currColorClass || '';
+        color = currColor || WHITE;
 
-    toggleCell({ cell: el, currColorClass: color });
-    socket.send({
-      app:  APP_NAME,
-      type: 'toggle',
+    toggleCell({ cell: el, currColor: color });
+    buffer.push({
       x:    elemCoord.x,
       y:    elemCoord.y,
-      currColorClass: currColorClass,
+      currColor: currColor,
       username: username
     });
   }
@@ -131,53 +135,52 @@ handleNameChange = function() {
   }
 };
 
-$(document).ready(function() {
+$(function() {
+
+  var togglePixel = function(data) {
+    toggleCell(data);
+    addLabel(data);
+  };
 
   grid  = document.getElementById('grid');
-  socket = new io.Socket(null, {port: PORT, rememberTransport: false});
-  socket.connect();
+  socket = new io.connect('http://localhost');
 
-  socket.on('message', function(obj) {
-    if ('type' in obj) {
-      switch(obj.type) {
-        case 'toggle':
-          toggleCell(obj);
-          addLabel(obj);
-          break;
-        case 'clear':
-          $('#grid ul li').removeClass();
-          break;
-      }
+  // Receives a buffer of pixels to toggle,
+  // and calls togglePixel on each pixel data.
+  socket.on('togglePixels', function(data) {
+    var i, len, toggleData;
+    for (i=0,len=data.length; i<len; ++i) {
+      toggleData = data[i];
+      togglePixel(toggleData);
     }
-    else if ('grid' in obj) {
-      if (obj.grid) {
-        // Do initialization of grid, if there is any to be done.
-        for (var i=0; i<obj.grid.length; ++i) { // i: columns
-          for (var j=0; j<obj.grid[i].length; ++j) { // j: rows
-            var cell = getCellByCoord(i, j);
-            if (obj.grid[i][j] !== cell.attr('class')) {
-              toggleCell({ cell: cell, currColorClass: obj.grid[i][j] });
-            }
+  });
+
+  socket.on('clear', function() {
+    $('#grid ul li').removeClass();
+  });
+
+  socket.on('grid', function(data) {
+    if (data !== null) {
+      // Do initialization of grid, if there is any to be done.
+      for (var i=0; i<data.length; ++i) { // i: columns
+        for (var j=0; j<data[i].length; ++j) { // j: rows
+          var cell = getCellByCoord(i, j);
+          if (typeof data[i][j] !== 'undefined' && data[i][j] !== WHITE) {
+            toggleCell({ cell: cell, currColor: data[i][j] });
           }
         }
       }
-      $('#wrapper').children(':first-child').removeClass('loading');
     }
-    else if ('msg' in obj) {
-      alert (obj.msg);
-    }
-  });
+    $('.loading').removeClass('loading');
 
-  /*
-  $('#grid ul li').click(function(evt) {
-    var elem      = evt.target,
-        elemCoord = getCoordByCell(elem);
-
-    toggleCell({ cell: elem });
-    socket.send({ type: 'toggle', x: elemCoord.x, y: elemCoord.y });
-    evt.stopPropagation();
+    // send toggled pixels to server on a set interval
+    setInterval(function() {
+      if (buffer.length) {
+        socket.emit('togglePixels', buffer);
+        buffer = [];
+      }
+    }, 100);
   });
-  */
 
   $('#grid').mousedown(function(evt) {
     var el = $(evt.target),
@@ -206,10 +209,7 @@ $(document).ready(function() {
     var target = $(evt.target);
     if (target.attr('id') === 'clearBtn') {
       $('#grid ul li').removeClass();
-      socket.send({
-        app: APP_NAME,
-        type: 'clear'
-      });
+      socket.emit('clear');
     }
     // Initiate setting name.
     else if (target.attr('id') === 'editNameBtn') {
@@ -221,12 +221,17 @@ $(document).ready(function() {
       handleNameChange();
     }
     else if (target.is('a')) {
-      var yourColor = $('#colorMsg').children('div');
-      currColorClass = target.attr('class');
-      yourColor.css('display', 'none');
-      yourColor.removeClass();
-      yourColor.addClass(currColorClass);
-      yourColor.css('display', 'block');
+      var yourColor = $('#colorMsg').children('div'),
+          colorClass = target.attr('class'),
+          i, len;
+
+      for (i=0,len=COLORS.length; i<len; ++i) {
+        if (colorClass === COLORS[i]) {
+          currColor = i;
+          break;
+        }
+      }
+      yourColor.attr('class', COLORS[currColor]);
       evt.preventDefault();
     }
   });
@@ -236,10 +241,6 @@ $(document).ready(function() {
     if (evt.keyCode == '13') {
       handleNameChange();
     }
-  });
-
-  $('#testbtn').click(function(evt) {
-    socket.send({ type: 'printGrid' });
   });
 
 });

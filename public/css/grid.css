@@ -53,8 +53,9 @@
 #controls {
   border: 1px solid #000;
   min-height: 109px;
-  margin-top: 20px;
+  margin: 20px auto;
   padding: 10px;
+  width: 640px;
 }
 .colors li {
   float: left;
