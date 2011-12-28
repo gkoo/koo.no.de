@@ -1,7 +1,13 @@
-li
-  h3
+- var blogPostLink = "/blog/title/" + blogpost.slug;
+li.blogPost
+  h3.blogPostTitle
     //- TODO: figure out how to include date in CouchDB view blogslugs
     //- a(href="/blog/#{blogpost.year}/#{blogpost.month}/#{blogpost.slug}") #{blogpost.title}
-    a(href="/blog/title/#{blogpost.slug}") #{blogpost.title}
-  p #{blogpost.timestamp}
-  !{blogpost.post}
+    a(href=blogPostLink) #{blogpost.title}
+  p.datetime #{blogpost.timestamp}
+  //-
+    a.share(href="#", title="Share this post") Share
+    .share-links
+      a.twitter-share-button(href="https://www.twitter.com/share?url=http://www.gordonkoo.com"+blogPostLink+"&text="+blogpost.title) Tweet
+  .post-wrapper
+    !{blogpost.post}

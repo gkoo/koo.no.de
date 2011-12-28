@@ -254,23 +254,3 @@ ul {
 #content a {
   color: #069;
 }
-
-/* ==== */
-/* BLOG */
-/* ==== */
-
-.spinner {
-  text-align: center;
-}
-
-.spinner img {
-  margin: 40px auto 0;
-}
-
-.blogPost {
-  margin: 70px 0;
-}
-
-.blogPostTitle {
-  font-size: 28px;
-}

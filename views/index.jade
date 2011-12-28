@@ -1,69 +1,55 @@
-.section.about
-  h2 About
-  .content
-    p
-      | My name is Gordon Koo. I'm a software developer in the San Francisco Bay Area, currently working at
-      a(href='http://www.linkedin.com')
-        = 'LinkedIn'
-      | , a site aimed at connecting professionals. Here is my
-      a(href='http://www.linkedin.com/in/gordonkoo')
-        = 'LinkedIn profile'
-      | .
-    p
-      | This site was made using
-      a(href='http://nodejs.org')
-        = 'NodeJS'
-      //-
-        |  (
-        a(href='http://expressjs.com/')
-          = 'Express'
-      |  and 
-      //-
-        a(href='http://socket.io/')
-          = 'Socket.IO'
-        |  ),
-        a(href='http://redis.io/')
-          = 'Redis'
-        |  and
-      a(href='http://couchdb.apache.org/')
-        = 'CouchDB'
-      | .
+noscript Oops. This site is pretty dependent on Javascript, and it looks like your browser doesn't support Javascript or doesn't have it enabled. Sorry!
+#content
+  != partial('about')
+  != partial('blog')
+  != partial('resume')
+#drawerWrapper.hidden
+  ul#drawer.hide
+    ul.row
+      li.item
+        a(href="#about")
+          img(src="/img/drawericons/about_icon.png")
+        h2 About
+      li.item
+        a(href="#blog")
+          img(src="/img/drawericons/blog_icon.png")
+        h2 Blog
+      li.item
+        a(href="#resume")
+          img(src="/img/drawericons/resume_icon.png")
+        h2 Resume
+    ul.row
+      li.item
+        a(href="http://www.linkedin.com/in/gordonkoo")
+          img(src="/img/drawericons/linkedin_icon3.png")
+        h2 LinkedIn
+      li.item
+        a(href="http://www.twitter.com/superkerplunk")
+          img(src="/img/drawericons/twitter_icon.png")
+        h2 Twitter
+      li.item
+        a(href="https://github.com/gkoo")
+          img(src="/img/drawericons/github_icon.png")
+        h2 Github
+    ul.row
+      li.item.timeline
+        a(href="http://timeline.linkedinlabs.com")
+          img(src="/img/drawericons/timeline_icon.jpg")
+        h2 Connection Timeline
+      li.item.grid
+        a(href="/grid")
+          img(src="/img/drawericons/grid_icon.png")
+        h2 Grid
+      li.item
+        a(href="/faces")
+          img(src="/img/drawericons/linkedin_icon3.png")
+        h2 Faces of LinkedIn
+a#homeBtn(href="#home")
+  img(src="/img/drawericons/home_icon.png")
 
-.section.projects
-  h2 Projects
-  .content
-    ul
-      li
-        h3
-          a(href='grid') Grid
-        p You draw on it and say, "Huzzah!" Exponentially more fun with friends!
-      li
-        h3
-          a(href='http://timeline.linkedinlabs.com') LinkedIn Connection Timeline
-        p Visualize your LinkedIn connections ... through time and space!
-      li
-        h3
-          a(href='http://koo.no.de/faces') Faces of LinkedIn
-        p
-          | A mash-up experiment using
-          a(href='http://www.face.com/')
-            = 'Face.com'
-          |  and
-          a(href='http://developer.linkedin.com')
-            = 'LinkedIn'
-
-          | 's APIs. Browse your connections by facial expression.
-
-.section.blog
-  h2 Blog
-  .content
-    p I made a 
-      a(href='/blog') blog
-      | .
-
-.section.resume
-  h2 Resume
-  .content
-    p I made a 
-      a(href='/resume') resume
-      | .
+script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+script(type="text/javascript", src="/js/underscore-min.js")
+script(type="text/javascript", src="/js/json2.js")
+script(type="text/javascript", src="/js/backbone-min-0.5.3.js")
+script(type="text/javascript", src="/js/drawer.js")
+script(type="text/javascript", src="/js/resume_egg.js")

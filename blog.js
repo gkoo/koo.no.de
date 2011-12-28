@@ -520,7 +520,6 @@ Blog = function() {
         var cleanedPost = _this.cleanPosts(data);
         res.render('blog', {
           locals: {
-            page: 'blog',
             title: 'My Blog',
             posts: cleanedPost,
             nextLink: '',

@@ -257,7 +257,7 @@ SiteController = function() {
 
 init = function() {
   var controller = new SiteController();
-  Backbone.history.start({ pushState: true });
+  Backbone.history.start();
 };
 
 $(function() {

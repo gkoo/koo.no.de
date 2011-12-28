@@ -1,11 +1,13 @@
-h2.header it's a blog
-div
-  a(href='/', title='Back to Home') Home
-  | &nbsp;
-  a(href='/blog', title='Blog Link') Blog
-ul.posts
-  != partial('blogpost', posts)
-- if (typeof prevLink !== 'undefined' && prevLink !== '')
-  a.prev.blog-nav(href=prevLink) prev
-- if (typeof nextLink !== 'undefined' && nextLink !== '')
-  a.next.blog-nav(href=nextLink) next
+#content.show
+  #blogSection
+    h2.sectionTitle it's a blog
+    .blogContent
+    ul.posts
+      != partial('blogpost', posts)
+    - if (typeof prevLink !== 'undefined' && prevLink !== '')
+      a.prev.blog-nav(href=prevLink) prev
+    - if (typeof nextLink !== 'undefined' && nextLink !== '')
+      a.next.blog-nav(href=nextLink) next
+
+  a#homeBtn.show(href="/")
+    img(src="/img/drawericons/home_icon.png")
