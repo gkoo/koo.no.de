@@ -143,7 +143,7 @@ $(function() {
   };
 
   grid  = document.getElementById('grid');
-  socket = new io.connect('http://localhost');
+  socket = new io.connect('http://www.gordonkoo.com');
 
   // Receives a buffer of pixels to toggle,
   // and calls togglePixel on each pixel data.
