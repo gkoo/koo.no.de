@@ -1,3 +1,5 @@
+a#homeBtn.show(href="/")
+  img(src="/img/drawericons/home_icon.png")
 #content.show
   #blogSection
     h2.sectionTitle it's a blog
@@ -8,6 +10,3 @@
       a.prev.blog-nav(href=prevLink) prev
     - if (typeof nextLink !== 'undefined' && nextLink !== '')
       a.next.blog-nav(href=nextLink) next
-
-  a#homeBtn.show(href="/")
-    img(src="/img/drawericons/home_icon.png")
