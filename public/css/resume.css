@@ -1,9 +1,8 @@
 #resumeSection {
   border: 1px solid #ccc;
-  font-family: Helvetica, Arial;
-  font-size: 13px;
+  font-size: 1.6em;
   margin: 0 auto 20px;
-  padding: 50px;
+  padding: 2em 1em 1em;
   position: relative;
   text-align: left;
 
@@ -17,10 +16,11 @@
 }
 #resumeSection .name {
   float: left;
+  font-size: 1.8em;
 }
 #resumeSection .contact {
-  float: right;
-  margin: 0 0 20px;
+  clear: left;
+  padding-top: 1em;
 }
 #resumeSection .contact h3 {
   margin: 5px 0;
@@ -33,34 +33,38 @@
 }
 #resumeSection .section-heading {
   float: left;
-  margin: 16px 0;
-  width: 200px;
+  font-size: 1.6em;
+  margin: 1.6em 0 0;
+  /*width: 200px;*/
 }
 #resumeSection .section-content {
   float: left;
   padding: 0 0 17px;
-  width: 498px;
+  /*width: 498px;*/
 }
 #resumeSection #skills {
   clear: both;
 }
+#skillsListWrapper {
+  margin: 1.6em 0;
+}
 #resumeSection #skills .sub,
 #resumeSection #interests .sub {
-  margin-left: 20px;
+  margin-left: 2em;
 }
 #resumeSection #skills ul,
 #resumeSection #interests ul {
+  float: left;
+  font-size: 1.4em;
   list-style-type: disc;
   list-style-position: outside;
-  margin: 16px 90px 0 0;
+  margin: 0 9em 0 0;
   padding: 0 0 0 20px;
-  float: left;
 }
 #resumeSection #skills ul.last {
   margin-right: 0;
 }
 #resumeSection #skills .disclaimer {
-  font-size: 10px;
   font-style: italic;
   clear: left;
 }
@@ -110,4 +114,14 @@
   margin: 100px auto;
   padding: 20px;
   width: 600px;
+}
+
+@media only screen and (min-width: 480px) {
+  #resumeSection {
+    padding: 50px;
+  }
+  #resumeSection .contact {
+    float: right;
+    margin: 0 0 20px;
+  }
 }
