@@ -11,13 +11,14 @@ Blog = function() {
     var options = { host: 'gkoo.iriscouch.com',
                     port: 80,
                     method: opt.method ? opt.method : 'GET',
-                    path: '/blog/',
                     headers: { 'Authorization': 'Basic a29vbm9kZTpDYXlnb25nQmxvZzg2Kg==',
                                'Content-Type': 'application/json' },
                   },
         response = '',
         data = opt ? opt.data : null,
         req, prop;
+
+    options.path = '/blog/';
 
     // '/blog/' for posting, everything else for reading
     if (opt.view) {
