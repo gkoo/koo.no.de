@@ -7,10 +7,6 @@ DrawerView = Backbone.View.extend({
     _.bindAll(this, 'hide', 'show');
     this.drawerEl = $('#drawer');
     this.visible = false;
-    // Detect mobile or not. Hacky? Maybe.
-    if (document.body.ontouchstart !== undefined) {
-      this.el.addClass('touch');
-    }
   },
 
   show: function() {
