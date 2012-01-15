@@ -23,7 +23,7 @@ var Resume = function() {
     { name: 'Faces of LinkedIn',
       url: 'http://koo.no.de/faces',
            dates: '7/2011',
-           description: '<p>A mashup of the Face.com API and LinkedIn\'s Javascript API. Take your LinkedIn connections and filter them by who\'s happy, who\'s angry, who wears glasses, and more. Winner of LinkedIn\'s July Hackday.</p>'
+           description: '<p>A mashup of the Face.com API and LinkedIn\'s Javascript API. Take your LinkedIn connections and filter them by who\'s happy, who\'s angry, who wears glasses, and more. Winner of LinkedIn\'s July 2011 Hackday.</p>'
     },
     { name: 'LinkedIn Connection Timeline',
       url: 'http://timeline.linkedinlabs.com',

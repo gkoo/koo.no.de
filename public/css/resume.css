@@ -36,7 +36,7 @@
 }
 #resumeSection h2.section-heading {
   float: left;
-  font-size: 1.8em;
+  font-size: 2em;
   margin: 1.6em 0 0;
   /*width: 200px;*/
 }
@@ -61,8 +61,9 @@
   font-size: 1.6em;
   list-style-type: disc;
   list-style-position: outside;
-  margin: 0 8.5em 0 0;
+  margin: 0;
   padding: 0 0 0 20px;
+  width: 11em;
 }
 #resumeSection .skills ul.last {
   margin-right: 0;
@@ -83,7 +84,7 @@
 }
 #resumeSection .headline {
   font-size: 1.6em;
-  margin: 20px 0;
+  margin: 1em 0;
 }
 #resumeSection .position,
 #resumeSection .project-name,
@@ -141,7 +142,7 @@
 
 @media only screen and (min-width: 480px) {
   #resumeSection {
-    padding: 25px;
+    padding: 2.5em;
   }
   #resumeSection .name {
     float: left;
@@ -157,5 +158,28 @@
   }
   #resumeSection .interests ul {
     margin: 0 9em 0 0;
+  }
+}
+@media only screen and (min-width: 600px) {
+  #resumeSection {
+    padding: 5em;
+  }
+  #resumeSection h2.section-heading {
+    margin: .8em 0;
+    width: 10em;
+  }
+  #resumeSection .section-content {
+    width: 49em;
+  }
+  #resumeSection .skills ul,
+  #resumeSection .interests ul {
+    margin: 0 3.5em 0 0;
+    width: auto;
+  }
+  #resumeSection .skills .disclaimer {
+    font-size: 1.2em;
+  }
+  #resumeSection .interests .section-content {
+    margin-top: 1.6em;
   }
 }

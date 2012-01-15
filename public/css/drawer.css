@@ -7,7 +7,6 @@ body, ul, h1, h2, h3, h4, h5, div {
 
 body {
   font-family: Helvetica, Arial;
-  position: relative;
   text-align: center;
 }
 
@@ -32,15 +31,6 @@ ul {
   -webkit-transition: font-size 1s; /* Safari and Chrome */
   -o-transition: font-size 1s; /* Opera */
   transition: font-size 1s;
-}
-
-.homeLink {
-  font-size: 1.6em;
-  text-align: left;
-}
-
-.homeLink a {
-  color: #069;
 }
 
 .sectionTitle {
@@ -182,6 +172,22 @@ ul {
 /* ======== */
 /* HOME BTN */
 /* ======== */
+
+/* .homeLink is for 320-width design */
+.homeLink {
+  font-size: 1.6em;
+  text-align: left;
+}
+
+.homeLink a {
+  color: #069;
+}
+
+#homeBtnWrapper {
+  border: 0;
+  margin: 0 auto;
+  position: relative;
+}
 
 #homeBtn {
   display: none;
@@ -359,6 +365,9 @@ ul {
 
 @media only screen and (min-width: 768px) {
   #content {
+    max-width: 800px;
+  }
+  #homeBtnWrapper {
     max-width: 800px;
   }
 }

@@ -20,6 +20,7 @@
 }
 .innergrid {
   background-color: #fff;
+  height: 22px;
 }
 #grid .innergrid li {
   border: 1px solid #000;
