@@ -102,17 +102,14 @@ ul {
 
 #drawerWrapper .item h2 {
   display: none;
+  font-size: 1.5em;
+  padding-top: .2em;
+  text-align: center;
 }
 
 #drawerWrapper .item:hover h2,
 #drawerWrapper.touch .item h2 {
   display: block;
-}
-
-.item h2 {
-  font-size: 1.5em;
-  padding-top: .2em;
-  text-align: center;
 }
 
 /* ====== */
@@ -360,6 +357,9 @@ ul {
 @media only screen and (min-width: 600px) {
   #mainTitle {
     font-size: 7.2em;
+  }
+  #drawerWrapper .item h2 {
+    font-size: 2.4em;
   }
 }
 
