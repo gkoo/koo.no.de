@@ -1,6 +1,7 @@
 /* ADMIN - AUTH */
 #nav li {
   display: inline;
+  font-size: 1.6em;
   padding-right: 20px;
 }
 .enter-pw {
@@ -14,6 +15,7 @@
   margin-top: 20px;
 }
 .createPostForm h2 {
+  font-size: 2.4em;
   margin: 20px 0;
 }
 #postTitle,
@@ -44,9 +46,11 @@
   margin-bottom: 20px;
 }
 .formatting {
+  font-size: 1.6em;
   overflow: hidden;
 }
 .formattingHelp {
+  font-size: 1.6em;
   position: relative;
   top: -100px;
 
