@@ -168,9 +168,6 @@
     margin: .8em 0;
     width: 10em;
   }
-  #resumeSection .section-content {
-    width: 49em;
-  }
   #resumeSection .skills ul,
   #resumeSection .interests ul {
     margin: 0 3.5em 0 0;
@@ -181,5 +178,10 @@
   }
   #resumeSection .interests .section-content {
     margin-top: 1.6em;
+  }
+}
+@media only screen and (min-width: 850px) {
+  #resumeSection .section-content {
+    width: 49em;
   }
 }
