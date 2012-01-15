@@ -1,3 +1,14 @@
+.upcoming h2,
+.whatisthis h2 {
+  font-size: 2em;
+}
+#colorMsg,
+.nameLabel,
+#username span,
+.upcoming ul,
+.whatisthis p {
+  font-size: 1.6em;
+}
 .loading #grid {
   visibility: hidden;
 }
@@ -37,13 +48,15 @@
   background-color: #d5a222;
   border: 1px solid black;
   float: left;
-  left: -2px;
+
   position: relative;
   top: -20px;
+  left: -2px;
 }
 .loading .loading-status {
   display: block;
   float: left;
+  font-size: 1.6em;
   padding-top: 100px;
   text-align: center;
   width: 100%;
@@ -90,6 +103,11 @@
 #colorMsg {
   float: right;
   text-align: center;
+}
+.extra {
+  margin: 0 auto 20px;
+  text-align: left;
+  width: 640px;
 }
 .black {
   background-color: #000;

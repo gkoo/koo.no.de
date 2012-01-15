@@ -37,11 +37,31 @@ h2.sectionTitle welcome to the grid
       h2 Artists
       ul
         li.null Where is everyone? There's nobody here!
-h2 Upcoming features!
-ul
-  li Saving!
-  li Brush size! (maybe!)
-  li That's it!
+.extra
+  .whatisthis
+    h2 What is this?
+    p
+      | This project is just an experiment with the real-time
+      | capabilities of
+      a(href="http://nodejs.org", target="blank") NodeJS
+      |  using
+      a(href="http://socket.io", target="blank") socket.io
+      | .
+    h2 What do I do here?
+    p
+      | Use your mouse to click and drag on the grid to draw on it.
+      | What you draw will show up in other people's browsers, so
+      | try it with a friend! If you don't happen to have a friend
+      | around at the moment, you can still try it out by opening
+      | up this same page in two browsers and seeing your drawing
+      | appear in both browsers at the same time!
+  .upcoming
+    h2 Upcoming features!
+    ul
+      li Saving!
+      li Brush size! (maybe!)
+      li Mobile support!
+      li That's it!
 
 script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
 script(src='/socket.io/socket.io.js')
