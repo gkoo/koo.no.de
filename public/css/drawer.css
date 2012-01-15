@@ -100,6 +100,18 @@ ul {
   height: 100%;
 }
 
+.item.grid img {
+  border: 2px solid #000;
+}
+
+.item.timeline img,
+.item.grid img {
+  -moz-border-radius: 16px;
+  -webkit-border-radius: 16px;
+  -o-border-radius: 16px;
+  border-radius: 16px;
+}
+
 #drawerWrapper .item h2 {
   display: none;
   font-size: 1.5em;
