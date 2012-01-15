@@ -1,12 +1,12 @@
 #resumeSection
-  #header.section.first
+  .header.section.first
     h1.name Gordon Koo
     .contact
       h3.website
         a(href="http://www.gordonkoo.com", target="_blank") www.gordonkoo.com
       h3.linkedin
         a(href="http://www.linkedin.com/in/gordonkoo", target="_blank") www.linkedin.com/in/gordonkoo
-  #skills.section
+  .skills.section
     h2.section-heading Skills &raquo;
     .section-content
       #skillsListWrapper
@@ -29,28 +29,28 @@
           li Python*
           li Django*
       p.disclaimer * These skills are at intermediate level or could use some brushing up.
-  #experiences.section
+  .experiences.section
     h2.section-heading Experience &raquo;
     .section-content
       ul
         each experience in experiences
           != partial('resume_position', experience)
-  #projects.section
+  .projects.section
     h2.section-heading Projects &raquo;
     .section-content
       ul.project
         each project in projects
           != partial('resume_project', project)
-  #educations.section
+  .educations.section
     h2.section-heading Education &raquo;
     .section-content
       .education
         h4.headline
-          span Stanford University
+          span.college Stanford University
           span.dates 9/04 &mdash; 6/08
         p BS, Computer Science
         p Activities: Asian American Students' Association, The Stanford Fleet Street Singers
-  #interests.section
+  .interests.section
     h2.section-heading Interests &raquo;
     .section-content
       ul

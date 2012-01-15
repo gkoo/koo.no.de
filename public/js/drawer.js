@@ -93,7 +93,7 @@ ContentView = Backbone.View.extend({
     }
 
     sectionEl.show()
-             .siblings().hide();
+             .siblings(':not(.homeLink)').hide();
 
     // slide content down
     if (!animate) {

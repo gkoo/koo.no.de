@@ -1,6 +1,5 @@
 #resumeSection {
   border: 1px solid #ccc;
-  font-size: 1.6em;
   margin: 0 auto 20px;
   padding: 2em 1em 1em;
   position: relative;
@@ -14,16 +13,20 @@
 #resumeSection a:visited {
   color: #069;
 }
-#resumeSection .name {
+#resumeSection p {
+  clear: left;
+}
+#resumeSection h1 {
   float: left;
-  font-size: 1.8em;
+  font-size: 2.4em;
 }
 #resumeSection .contact {
   clear: left;
   padding-top: 1em;
 }
 #resumeSection .contact h3 {
-  margin: 5px 0;
+  font-size: 1.6em;
+  margin: 0 0 5px;
 }
 #resumeSection .section {
   border-top: 1px solid #ccc;
@@ -31,9 +34,9 @@
 #resumeSection .section.first {
   border: none;
 }
-#resumeSection .section-heading {
+#resumeSection h2.section-heading {
   float: left;
-  font-size: 1.6em;
+  font-size: 1.8em;
   margin: 1.6em 0 0;
   /*width: 200px;*/
 }
@@ -42,52 +45,72 @@
   padding: 0 0 17px;
   /*width: 498px;*/
 }
-#resumeSection #skills {
+#resumeSection .skills {
   clear: both;
 }
 #skillsListWrapper {
   margin: 1.6em 0;
 }
-#resumeSection #skills .sub,
-#resumeSection #interests .sub {
+#resumeSection .skills .sub,
+#resumeSection .interests .sub {
   margin-left: 2em;
 }
-#resumeSection #skills ul,
-#resumeSection #interests ul {
+#resumeSection .skills ul,
+#resumeSection .interests ul {
   float: left;
-  font-size: 1.4em;
+  font-size: 1.6em;
   list-style-type: disc;
   list-style-position: outside;
-  margin: 0 9em 0 0;
+  margin: 0 8.5em 0 0;
   padding: 0 0 0 20px;
 }
-#resumeSection #skills ul.last {
+#resumeSection .skills ul.last {
   margin-right: 0;
 }
-#resumeSection #skills .disclaimer {
-  font-style: italic;
+#resumeSection .skills .disclaimer {
   clear: left;
+  font-style: italic;
+  padding-top: 10px;
 }
-#resumeSection #experiences ul,
-#resumeSection #projects ul {
+#resumeSection .experiences ul,
+#resumeSection .projects ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
+#resumeSection h4 {
+  font-size: 1.6em;
+}
 #resumeSection .headline {
-  margin: 17px 0;
+  font-size: 1.6em;
+  margin: 20px 0;
+}
+#resumeSection .position,
+#resumeSection .project-name,
+#resumeSection .college {
+  display: block;
+  float: left;
 }
 #resumeSection .dates {
   display: block;
-  float: right;
+  clear: left;
+  float: left;
+  font-style: italic;
+  font-weight: normal;
 }
 #resumeSection .position-description {
   clear: both;
 }
-#interests ul {
+#resumeSection .position-description {
+  padding-top: 1px;
+}
+#resumeSection .interests ul {
   list-style-type: disc;
   list-style-position: outside;
-  margin-bottom: 0;
+  margin: 0;
+}
+#resumeSection .interests li {
+  float: none;
 }
 #resumeSection .clearfix,
 #resumeSection .section {
@@ -118,10 +141,21 @@
 
 @media only screen and (min-width: 480px) {
   #resumeSection {
-    padding: 50px;
+    padding: 25px;
+  }
+  #resumeSection .name {
+    float: left;
   }
   #resumeSection .contact {
+    clear: none;
     float: right;
     margin: 0 0 20px;
+    padding: 0;
+  }
+  #resumeSection .skills {
+    clear: both;
+  }
+  #resumeSection .interests ul {
+    margin: 0 9em 0 0;
   }
 }

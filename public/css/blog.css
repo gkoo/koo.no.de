@@ -7,7 +7,7 @@
 }
 
 .blogPost {
-  margin: 70px 0;
+  margin: 35px 0;
 }
 
 .blogPostTitle {
@@ -16,4 +16,16 @@
 
 .datetime {
   font-style: italic;
+}
+
+@media only screen and (min-width: 480px) {
+  .blogPost {
+    margin: 35px 0;
+  }
+}
+
+@media only screen and (min-width: 480px) {
+  .blogPost {
+    margin: 48px 0;
+  }
 }

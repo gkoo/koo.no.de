@@ -34,6 +34,15 @@ ul {
   transition: font-size 1s;
 }
 
+.homeLink {
+  font-size: 1.6em;
+  text-align: left;
+}
+
+.homeLink a {
+  color: #069;
+}
+
 .sectionTitle {
   font-size: 3em;
   /*margin: -10px 0 20px;*/
@@ -335,6 +344,10 @@ ul {
 
   .homeLink {
     display: none;
+  }
+
+  #content p {
+    line-height: 1.5em;
   }
 }
 
