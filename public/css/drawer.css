@@ -294,9 +294,19 @@ ul {
     left: 51em; /* 45 + (12/2) = 51 */
   }
 
+  #content p {
+    line-height: 1.5em;
+  }
+}
+
+@media only screen and (min-width: 600px) {
   /* ======== */
   /* HOME BTN */
   /* ======== */
+  .homeLink {
+    display: none;
+  }
+
   #homeBtn {
     background-color: #fff;
     border: 1px solid #666;
@@ -345,16 +355,6 @@ ul {
     height: 7.5em;
   }
 
-  .homeLink {
-    display: none;
-  }
-
-  #content p {
-    line-height: 1.5em;
-  }
-}
-
-@media only screen and (min-width: 600px) {
   #mainTitle {
     font-size: 7.2em;
   }
