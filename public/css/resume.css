@@ -58,12 +58,15 @@
 #resumeSection .skills ul,
 #resumeSection .interests ul {
   float: left;
-  font-size: 1.6em;
   list-style-type: disc;
   list-style-position: outside;
   margin: 0;
   padding: 0 0 0 20px;
   width: 11em;
+}
+#resumeSection .skills li,
+#resumeSection .interests li {
+  font-size: 1.6em;
 }
 #resumeSection .skills ul.last {
   margin-right: 0;
