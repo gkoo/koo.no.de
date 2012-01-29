@@ -109,6 +109,9 @@
   text-align: left;
   width: 640px;
 }
+.upcoming li {
+  font-size: 1em;
+}
 .black {
   background-color: #000;
 }
