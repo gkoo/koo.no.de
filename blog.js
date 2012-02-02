@@ -5,6 +5,7 @@
 // TODO: check pw via hash
 
 var http = require('http'),
+    fs = require('fs'),
 
 Blog = function() {
   var couchRequest = function(opt, callback) {
@@ -17,7 +18,7 @@ Blog = function() {
                   },
         response = '',
         data = opt ? opt.data : null,
-        req, prop;
+        req, prop, date;
 
     // '/blog/' for posting, everything else for reading
     if (opt.view) {
@@ -47,11 +48,17 @@ Blog = function() {
       options.method = opt.method ? opt.method : 'POST';
     }
 
+    // log how long it took to get posts
+    date = new Date();
     req = http.request(options, function(res) {
       res.on('data', function(chunk) {
         response += chunk;
       });
       res.on('end', function() {
+        var d = new Date(),
+            stream = fs.createWriteStream('blogResponseTime.log', { flags: 'a', encoding: null, mode: 0666 });
+        stream.write('[' + d.toString() + '] Blog request took: ' + (d.getTime() - date) + ' milliseconds\n');
+
         callback(JSON.parse(response));
       });
     });
