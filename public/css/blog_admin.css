@@ -60,6 +60,9 @@
   transition-property: top;
   transition-duration: .5s;
 }
+.formattingHelp li {
+  font-size: 1em;
+}
 /* ADMIN - POST LIST */
 .post-list .list {
   list-style: none;
