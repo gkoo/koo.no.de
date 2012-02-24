@@ -1,59 +1,47 @@
-#content
-  p.homeLink
-    a(href="#home") Home
-  != partial('about')
-  != partial('blog')
-  != partial('resume')
-#drawerWrapper.hidden
-  ul#drawer.hide
-    ul.row
-      li.item
-        a(href="#about")
-          img(src="/img/drawericons/about_icon.png")
-        h2 About
-      li.item
-        a(href="#blog")
-          img(src="/img/drawericons/blog_icon.png")
-        h2 Blog
-      li.item
-        a(href="#resume")
-          img(src="/img/drawericons/resume_icon.png")
-        h2 Resume
-    ul.row
-      li.item
-        a(href="http://www.linkedin.com/in/gordonkoo")
-          img(src="/img/drawericons/linkedin_icon3.png")
-        h2 LinkedIn
-      li.item
-        a(href="http://www.twitter.com/superkerplunk")
-          img(src="/img/drawericons/twitter_icon.png")
-        h2 Twitter
-      li.item
-        a(href="https://github.com/gkoo")
-          img(src="/img/drawericons/github_icon.png")
-        h2 Github
-    ul.row
-      li.item.timeline
-        a(href="http://timeline.linkedinlabs.com")
-          img(src="/img/drawericons/timeline_icon.jpg")
-        h2 Connection Timeline
-      li.item.grid
-        a(href="/grid")
-          img(src="/img/drawericons/grid_icon.png")
-        h2 Grid
-      li.item
-        a(href="http://gordonkoo.com/faces")
-          img(src="/img/drawericons/linkedin_icon3.png")
-        h2 Faces of LinkedIn
-noscript
-  p Oops. This site is pretty dependent on Javascript, and it looks like your browser doesn't support Javascript or doesn't have it enabled. Sorry!
-  p: a(href="http://www.getfirefox.com") Download Firefox
-  p: a(href="http://www.google.com/chrome") Download Google Chrome
-  p: a(href="http://www.apple.com/safari") Download Safari
-  p: a(href="http://www.opera.com") Download Opera
+!!! 5
+html
+  head
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title= title
+    //link(href='http://fonts.googleapis.com/css?family=Exo:500,800', rel='stylesheet', type='text/css')
+    //link(rel='stylesheet', type='text/css', href='/css/style.css')
+    link(rel='stylesheet/less', type='text/css', href='/css/style.less')
+    link(rel='stylesheet/less', type='text/css', href='/css/about.less')
+    script(type='text/javascript', src='/js/less-1.2.1.min.js')
+  body
+    #main
+      //h1#mainTitle= title
 
-script(type="text/javascript", src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
-script(type="text/javascript", src="/js/underscore-min.js")
-script(type="text/javascript", src="/js/backbone-min-0.5.3.js")
-script(type="text/javascript", src="/js/drawer.js")
-script(type="text/javascript", src="/js/resume_egg.js")
+      sections = [{ anchor: 'about', name: 'About' }, { anchor: 'blog', name: 'Blog' }, { anchor: 'projects', name: 'Projects' }, { anchor: 'misc', name: 'Misc' }]
+      showHome = (typeof page !== 'undefined' && page === 'home')
+      navClass = showHome ? '' : 'faded'
+      ul#sectionBtnWrapper(class=navClass)
+        each section in sections
+          include includes/sectionBtn
+
+      contentClass = showHome ? '' : 'show'
+      #content(class=contentClass)
+        each section in sections
+          include includes/section
+    noscript
+      | Oops, this site is pretty dependent on Javascript. Please enable Javascript or upgrade to a browser that supports it. Thanks!
+
+
+    script(type="text/javascript", src="/js/jquery-1.7.1.min.js")
+    script(type="text/javascript", src="/js/underscore-min.js")
+    script(type="text/javascript", src="/js/backbone-min-0.9.1.js")
+    script(type="text/javascript")
+      var currPage = '#{page}';
+    script(type="text/javascript", src="/js/homepage.js")
+
+    //-
+      script(type="text/javascript")
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-28122031-1']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();

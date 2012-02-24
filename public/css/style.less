@@ -1,0 +1,192 @@
+/* Color Scheme: http://www.degraeve.com/color-palette/index.php?q=http://media-cdn.pinterest.com/upload/186688347022839546_Z74ANS9o_f.jpg,1D403E54927264AF9F499C9692C6AC,0D676254CB8E78E2CA3EE0D5BEF0D7*/
+
+@shadow-blur: 1px;
+@shadow-length: 3px;
+@btnTransitionProperties: background-color, opacity, width, height, left, top;
+@btnTransitionDuration: .3s;
+@btnTransitionTiming: ease-out;
+
+.shadow() {
+  -moz-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
+  -ms-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
+  -o-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
+  -webkit-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
+  box-shadow: @shadow-length @shadow-length @shadow-blur #000;
+}
+
+.btn-transition() {
+  -moz-transition-property: @btnTransitionProperties;
+  -moz-transition-duration: @btnTransitionDuration;
+  -moz-transition-timing-function: @btnTransitionTiming;
+
+  -webkit-transition-property: @btnTransitionProperties;
+  -webkit-transition-duration: @btnTransitionDuration;
+  -webkit-transition-timing-function: @btnTransitionTiming;
+
+  -o-transition-property: @btnTransitionProperties;
+  -o-transition-duration: @btnTransitionDuration;
+  -o-transition-timing-function: @btnTransitionTiming;
+
+  transition-property: @btnTransitionProperties;
+  transition-duration: @btnTransitionDuration;
+  transition-timing-function: @btnTransitionTiming;
+}
+
+.transition(@property, @duration: .5s) {
+  -moz-transition:    @property @duration ease-out;
+  -ms-transition:     @property @duration ease-out;
+  -o-transition:      @property @duration ease-out;
+  -webkit-transition: @property @duration ease-out;
+  transition:         @property @duration ease-out;
+}
+
+/* RESET */
+body, h1, h2, h3, h4, h5, h6, div, ul, ol, li, p {
+  border: 0;
+  font-family: 'Helvetica', 'Arial', sans-serif;
+  font-size: 16px;
+  font-weight: normal;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #fff;
+  color: #000;
+}
+
+#main {
+  margin: 20px auto;
+  padding: 0 10px;
+  text-align: center;
+}
+
+#mainTitle { /* h1 */
+  font-family: 'Exo', sans-serif;
+  font-size: 48px;
+  font-weight: 800;
+  text-align: center;
+  text-shadow: #244 @shadow-length @shadow-length @shadow-blur;
+}
+
+@sectionBtnLength: 120px;
+@sectionBtnMargin: 10px;
+@sectionTileLength: @sectionBtnLength + 2*@sectionBtnMargin;
+@rowCount: 2;
+@colCount: 2;
+
+#sectionBtnWrapper {
+  margin: 25px auto;
+  position: relative;
+  width: @rowCount*(@sectionBtnLength + 2*@sectionBtnMargin);
+  height: @colCount*(@sectionBtnLength + 2*@sectionBtnMargin);
+}
+
+.sectionBtn { /* li */
+  color: #000;
+  margin: @sectionBtnMargin;
+  overflow: hidden;
+  position: absolute;
+
+  .btn-transition;
+  /*.shadow;*/
+}
+
+.sectionBtn:nth-child(1) {
+  top: 0;
+  left: 0;
+}
+.sectionBtn:nth-child(2) {
+  top: 0;
+  left: @sectionTileLength;
+}
+.sectionBtn:nth-child(3) {
+  top: @sectionTileLength;
+  left: 0;
+}
+.sectionBtn:nth-child(4) {
+  top: @sectionTileLength;
+  left: @sectionTileLength;
+}
+
+@sectionTitleHeight: 50px;
+.sectionBtn .title { /* a */
+  background-color: #14a;
+  color: #bed;
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  height: @sectionTitleHeight;
+  line-height: @sectionTitleHeight;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+
+  width: @sectionBtnLength;
+  height: @sectionBtnLength;
+  .btn-transition;
+}
+
+/* HIDDEN STATE */
+#sectionBtnWrapper.faded {
+  display: none;
+}
+
+#sectionBtnWrapper.fading .sectionBtn {
+  opacity: 0;
+}
+
+#sectionBtnWrapper.fading .sectionBtn .title {
+  width: @sectionBtnLength*1.5;
+  height: @sectionBtnLength*1.5;
+}
+
+#sectionBtnWrapper.fading .sectionBtn:nth-child(1) {
+  top: 0-@sectionTileLength;
+  left: 0-@sectionTileLength;
+}
+#sectionBtnWrapper.fading .sectionBtn:nth-child(2) {
+  top: 0-@sectionTileLength;
+  left: @sectionTileLength*2;
+}
+#sectionBtnWrapper.fading .sectionBtn:nth-child(3) {
+  top: @sectionTileLength*2;
+  left: 0-@sectionTileLength;
+}
+#sectionBtnWrapper.fading .sectionBtn:nth-child(4) {
+  top: @sectionTileLength*2;
+  left: @sectionTileLength*2;
+}
+
+.sectionBtn .title:hover {
+  background-color: #fff;
+  color: #14a;
+}
+
+.sectionBtn .title span {
+  display: block;
+  margin: @sectionTitleHeight/-2 auto 0;
+  position: absolute;
+  top: 50%;
+  width: 100%;
+}
+
+#content {
+  display: none;
+  padding-top: 25px;
+  text-align: left;
+}
+
+#content.show {
+  display: block;
+}
+
+@import "hp_section";
+
+@media only screen and (min-width: 480px) {
+  /*.sectionTitle { [> h2 <]*/
+    /*text-align: left;*/
+  /*}*/
+}
+
