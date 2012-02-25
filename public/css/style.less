@@ -3,7 +3,7 @@
 @shadow-blur: 1px;
 @shadow-length: 3px;
 @btnTransitionProperties: background-color, opacity, width, height, left, top;
-@btnTransitionDuration: .3s;
+@btnTransitionDuration: .5s;
 @btnTransitionTiming: ease-out;
 
 .shadow() {
@@ -56,6 +56,10 @@ body {
   color: #000;
 }
 
+a {
+  color: #14a;
+}
+
 #main {
   margin: 20px auto;
   padding: 0 10px;
@@ -63,9 +67,9 @@ body {
 }
 
 #mainTitle { /* h1 */
-  font-family: 'Exo', sans-serif;
+  font-family: 'Helvetica', 'Arial', sans-serif;
   font-size: 48px;
-  font-weight: 800;
+  font-weight: 600;
   text-align: center;
   text-shadow: #244 @shadow-length @shadow-length @shadow-blur;
 }
@@ -81,6 +85,7 @@ body {
   position: relative;
   width: @rowCount*(@sectionBtnLength + 2*@sectionBtnMargin);
   height: @colCount*(@sectionBtnLength + 2*@sectionBtnMargin);
+  .transition(margin-top);
 }
 
 .sectionBtn { /* li */
@@ -116,7 +121,6 @@ body {
   color: #bed;
   display: block;
   font-size: 24px;
-  font-weight: 800;
   height: @sectionTitleHeight;
   line-height: @sectionTitleHeight;
   position: relative;
@@ -164,6 +168,11 @@ body {
   color: #14a;
 }
 
+#sectionBtnWrapper.fading .sectionBtn .title:hover {
+  background-color: #14a;
+  color: #bed;
+}
+
 .sectionBtn .title span {
   display: block;
   margin: @sectionTitleHeight/-2 auto 0;
@@ -173,20 +182,57 @@ body {
 }
 
 #content {
+  color: #000;
   display: none;
-  padding-top: 25px;
+  margin: 0 auto;
   text-align: left;
+
+  .transition(margin);
 }
 
 #content.show {
   display: block;
 }
 
-@import "hp_section";
+#content .homeBtn {
+  background-color: #14a;
+  color: #fff;
+  font-size: 24px;
+  padding: 10px;
+}
 
-@media only screen and (min-width: 480px) {
-  /*.sectionTitle { [> h2 <]*/
-    /*text-align: left;*/
-  /*}*/
+@import "hp_section";
+@import "about";
+@import "blog";
+@import "projects";
+
+@media only screen and (min-height: 600px) {
+  #sectionBtnWrapper {
+    margin-top: 100px;
+  }
+  #content {
+    margin: 60px auto 0;
+  }
+}
+@media only screen and (min-height: 800px) {
+  #sectionBtnWrapper {
+    margin-top: 200px;
+  }
+  #content {
+    margin: 120px auto 0;
+  }
+}
+@media only screen and (min-height: 1200px) {
+  #sectionBtnWrapper {
+    margin-top: 400px;
+  }
+  #content {
+    margin: 120px auto 0;
+  }
+}
+@media only screen and (min-width: 800px) {
+  #content {
+    width: 800px;
+  }
 }
 

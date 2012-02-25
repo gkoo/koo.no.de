@@ -142,15 +142,67 @@ app.get('/faces', function(req, res){
   });
 });
 
-// Routes: Index
-// -------------
-app.get('/', function(req, res){
-  res.render('index', {
+// Routes: Drawer
+// --------------
+app.get('/drawer', function(req, res){
+  res.render('drawer', {
     locals: {
       experiences: resume.experiences,
       projects: resume.projects,
-      title: 'Gordon Koo'
-    }
+      title: 'Gordon Koo',
+      page: 'drawer'
+    },
+    layout: 'drawer_layout'
+  });
+});
+
+app.get('/about', function(req, res){
+  res.render('index', {
+    locals: {
+      title: 'Gordon Koo',
+      page: 'about'
+    },
+    layout: false
+  });
+});
+
+app.get('/blog', function(req, res){
+  res.render('index', {
+    locals: {
+      title: 'Gordon Koo',
+      page: 'blog'
+    },
+    layout: false
+  });
+});
+
+app.get('/projects', function(req, res){
+  res.render('index', {
+    locals: {
+      title: 'Gordon Koo',
+      page: 'projects'
+    },
+    layout: false
+  });
+});
+
+app.get('/misc', function(req, res){
+  res.render('index', {
+    locals: {
+      title: 'Gordon Koo',
+      page: 'misc'
+    },
+    layout: false
+  });
+});
+
+app.get('/', function(req, res){
+  res.render('index', {
+    locals: {
+      title: 'Gordon Koo',
+      page: 'home'
+    },
+    layout: false
   });
 });
 

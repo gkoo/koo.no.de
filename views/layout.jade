@@ -5,10 +5,8 @@ html
     title= title
     - if (typeof page !== 'undefined')
       link(rel='stylesheet', href='/css/#{page}.css')
-    link(rel='stylesheet', href='/css/drawer.css')
-    link(rel='stylesheet', href='/css/blog.css')
-    link(rel='stylesheet', href='/css/resume.css')
-    link(rel='icon', type='image/png', href='/img/favicon.png')
+    link(href='http://fonts.googleapis.com/css?family=Asap', rel='stylesheet', type='text/css')
+    link(rel='stylesheet', href='/css/style.css')
   body
     != partial('homeBtn', { show: typeof page !== 'undefined' && page === 'grid' })
     #main

@@ -1,0 +1,12 @@
+sectionName = section.name.toLowerCase()
+classNames = sectionName + ' section'
+
+// if loading page directly, add 'show' to show immediately
+if sectionName == page
+  - classNames += ' show'
+
+// classes: section [sectionName] [show]
+div(class=classNames)
+  h2.sectionTitle= section.name
+  .sectionContent
+    != partial('includes/' + sectionName)
