@@ -11,6 +11,10 @@ var BlogPostCollection = Backbone.Collection.extend({
 
   fetchPosts: function() {
     var _this = this;
+    if (this.length) {
+      // we've already fetched the posts.
+      return;
+    }
     this.fetch({
       dataType: 'jsonp',
       data: { page: 1 },
@@ -35,13 +39,13 @@ BlogView = Backbone.View.extend({
   },
 
   createPostTemplate: function() {
-    var templateStr = ['<div class="blog-post">',
-                       '  <h3 class="post-title">',
+    var templateStr = ['<li class="blog-post">',
+                       '  <h3 class="title post-title">',
                        '    <a href="<%= full_url %>"><%= title %></a>',
                        '  </h3>',
                        '  <span class="post-date"><%= display_date %></span>',
                        '  <%= body_html %>',
-                       '</div>'].join('');
+                       '</li>'].join('');
     this.postTemplate = _.template(templateStr);
   },
 
@@ -51,6 +55,7 @@ BlogView = Backbone.View.extend({
     collection.each(function(post) {
       postsHtml += _this.postTemplate(post.toJSON());
     });
+    this.$el.find('.spinner').remove();
     this.$el.find('.blogContent').html(postsHtml);
   }
 }),
@@ -101,6 +106,7 @@ NavView = Backbone.View.extend({
     _.bindAll(this, 'goToSection');
     _.extend(Backbone.Events);
     this.el = o.el;
+    $(this.el).addClass('loaded');
   },
 
   events: {
@@ -118,7 +124,6 @@ NavView = Backbone.View.extend({
     }
     evt.preventDefault();
     page = $target.attr('data-section');
-    console.log($target);
     this.trigger('section:navigate', page);
   }
 }),

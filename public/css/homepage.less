@@ -1,18 +1,8 @@
 /* Color Scheme: http://www.degraeve.com/color-palette/index.php?q=http://media-cdn.pinterest.com/upload/186688347022839546_Z74ANS9o_f.jpg,1D403E54927264AF9F499C9692C6AC,0D676254CB8E78E2CA3EE0D5BEF0D7*/
 
-@shadow-blur: 1px;
-@shadow-length: 3px;
 @btnTransitionProperties: background-color, opacity, width, height, left, top;
 @btnTransitionDuration: .5s;
 @btnTransitionTiming: ease-out;
-
-.shadow() {
-  -moz-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
-  -ms-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
-  -o-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
-  -webkit-box-shadow: @shadow-length @shadow-length @shadow-blur #000;
-  box-shadow: @shadow-length @shadow-length @shadow-blur #000;
-}
 
 .btn-transition() {
   -moz-transition-property: @btnTransitionProperties;
@@ -71,7 +61,6 @@ a {
   font-size: 48px;
   font-weight: 600;
   text-align: center;
-  text-shadow: #244 @shadow-length @shadow-length @shadow-blur;
 }
 
 @sectionBtnLength: 120px;
@@ -85,9 +74,51 @@ a {
   position: relative;
   width: @rowCount*(@sectionBtnLength + 2*@sectionBtnMargin);
   height: @colCount*(@sectionBtnLength + 2*@sectionBtnMargin);
-  .transition(margin-top);
 }
 
+#sectionBtnWrapper.loaded {
+  .transition(margin-top); /* for media queries */
+}
+
+/* HIDDEN STATE */
+#sectionBtnWrapper.faded {
+  display: none;
+}
+
+#sectionBtnWrapper.fading {
+  .sectionBtn {
+    opacity: 0;
+
+    .title {
+      width: @sectionBtnLength*1.5;
+      height: @sectionBtnLength*1.5;
+    }
+    .title:hover {
+      /* prevent flickering */
+      background-color: #14a;
+      color: #bed;
+    }
+  }
+
+  .sectionBtn:nth-child(1) {
+    top: 0-@sectionTileLength;
+    left: 0-@sectionTileLength;
+  }
+  .sectionBtn:nth-child(2) {
+    top: 0-@sectionTileLength;
+    left: @sectionTileLength*2;
+  }
+  .sectionBtn:nth-child(3) {
+    top: @sectionTileLength*2;
+    left: 0-@sectionTileLength;
+  }
+  .sectionBtn:nth-child(4) {
+    top: @sectionTileLength*2;
+    left: @sectionTileLength*2;
+  }
+}
+
+@sectionTitleHeight: 50px;
 .sectionBtn { /* li */
   color: #000;
   margin: @sectionBtnMargin;
@@ -95,7 +126,34 @@ a {
   position: absolute;
 
   .btn-transition;
-  /*.shadow;*/
+
+  .title { /* a */
+    background-color: #14a;
+    color: #bed;
+    display: block;
+    font-size: 24px;
+    height: @sectionTitleHeight;
+    line-height: @sectionTitleHeight;
+    position: relative;
+    text-align: center;
+    text-decoration: none;
+
+    width: @sectionBtnLength;
+    height: @sectionBtnLength;
+    .btn-transition;
+  }
+  .title:hover {
+    background-color: #fff;
+    color: #14a;
+  }
+
+  .title span {
+    display: block;
+    margin: @sectionTitleHeight/-2 auto 0;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+  }
 }
 
 .sectionBtn:nth-child(1) {
@@ -115,90 +173,24 @@ a {
   left: @sectionTileLength;
 }
 
-@sectionTitleHeight: 50px;
-.sectionBtn .title { /* a */
-  background-color: #14a;
-  color: #bed;
-  display: block;
-  font-size: 24px;
-  height: @sectionTitleHeight;
-  line-height: @sectionTitleHeight;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-
-  width: @sectionBtnLength;
-  height: @sectionBtnLength;
-  .btn-transition;
-}
-
-/* HIDDEN STATE */
-#sectionBtnWrapper.faded {
-  display: none;
-}
-
-#sectionBtnWrapper.fading .sectionBtn {
-  opacity: 0;
-}
-
-#sectionBtnWrapper.fading .sectionBtn .title {
-  width: @sectionBtnLength*1.5;
-  height: @sectionBtnLength*1.5;
-}
-
-#sectionBtnWrapper.fading .sectionBtn:nth-child(1) {
-  top: 0-@sectionTileLength;
-  left: 0-@sectionTileLength;
-}
-#sectionBtnWrapper.fading .sectionBtn:nth-child(2) {
-  top: 0-@sectionTileLength;
-  left: @sectionTileLength*2;
-}
-#sectionBtnWrapper.fading .sectionBtn:nth-child(3) {
-  top: @sectionTileLength*2;
-  left: 0-@sectionTileLength;
-}
-#sectionBtnWrapper.fading .sectionBtn:nth-child(4) {
-  top: @sectionTileLength*2;
-  left: @sectionTileLength*2;
-}
-
-.sectionBtn .title:hover {
-  background-color: #fff;
-  color: #14a;
-}
-
-#sectionBtnWrapper.fading .sectionBtn .title:hover {
-  background-color: #14a;
-  color: #bed;
-}
-
-.sectionBtn .title span {
-  display: block;
-  margin: @sectionTitleHeight/-2 auto 0;
-  position: absolute;
-  top: 50%;
-  width: 100%;
-}
-
 #content {
   color: #000;
   display: none;
   margin: 0 auto;
   text-align: left;
 
-  .transition(margin);
+  .transition(margin); /* for media queries */
+
+  .homeBtn {
+    background-color: #14a;
+    color: #fff;
+    font-size: 24px;
+    padding: 10px;
+  }
 }
 
 #content.show {
   display: block;
-}
-
-#content .homeBtn {
-  background-color: #14a;
-  color: #fff;
-  font-size: 24px;
-  padding: 10px;
 }
 
 @import "hp_section";
@@ -222,6 +214,7 @@ a {
     margin: 120px auto 0;
   }
 }
+/*
 @media only screen and (min-height: 1200px) {
   #sectionBtnWrapper {
     margin-top: 400px;
@@ -230,6 +223,7 @@ a {
     margin: 120px auto 0;
   }
 }
+*/
 @media only screen and (min-width: 800px) {
   #content {
     width: 800px;

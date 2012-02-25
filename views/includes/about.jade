@@ -1,7 +1,8 @@
 //#aboutSection
   h2.sectionTitle about
 p
-  | My name is Gordon Koo. I'm a software developer in the San Francisco Bay Area, currently working at
+  img#img-me(src="/img/me_thumb.jpg")
+  | Hi. My name is Gordon Koo. I'm a software developer in the San Francisco Bay Area, currently working at
   a(href='http://www.linkedin.com')
     = 'LinkedIn'
   | , a site aimed at connecting professionals. Here is my
@@ -9,12 +10,14 @@ p
     = 'LinkedIn profile'
   | .
 p
+  img#img-guitar(src="/img/guitar_thumb.jpg")
   | In my freshman year of college, my dorm resident assistant
   | put a guitar in my hands and taught me a handful of chords
   | and the basics of strumming. Since then, I've become quite
   | fond of playing guitar (and more recently, ukulele) and
   | it's my most frequent and enjoyed hobby today.
 p
+  img#img-firebug(src="/img/firebug_crop.png")
   | I like to work on websites. I suppose that's a good trait
   | to have for someone in my profession. My proclivity to
   | work on personal projects outside of work started with
@@ -24,11 +27,15 @@ p
   | , an internal event
   | hosted every month where employees are encouraged to work
   | on side projects and learn about new technologies.
-p
+p.last
   | This site was made using
   a(href='http://nodejs.org')
     = 'NodeJS'
   | ,
   a(href='http://documentcloud.github.com/backbone/')
     = 'Backbone'
-  | , and some random CSS3.
+  | ,
+  a(href='http://lesscss.org')
+    = 'Less'
+  | ,
+  | and some random CSS3.
