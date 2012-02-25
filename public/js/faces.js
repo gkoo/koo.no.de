@@ -20,7 +20,7 @@ $(function() {
 
     initialize: function() {
       _.bindAll(this, 'render', 'renderPhotoAttrs');
-      $(this.el).addClass('cxn');
+      this.$el.addClass('cxn');
       this.model.bind('change', this.render);
     },
 
@@ -42,7 +42,7 @@ $(function() {
                                   .append(picLink)
                                   .append(nameLink),
           photoAttrs  = this.model.get('photoAttributes'),
-          el          = $(this.el),
+          el          = this.$el,
           attributesElem;
       if (this.model.get('isSelf')) {
         el.addClass('self');
@@ -68,7 +68,7 @@ $(function() {
     renderPhotoAttrs: function(photoAttrs) {
       var glassesVal = photoAttrs.glasses.value,
           smileVal = photoAttrs.smiling.value,
-          el = $(this.el);
+          el = this.$el;
       if (photoAttrs.mood) {
         this.renderAttrClass(photoAttrs.mood.value, 'first');
         el.addClass(photoAttrs.mood.value);
@@ -105,7 +105,6 @@ $(function() {
       this.cxnPicViews = [];
       this.collection.each(this.constructCxnView);
       this.render();
-      this.el = $(this.el);
     },
     constructCxnView: function(cxn) {
       this.cxnPicViews.push(new ConnectionView({ model: cxn }));
@@ -119,7 +118,7 @@ $(function() {
         tmpUl.append(cxnPicView.render());
       });
       this.$('.cxns').remove();
-      this.el.children('.cxnMain').append(tmpUl);
+      this.$el.children('.cxnMain').append(tmpUl);
     }
   }),
 
@@ -237,7 +236,7 @@ $(function() {
     },
     render: function() {
       var currTab = this.model.get('current');
-      this.el.children('li').each(function(idx, el) {
+      this.$el.children('li').each(function(idx, el) {
         el = $(el);
         if (el.find('a').hasClass(currTab)) {
           el.addClass('current');
