@@ -1,6 +1,6 @@
 var express = require('express'),
     face = require('./faces_module.js'),
-    blog = require('./blog.js'),
+    //blog = require('./blog.js'),
     resume = require('./resume.js'),
     shuttle = require('./shuttle.js'),
     app = express.createServer(),
@@ -103,7 +103,7 @@ app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
 
 // Routes: Blog
 // ------------
-blog.listen(app);
+//blog.listen(app);
 
 // Routes: Grid
 // ------------
@@ -113,7 +113,8 @@ app.get('/grid', function(req, res){
       page: 'grid',
       dimSize: dimSize,
       title: 'Welcome to the Grid'
-    }
+    },
+    layout: false
   });
 });
 
