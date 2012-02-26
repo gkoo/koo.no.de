@@ -23,24 +23,25 @@ GridModule = function() {
     }
   },
 
-  initConnection = function(client) {
+  initConnection = function(socket) {
     if (gridDirty) {
-      client.emit('grid', grid);
+      socket.emit('grid', grid);
     }
     else {
-      client.emit('grid', null);
+      socket.emit('grid', null);
     }
 
-    client.on('clear', function() {
-      io.sockets.emit('clear');
+    socket.on('clear', function() {
+      // Send to everyone except the socket we received from.
+      socket.broadcast.emit('clear');
       initGrid();
       gridDirty = false;
     });
 
-    client.on('togglePixels', function(data) {
+    socket.on('togglePixels', function(data) {
       var x, y, i, len, toggleData;
 
-      io.sockets.emit('togglePixels', data);
+      socket.broadcast.emit('togglePixels', data);
       for (i=0, len=data.length; i<len; ++i) {
         toggleData = data[i];
         x = toggleData.x;
@@ -48,15 +49,13 @@ GridModule = function() {
         grid[x][y] = toggleData.currColor;
       }
       gridDirty = true;
-      //data.playerId = players[client.sessionId].playerId;
+      //data.playerId = players[socket.sessionId].playerId;
     });
   };
 
   this.listen = function(app) {
     io = io.listen(app);
-    io.sockets.on('connection', function(client) {
-      initConnection(client);
-    });
+    io.sockets.on('connection', initConnection);
   };
 
   initGrid();

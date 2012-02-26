@@ -1,13 +1,20 @@
+body,h1,h2,h3,h4,h5,h6,div,ul,ol,li,p{border:0;font-family:'Helvetica','Arial',sans-serif;font-size:16px;font-weight:normal;list-style:none;margin:0;padding:0;}
+.sectionTitle {
+  font-size: 48px;
+  margin-top: 36px;
+  text-align: center;
+}
 .upcoming h2,
 .whatisthis h2 {
-  font-size: 2em;
+  font-size: 24px;
+  margin: 20px 0;
 }
 #colorMsg,
 .nameLabel,
 #username span,
 .upcoming ul,
 .whatisthis p {
-  font-size: 1.6em;
+  font-size: 16px;
 }
 .loading #grid {
   visibility: hidden;
@@ -70,6 +77,11 @@
   margin: 20px auto;
   padding: 10px;
   width: 640px;
+}
+.colors,
+.colors li {
+  margin: 0;
+  list-style: none;
 }
 .colors li {
   float: left;

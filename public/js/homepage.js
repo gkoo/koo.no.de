@@ -103,10 +103,13 @@ ContentView = Backbone.View.extend({
 
 NavView = Backbone.View.extend({
   initialize: function(o) {
+    var _this = this;
     _.bindAll(this, 'goToSection');
     _.extend(Backbone.Events);
     this.el = o.el;
-    $(this.el).addClass('loaded');
+    setTimeout(function() {
+      $(_this.el).addClass('loaded');
+    }, 100);
   },
 
   events: {

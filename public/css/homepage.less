@@ -76,8 +76,13 @@ a {
   height: @colCount*(@sectionBtnLength + 2*@sectionBtnMargin);
 }
 
+/* Prevent Chrome from doing animation on load */
 #sectionBtnWrapper.loaded {
   .transition(margin-top); /* for media queries */
+
+  .sectionBtn { /* li */
+    .btn-transition;
+  }
 }
 
 /* HIDDEN STATE */
@@ -124,8 +129,6 @@ a {
   margin: @sectionBtnMargin;
   overflow: hidden;
   position: absolute;
-
-  .btn-transition;
 
   .title { /* a */
     background-color: #14a;
