@@ -21,7 +21,7 @@ a{color:#14a;}
 .sectionBtn:nth-child(4){top:140px;left:140px;}
 #content{color:#000;display:none;margin:0 auto;text-align:left;-moz-transition:margin 0.5s ease-out;-ms-transition:margin 0.5s ease-out;-o-transition:margin 0.5s ease-out;-webkit-transition:margin 0.5s ease-out;transition:margin 0.5s ease-out;}#content .homeBtn{background-color:#14a;color:#fff;font-size:24px;padding:10px;}
 #content.show{display:block;}
-.section{border:10px solid #14a;display:none;padding:25px 10px;text-align:center;}
+.section{border:10px solid #14a;display:none;padding:50px;text-align:center;}
 .section.show{display:block;}
 .sectionTitle{font-size:36px;margin:0 auto 30px;}
 .sectionContent{text-align:left;}.sectionContent .title{font-size:28px;margin:10px 0;}.sectionContent .title a{text-decoration:none;}
