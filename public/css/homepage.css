@@ -34,8 +34,10 @@ a{color:#14a;}
 .about.section #img-guitar{float:left;margin:0 20px 20px 0;}
 .about.section #img-me,.about.section #img-firebug{float:left;margin:0 20px 20px 0;}
 @media only screen and (min-width:600px){.about.section p{margin:10px 0 0;} p.last{padding:0 0 0 116px;}}.blog .spinner{text-align:center;}.blog .spinner img{margin:0 auto;}
-.blog .blog-post .post-date{display:none;}
+.blog .blog-post{margin-bottom:50px;}.blog .blog-post .post-date{display:none;}
 .blog .blog-post p{margin:10px 0;}
+.blog .blog-post .CodeRay{background-color:#eee;padding:10px;}
+.blog .blog-post .code{font-size:14px;}.blog .blog-post .code pre{margin:0;padding:0;}
 .projects h3{font-size:24px;margin:10px 0;}
 .projects li{margin:20px 0;}
 @media only screen and (min-height:600px){#sectionBtnWrapper{margin-top:100px;} #content{margin:60px auto 0;}}@media only screen and (min-height:800px){#sectionBtnWrapper{margin-top:200px;} #content{margin:120px auto 0;}}@media only screen and (min-width:800px){#content{width:800px;}}
