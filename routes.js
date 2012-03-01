@@ -1,10 +1,11 @@
-var express = require('express'),
-    face = require('./faces_module.js'),
-    //blog = require('./blog.js'),
-    resume = require('./resume.js'),
+var http    = require('http'), // used for posterous api
+    express = require('express'),
+    face  = require('./faces_module.js'),
+    //blog  = require('./blog.js'),
+    resume  = require('./resume.js'),
     shuttle = require('./shuttle.js'),
-    app = express.createServer(),
-    dimSize = 30;
+    app     = express.createServer(),
+    renderHomepageResponse;
 
 // Configuration
 
@@ -105,18 +106,6 @@ app.get('/wvmx/:name/:profileurl?/:pictureurl?', function(req, res) {
 // ------------
 //blog.listen(app);
 
-// Routes: Grid
-// ------------
-app.get('/grid', function(req, res){
-  res.render('grid', {
-    locals: {
-      page: 'grid',
-      dimSize: dimSize,
-      title: 'Welcome to the Grid'
-    },
-    layout: false
-  });
-});
 
 // Routes: Faces
 // -------------
@@ -143,8 +132,6 @@ app.get('/faces', function(req, res){
   });
 });
 
-// Routes: Drawer
-// --------------
 app.get('/drawer', function(req, res){
   res.render('drawer', {
     locals: {
@@ -157,44 +144,57 @@ app.get('/drawer', function(req, res){
   });
 });
 
-app.get('/about', function(req, res){
-  res.render('index', {
-    locals: {
-      title: 'Gordon Koo',
-      page: 'about'
-    },
-    layout: false
-  });
-});
+// Routes: Homepage
+// ----------------
+renderHomepageResponse = function (page, res, next) {
+  var blogPosts,
+      options,
+      respBody;
 
-app.get('/blog', function(req, res){
-  res.render('index', {
-    locals: {
-      title: 'Gordon Koo',
-      page: 'blog'
-    },
-    layout: false
-  });
-});
+  // Retrieve Posterous posts to render in Jade.
+  if (page === 'grid') {
+    next();
+  }
+  if (page === 'blog') {
+    options = {
+      host: 'www.posterous.com',
+      path: '/api/2/sites/6512834/posts/public',
+      port: 80
+    };
+    respBody = '';
+    http.get(options, function (postRes) {
+      postRes.on('data', function(chunk) {
+        respBody += chunk;
+      });
+      postRes.on('end', function() {
+        res.render('index', {
+          locals: {
+            title: 'Gordon Koo',
+            page: 'blog',
+            blogPosts: JSON.parse(respBody)
+          },
+          layout: false
+        });
+      });
+    }).on('error', function (e) {
+      console.log("Got error: " + e.message);
+    });
+  }
+  // Otherwise, just render a normal section page.
+  else {
+    res.render('index', {
+      locals: {
+        title: 'Gordon Koo',
+        page: page
+      },
+      layout: false
+    });
+  }
+};
 
-app.get('/projects', function(req, res){
-  res.render('index', {
-    locals: {
-      title: 'Gordon Koo',
-      page: 'projects'
-    },
-    layout: false
-  });
-});
-
-app.get('/misc', function(req, res){
-  res.render('index', {
-    locals: {
-      title: 'Gordon Koo',
-      page: 'misc'
-    },
-    layout: false
-  });
+app.get(/^\/(\w+)\/?$/, function(req, res, next){
+  var page = req.params[0];
+  renderHomepageResponse(page, res, next);
 });
 
 app.get('/', function(req, res){
@@ -216,4 +216,3 @@ app.get('/*', function(req, res) {
 
 // export app instance into the Routes module object
 exports.app = app;
-exports.dimSize = dimSize;

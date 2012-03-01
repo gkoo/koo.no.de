@@ -56,6 +56,19 @@ GridModule = function() {
   this.listen = function(app) {
     io = io.listen(app);
     io.sockets.on('connection', initConnection);
+
+    // Routes: Grid
+    // ------------
+    app.get('/grid', function(req, res){
+      res.render('grid', {
+        locals: {
+          page: 'grid',
+          dimSize: DIMSIZE,
+          title: 'Welcome to the Grid'
+        },
+        layout: false
+      });
+    });
   };
 
   initGrid();

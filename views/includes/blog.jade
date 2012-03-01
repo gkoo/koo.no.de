@@ -1,3 +1,11 @@
 ul.blogContent
-.spinner
-  img(src="/img/spinner.gif")
+- if (typeof blogPosts !== 'undefined' && blogPosts.length)
+  each post in blogPosts
+    li(class="blog-post")
+      h3(class="title post-title")
+       a(href=post.full_url) #{post.title}
+      span(class="post-date") #{post.display_date}
+      !{post.body_html}
+- else
+  .spinner
+    img(src="/img/spinner.gif")
