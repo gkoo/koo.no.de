@@ -60,16 +60,20 @@ BlogView = Backbone.View.extend({
   }
 }),
 
-Blog = function() {
-  this.init = function() {
-    this.view = new BlogView();
-    this.postCollection = new BlogPostCollection();
-    this.postCollection.on('reset', this.view.render);
-    this.fetchPosts = this.postCollection.fetchPosts;
-    return this;
+Blog = function(preloaded) {
+  this.init = function(preloaded) {
+    this.preloaded = preloaded;
+    // Don't do any set-up if blog post was fetched server-side.
+    if (!this.preloaded) {
+      this.view = new BlogView();
+      this.postCollection = new BlogPostCollection();
+      this.postCollection.on('reset', this.view.render);
+      this.fetchPosts = this.postCollection.fetchPosts;
+      return this;
+    }
   };
 
-  return this.init();
+  return this.init(preloaded);
 },
 
 // ========
@@ -189,7 +193,7 @@ Homepage = function(initialPage) {
     window.clearTimeout(this.fadingTimeout);
 
     if (section) {
-      if (section === 'blog') {
+      if (section === 'blog' && !this.blog.preloaded) {
         this.blog.fetchPosts();
       }
       this.hideSectionBtns();
@@ -215,13 +219,12 @@ Homepage = function(initialPage) {
   };
 
   this.init = function() {
-    //var blog = new Blog();
     _.bindAll(this);
     this.router = new HomepageRouter();
     // only show navView if user didn't navigate directly to a section
     this.navView = new NavView({ el: $('#sectionBtnWrapper') });
     this.contentView = new ContentView({ el: $('#content') });
-    this.blog = new Blog();
+    this.blog = new Blog(initialPage === 'blog');
     this.setupEvents();
 
     Backbone.history.start({ pushState: true });
