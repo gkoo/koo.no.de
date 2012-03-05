@@ -11,8 +11,8 @@ GridModule = function() {
   var grid    = [],
       gridDirty = false,    // whether anything is on the grid yet
       DIMSIZE = 30,
-      WHITE   = 5,
-      COLORS  = ['black', 'red', 'green', 'blue', 'yellow', 'white'],
+      COLORS  = ['black', 'brown', 'red', 'green', 'blue', 'yellow', 'white'],
+      WHITE   = COLORS.length-1,
 
   initGrid = function() {
     for (var i=0; i<DIMSIZE; ++i) {

@@ -1,12 +1,13 @@
 // TODO: use localstorage to save name, etc.
-var debug = 0,
-    COLORS            = { BLACK  : 0,
-                        RED    : 1,
-                        GREEN  : 2,
-                        BLUE   : 3,
-                        YELLOW : 4,
-                        WHITE  : 5 },
-    COLOR_CLASSES     = ['black', 'red', 'green', 'blue', 'yellow', 'white'],
+var debug = 1,
+    COLORS        = { BLACK  : 0,
+                      BROWN  : 1,
+                      RED    : 2,
+                      GREEN  : 3,
+                      BLUE   : 4,
+                      YELLOW : 5,
+                      WHITE  : 6 },
+    COLOR_CLASSES = ['black', 'brown', 'red', 'green', 'blue', 'yellow', 'white'],
 
 
 

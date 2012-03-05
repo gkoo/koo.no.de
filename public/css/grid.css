@@ -127,6 +127,9 @@ body,h1,h2,h3,h4,h5,h6,div,ul,ol,li,p{border:0;font-family:'Helvetica','Arial',s
 .black {
   background-color: #000;
 }
+.brown {
+  background-color: #8B4513;
+}
 .red {
   background-color: #f00;
 }
