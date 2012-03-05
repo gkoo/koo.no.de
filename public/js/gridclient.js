@@ -1,5 +1,5 @@
 // TODO: use localstorage to save name, etc.
-var debug = 1,
+var debug = 0,
     COLORS        = { BLACK  : 0,
                       BROWN  : 1,
                       RED    : 2,
