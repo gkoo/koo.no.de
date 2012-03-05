@@ -154,6 +154,7 @@ renderHomepageResponse = function (page, res, next) {
   // Retrieve Posterous posts to render in Jade.
   if (page === 'grid') {
     next();
+    return;
   }
   if (page === 'blog') {
     options = {
