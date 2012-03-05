@@ -182,7 +182,10 @@ renderHomepageResponse = function (page, res, next) {
     });
   }
   // Otherwise, just render a normal section page.
-  else {
+  else if (page === 'about'
+           || page === 'projects'
+           || page === 'misc'
+           || page === 'home') {
     res.render('index', {
       locals: {
         title: 'Gordon Koo',
@@ -190,6 +193,9 @@ renderHomepageResponse = function (page, res, next) {
       },
       layout: false
     });
+  }
+  else {
+    next();
   }
 };
 
