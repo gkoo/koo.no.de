@@ -2,7 +2,32 @@
 // BLOG
 // ====
 
-var BlogPostCollection = Backbone.Collection.extend({
+var addClass = function (el, newClass) {
+  if (el.className.indexOf(newClass) < 0) {
+    if (el.className.length > 0) {
+      el.className += ' ';
+    }
+    el.className += newClass;
+  }
+},
+
+removeClass = function (el, classToRemove) {
+  var classes = el.className.split(' '),
+      i, len;
+  for (i = 0, len = classes.length; i < len; ++i) {
+    if (classes[i] === classToRemove) {
+      classes.splice(i, 1);
+      break;
+    }
+  }
+  el.className = classes.join(' ');
+},
+
+hasClass = function (el, className) {
+  return (el.className.indexOf(className) != -1);
+},
+
+BlogPostCollection = Backbone.Collection.extend({
   initialize: function () {
     var siteId = 6512834;
     this.fetchPosts = this.fetchPosts.bind(this);
@@ -97,21 +122,18 @@ ContentView = Backbone.View.extend({
   },
 
   showSection: function(section) {
-    var sectionEl = document.querySelector('#' + this.id + ' .' + section),
-        sectionClassList = sectionEl.classList;
+    var sectionEl = document.querySelector('#' + this.id + ' .' + section);
     this.el.style.display = 'block';
-    if (!sectionClassList.contains('show')) {
-      sectionClassList.add('show');
-    }
+    addClass(sectionEl, 'show');
   },
 
   hide: function() {
     var showingSection = document.querySelector('.section.show'),
         i, len;
     if (showingSection) {
-      showingSection.classList.remove('show');
+      removeClass(showingSection, 'show');
     }
-    this.el.classList.remove('show');
+    removeClass(this.el, 'show');
     this.el.style.display = 'none';
   },
 
@@ -137,17 +159,16 @@ NavView = Backbone.View.extend({
 
     // Prevent CSS3 transitions until page is loaded. Sort of hacky.
     setTimeout(function() {
-      if (!el.classList) { el.className = 'loaded'; }
-      else { el.classList.add('loaded'); }
+      addClass(el, 'loaded');
     }, 100);
   },
 
   goToSection: function(evt) {
     var target = evt.target,
         parent;
-    if (!target.classList.contains('title')) {
+    if (!hasClass(target, 'title')) {
       parent = target.parentElement;
-      if (parent.classList.contains('title')) {
+      if (hasClass(parent, 'title')) {
         target = parent;
       }
     }
@@ -157,23 +178,17 @@ NavView = Backbone.View.extend({
   },
 
   show: function () {
-    var elClasslist = this.el.classList;
-    elClasslist.remove('faded');
-    this.fadingTimeout = window.setTimeout(function() {
-      elClasslist.remove('fading');
-    }, 10);
+    removeClass(this.el, 'faded');
+    this.fadingTimeout = window.setTimeout((function() {
+      removeClass(this.el, 'fading');
+    }).bind(this), 10);
   },
 
   hide: function (anim_duration) {
-    var classList = this.el.classList;
-    if (!classList.contains('fading')) {
-      classList.add('fading');
-    }
-    this.fadingTimeout = window.setTimeout(function() {
-      if (!classList.contains('faded')) {
-        classList.add('faded');
-      }
-    }, anim_duration);
+    addClass(this.el, 'fading');
+    this.fadingTimeout = window.setTimeout((function() {
+      addClass(this.el, 'faded');
+    }).bind(this), anim_duration);
   }
 }),
 
@@ -221,6 +236,7 @@ Homepage = function(initialPage) {
       }).bind(this), ANIM_DURATION);
     }
     else {
+      // show nav view
       this.contentView.hide();
       this.navView.show();
     }
