@@ -3,39 +3,40 @@
 // ====
 
 var BlogPostCollection = Backbone.Collection.extend({
-  initialize: function() {
+  initialize: function () {
     var siteId = 6512834;
-    _.bindAll(this, 'fetchPosts');
-    this.url = 'http://www.posterous.com/api/2/sites/' + siteId + '/posts/public';
+    this.fetchPosts = this.fetchPosts.bind(this);
+    this.handleResponse = this.handleResponse.bind(this);
+    this.url = 'http://www.posterous.com/api/2/sites/' + siteId + '/posts/public?callback=posterousCallback';
+    window.posterousCallback = this.handleResponse;
   },
 
-  fetchPosts: function() {
-    var _this = this;
+  fetchPosts: function () {
+    var newScriptEl;
     if (this.length) {
       // we've already fetched the posts.
       return;
     }
-    this.fetch({
-      dataType: 'jsonp',
-      data: { page: 1 },
-      success: function(collection, response) {
-        console.log('blog fetch success');
-      },
-      error: function(collection, response) {
-        console.log('blog fetch error');
-        console.log(response);
-      }
-    });
+
+    newScriptEl = document.createElement('script');
+    newScriptEl.src = this.url;
+    document.body.appendChild(newScriptEl);
+  },
+
+  handleResponse: function (o) {
+    this.reset(o);
   }
 }),
 
 BlogView = Backbone.View.extend({
-  el: $('.section.blog'),
+  el: document.querySelector('.section.blog'),
 
   initialize: function() {
-    _.bindAll(this, 'render',
-                    'createPostTemplate');
+    this.render = this.render.bind(this);
+    this.createPostTemplate = this.createPostTemplate.bind(this);
     this.createPostTemplate();
+    this.spinnerEl = document.querySelector('.section.blog .spinner');
+    this.blogContentEl = document.querySelector('.section.blog .blogContent');
   },
 
   createPostTemplate: function() {
@@ -55,8 +56,8 @@ BlogView = Backbone.View.extend({
     collection.each(function(post) {
       postsHtml += _this.postTemplate(post.toJSON());
     });
-    this.$el.find('.spinner').remove();
-    this.$el.find('.blogContent').html(postsHtml);
+    this.spinnerEl.style.display = 'none';
+    this.blogContentEl.innerHTML = postsHtml;
   }
 }),
 
@@ -81,24 +82,39 @@ Blog = function(preloaded) {
 // ========
 
 ContentView = Backbone.View.extend({
-  initialize: function(o) {
+  el: document.getElementById('content'),
+
+  initialize: function() {
+    var homeBtn;
     _.extend(this, Backbone.Events);
-    _.bindAll(this, 'showSection',
-                    'hide',
-                    'goHome');
-    this.el = o.el;
+    this.showSection = this.showSection.bind(this);
+    this.hide = this.hide.bind(this);
+    this.goHome = this.goHome.bind(this);
+    this.id = this.el.getAttribute('id');
+
+    homeBtn = document.querySelector('.homeBtn');
+    homeBtn.addEventListener('click', this.goHome);
   },
-  events: {
-    'click .homeBtn': 'goHome'
-  },
+
   showSection: function(section) {
-    this.$el.show()
-            .find('.' + section).addClass('show');
+    var sectionEl = document.querySelector('#' + this.id + ' .' + section),
+        sectionClassList = sectionEl.classList;
+    this.el.style.display = 'block';
+    if (!sectionClassList.contains('show')) {
+      sectionClassList.add('show');
+    }
   },
+
   hide: function() {
-    this.$el.hide()
-            .find('.show').removeClass('show');
+    var showingSection = document.querySelector('.section.show'),
+        i, len;
+    if (showingSection) {
+      showingSection.classList.remove('show');
+    }
+    this.el.classList.remove('show');
+    this.el.style.display = 'none';
   },
+
   goHome: function(evt) {
     evt.preventDefault();
     this.trigger('goHome');
@@ -106,39 +122,64 @@ ContentView = Backbone.View.extend({
 }),
 
 NavView = Backbone.View.extend({
-  initialize: function(o) {
-    var _this = this;
-    _.bindAll(this, 'goToSection');
+  el: document.getElementById('sectionBtnWrapper'),
+
+  initialize: function() {
+    var el = this.el;
     _.extend(Backbone.Events);
-    this.el = o.el;
+
+    this.goToSection = this.goToSection.bind(this);
+    this.hide = this.hide.bind(this);
+    this.show = this.show.bind(this);
+
+    this.id = el.getAttribute('id');
+    this.el.addEventListener('click', this.goToSection);
+
+    // Prevent CSS3 transitions until page is loaded. Sort of hacky.
     setTimeout(function() {
-      $(_this.el).addClass('loaded');
+      if (!el.classList) { el.className = 'loaded'; }
+      else { el.classList.add('loaded'); }
     }, 100);
   },
 
-  events: {
-    'click .title': 'goToSection'
-  },
-
   goToSection: function(evt) {
-    var $target = $(evt.target),
-        $parent;
-    if (!$target.hasClass('title')) {
-      $parent = $target.parent();
-      if ($parent.hasClass('title')) {
-        $target = $parent;
+    var target = evt.target,
+        parent;
+    if (!target.classList.contains('title')) {
+      parent = target.parentElement;
+      if (parent.classList.contains('title')) {
+        target = parent;
       }
     }
     evt.preventDefault();
-    page = $target.attr('data-section');
+    page = target.getAttribute('data-section');
     this.trigger('section:navigate', page);
+  },
+
+  show: function () {
+    var elClasslist = this.el.classList;
+    elClasslist.remove('faded');
+    this.fadingTimeout = window.setTimeout(function() {
+      elClasslist.remove('fading');
+    }, 10);
+  },
+
+  hide: function (anim_duration) {
+    var classList = this.el.classList;
+    if (!classList.contains('fading')) {
+      classList.add('fading');
+    }
+    this.fadingTimeout = window.setTimeout(function() {
+      if (!classList.contains('faded')) {
+        classList.add('faded');
+      }
+    }, anim_duration);
   }
 }),
 
 HomepageRouter = Backbone.Router.extend({
   initialize: function() {
     _.extend(Backbone.Events);
-    _.bindAll(this, 'home', 'blog');
   },
   routes: {
     '': 'home',
@@ -166,51 +207,26 @@ HomepageRouter = Backbone.Router.extend({
 }),
 
 Homepage = function(initialPage) {
-  var _this = this,
-      ANIM_DURATION = 400,
-      contentEl = $('#content');
+  this.sectionBtnWrapper = document.getElementById('sectionBtnWrapper');
 
-  this.sectionBtnWrapper = $('#sectionBtnWrapper');
-
-  this.hideSectionBtns = function() {
-    this.sectionBtnWrapper.addClass('fading');
-    this.fadingTimeout = window.setTimeout(function() {
-      _this.sectionBtnWrapper.addClass('faded');
-    }, ANIM_DURATION);
-  };
-
-  this.showSectionBtns = function() {
-    contentEl.removeClass('show')
-             .children('.show').removeClass('show');
-    this.sectionBtnWrapper.removeClass('faded');
-    console.log('setting fading timeout');
-    this.fadingTimeout = window.setTimeout(function() {
-      _this.sectionBtnWrapper.removeClass('fading');
-    }, 10);
-  };
-
-  this.changeSection = function(section) {
-    window.clearTimeout(this.fadingTimeout);
-
+  this.changeSection = (function(section) {
+    var ANIM_DURATION = 400;
     if (section) {
       if (section === 'blog' && !this.blog.preloaded) {
         this.blog.fetchPosts();
       }
-      this.hideSectionBtns();
-      setTimeout(function() {
-        _this.contentView.showSection(section);
-      }, ANIM_DURATION);
+      this.navView.hide(ANIM_DURATION);
+      setTimeout((function() {
+        this.contentView.showSection(section);
+      }).bind(this), ANIM_DURATION);
     }
     else {
-      if (this.fadingTimeout) {
-        console.log('clearing fading timeout');
-      }
       this.contentView.hide();
-      this.showSectionBtns();
+      this.navView.show();
     }
 
     this.router.navigate(section);
-  };
+  }).bind(this);
 
   this.setupEvents = function() {
     this.navView.on('section:navigate', this.changeSection);
@@ -219,11 +235,10 @@ Homepage = function(initialPage) {
   };
 
   this.init = function() {
-    _.bindAll(this);
     this.router = new HomepageRouter();
     // only show navView if user didn't navigate directly to a section
-    this.navView = new NavView({ el: $('#sectionBtnWrapper') });
-    this.contentView = new ContentView({ el: $('#content') });
+    this.navView = new NavView();
+    this.contentView = new ContentView();
     this.blog = new Blog(initialPage === 'blog');
     this.setupEvents();
 
@@ -233,6 +248,17 @@ Homepage = function(initialPage) {
   this.init();
 };
 
-$(function() {
+// Define bind for Safari
+if (typeof Function.bind === 'undefined') {
+  Function.prototype.bind = function (bind) {
+    var self = this;
+    return function () {
+      var args = Array.prototype.slice.call(arguments);
+      return self.apply(bind || null, args);
+    };
+  };
+}
+
+document.body.onload = function () {
   var homepage = new Homepage(currPage);
-});
+};
