@@ -32,7 +32,7 @@ BlogPostCollection = Backbone.Collection.extend({
     var siteId = 6512834;
     this.fetchPosts = this.fetchPosts.bind(this);
     this.handleResponse = this.handleResponse.bind(this);
-    this.url = 'http://www.posterous.com/api/2/sites/' + siteId + '/posts/public?callback=posterousCallback';
+    this.url = 'http://www.posterous.com/api/2/sites/' + siteId + '/posts/public?page=1&callback=posterousCallback';
     window.posterousCallback = this.handleResponse;
   },
 
