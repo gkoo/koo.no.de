@@ -1,12 +1,5 @@
 var io     = require('socket.io'),
 
-/*
-io = io.listen(app, {
-  rememberTransport: false,
-  transports: ['htmlfile', 'xhr-polling', 'jsonp-polling']
-});
-*/
-
 GridModule = function() {
   var grid    = [],
       gridDirty = false,    // whether anything is on the grid yet
@@ -54,7 +47,10 @@ GridModule = function() {
   };
 
   this.listen = function(app) {
-    io = io.listen(app);
+    io = io.listen(app, {
+      //rememberTransport: false,
+      transports: ['xhr-polling', 'htmlfile', 'jsonp-polling']
+    });
     io.sockets.on('connection', initConnection);
 
     // Routes: Grid
