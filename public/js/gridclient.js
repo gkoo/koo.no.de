@@ -375,7 +375,7 @@ Grid = function () {
   };
 
   this.setupSocket = function () {
-    var socketUrl = debug ? 'http://localhost' : 'http://www.gordonkoo.com';
+    var socketUrl = debug ? 'http://localhost' : 'http://koo.no.de';
     this.socket = new io.connect(socketUrl);
 
     // Receives a buffer of pixels to toggle,
