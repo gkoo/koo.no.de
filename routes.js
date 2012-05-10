@@ -205,6 +205,7 @@ app.get(/^\/(\w+)\/?$/, function(req, res, next){
 });
 
 app.get('/', function(req, res){
+  /*
   res.render('index', {
     locals: {
       title: 'Gordon Koo',
@@ -212,6 +213,8 @@ app.get('/', function(req, res){
     },
     layout: false
   });
+  */
+  res.redirect('http://www.gordonkoo.com');
 });
 
 /*
