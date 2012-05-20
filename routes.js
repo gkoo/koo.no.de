@@ -1,6 +1,6 @@
 var http    = require('http'), // used for posterous api
     express = require('express'),
-    face  = require('./faces_module.js'),
+    //face  = require('./faces_module.js'),
     //blog  = require('./blog.js'),
     resume  = require('./resume.js'),
     shuttle = require('./shuttle.js'),
@@ -141,6 +141,12 @@ app.get('/drawer', function(req, res){
       page: 'drawer'
     },
     layout: 'drawer_layout'
+  });
+});
+
+app.get('/flux', function(req, res){
+  res.render('flux.ejs', {
+    layout: false
   });
 });
 
