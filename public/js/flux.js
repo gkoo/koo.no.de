@@ -63,6 +63,7 @@ $(function() {
           timespan         = today - earliestDate;
           // no-op takes around 70-100 ms
           console.log('Processing took ' + ((new Date()).getTime() - date.getTime()) + ' milliseconds');
+          alert('Processing is done!');
         }
       }, false);
     }
